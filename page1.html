@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>報表中心</title>
+    <link rel="manifest" href="manifest.json">
+    <script src="auth.js"></script>
+</head>
+<body>
+    <div style="padding: 20px;">
+        <h2>📊 每月報表</h2>
+        <hr>
+        <p>這裡是詳細資料區...</p>
+        
+        <div style="background: #f0f0f0; padding: 15px; border-radius: 8px;">
+            <strong>2025年12月業績</strong><br>
+            <span style="color: red; font-size: 24px;">$1,250,000</span>
+        </div>
+        
+        <br>
+        <p>您可以在這裡插入 Google Drive 的圖表或 PDF 連結。</p>
+    </div>
+
+    <script>
+        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
+    </script>
+</body>
+</html>

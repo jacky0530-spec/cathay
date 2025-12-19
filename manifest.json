@@ -1,0 +1,20 @@
+{
+  "short_name": "國泰專區",
+  "name": "國泰雲端服務 App",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "index.html",
+  "background_color": "#00A651",
+  "5display": "standalone",
+  "theme_color": "#00A651"
+}
