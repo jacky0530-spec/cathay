@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>客戶資料管理系統 (靜默儲存版)</title>
+    <title>客戶資料管理系統 (自動日期修復版)</title>
     <script type="module" src="auth.js"></script>
 
     <style>
@@ -125,7 +125,7 @@
             padding: 6px 12px;
             font-size: 14px;
             white-space: nowrap;
-            margin-right: 0; /* reset margin */
+            margin-right: 0;
         }
 
         .search-section { margin-bottom: 20px; }
@@ -194,7 +194,7 @@
         <div class="form-grid">
             <div>
                 <label>紀錄日期 (必填)</label>
-                <input type="date" id="recordDate">
+                <input type="date" id="recordDate" autocomplete="off">
             </div>
             <div>
                 <label>姓名 (必填)</label>
@@ -260,6 +260,7 @@
 </div>
 
 <script>
+    // 1. 強制設定今天的日期
     function setTodayDate() {
         const dateField = document.getElementById('recordDate');
         if (dateField) {
@@ -267,16 +268,20 @@
             const year = today.getFullYear();
             const month = String(today.getMonth() + 1).padStart(2, '0');
             const day = String(today.getDate()).padStart(2, '0');
+            // 強制寫入值
             dateField.value = `${year}-${month}-${day}`;
         }
     }
 
-    window.onload = function() {
+    // 2. 初始化：使用 DOMContentLoaded 確保在元素載入後立刻執行
+    document.addEventListener('DOMContentLoaded', function() {
         try {
             loadData();
-            setTodayDate();
-        } catch (e) { console.error("初始化錯誤:", e); }
-    };
+            setTodayDate(); 
+        } catch (e) {
+            console.error("初始化錯誤:", e);
+        }
+    });
 
     function saveData() {
         try {
@@ -290,7 +295,10 @@
                 return;
             }
 
-            if (!recordDateField.value) setTodayDate();
+            // 防呆：如果日期是空的，儲存時再補一次
+            if (!recordDateField.value) {
+                setTodayDate();
+            }
 
             const editId = editIdField.value;
             const recordDate = recordDateField.value;
@@ -312,7 +320,6 @@
                 const index = records.findIndex(r => r.id == editId);
                 if (index !== -1) {
                     records[index] = { ...records[index], recordDate, name, phone, lineId, address, experience, notes };
-                    // 移除成功提示：alert('資料更新成功！');
                 }
             } else {
                 const newRecord = {
@@ -321,10 +328,11 @@
                     recordDate, name, phone, lineId, address, experience, notes
                 };
                 records.push(newRecord);
-                // 移除成功提示：alert('資料儲存成功！');
             }
 
             localStorage.setItem('contactRecords', JSON.stringify(records));
+            
+            // 儲存後重置表單 (這會再次觸發 setTodayDate)
             resetForm();
             loadData();
 
@@ -341,6 +349,8 @@
         document.getElementById('address').value = '';
         document.getElementById('experience').value = '';
         document.getElementById('notes').value = '';
+        
+        // 重置時也要填入今天日期
         setTodayDate();
 
         const saveBtn = document.getElementById('saveBtn');
@@ -376,7 +386,6 @@
     function cancelEdit() { resetForm(); }
 
     function deleteData(id) {
-        // 刪除通常還是建議保留確認框，避免誤刪
         if(confirm('確定要刪除這筆資料嗎？')) {
             let records = JSON.parse(localStorage.getItem('contactRecords')) || [];
             records = records.filter(record => record.id !== id);
