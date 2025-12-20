@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>客戶聯絡記錄系統 (含日期)</title>
+    <title>客戶資料管理系統 (靜默儲存版)</title>
     <style>
         :root {
             --primary-color: #2c3e50;
             --accent-color: #3498db;
             --bg-color: #f4f7f6;
+            --line-color: #00c300;
         }
 
         body {
@@ -20,7 +21,7 @@
         }
 
         .container {
-            max-width: 1100px; /* 稍微加寬以容納日期欄位 */
+            max-width: 1200px;
             margin: 0 auto;
         }
 
@@ -29,24 +30,36 @@
             color: var(--primary-color);
         }
 
-        /* 輸入區塊樣式 */
+        /* 輸入區塊 */
         .input-card {
             background: white;
             padding: 25px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             margin-bottom: 20px;
+            border-left: 5px solid var(--accent-color);
+        }
+
+        .edit-mode-indicator {
+            display: none;
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            border: 1px solid #ffeeba;
+            text-align: center;
+            font-weight: bold;
         }
 
         .form-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr; /* 改為三欄 */
+            grid-template-columns: repeat(4, 1fr);
             gap: 15px;
         }
 
-        .full-width {
-            grid-column: span 3;
-        }
+        .full-width { grid-column: span 4; }
+        .half-width { grid-column: span 2; }
 
         label {
             display: block;
@@ -54,62 +67,81 @@
             font-weight: bold;
         }
 
-        input, textarea, select {
+        input, textarea {
             width: 100%;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 4px;
             box-sizing: border-box;
+            font-size: 16px;
         }
 
-        /* 日期欄位特別樣式 */
-        input[type="date"] {
-            background-color: #fff;
-            cursor: pointer;
+        input[type="date"] { background-color: #fcfcfc; }
+
+        /* 按鈕群組 */
+        .btn-group {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
         }
 
         button {
-            background-color: var(--accent-color);
             color: white;
             border: none;
-            padding: 12px 20px;
+            padding: 10px 20px;
             border-radius: 4px;
             cursor: pointer;
             font-size: 16px;
-            margin-top: 10px;
-            transition: background 0.3s;
+            transition: opacity 0.3s;
         }
+        button:hover { opacity: 0.9; }
 
-        button:hover {
-            background-color: #2980b9;
-        }
-
-        button.delete-btn {
-            background-color: #e74c3c;
-            padding: 5px 10px;
-            font-size: 14px;
-        }
-
-        button.delete-btn:hover {
-            background-color: #c0392b;
-        }
-
-        /* 搜尋區塊 */
-        .search-section {
-            margin-bottom: 20px;
+        .btn-save { background-color: var(--accent-color); font-weight: bold; }
+        .btn-export { background-color: #27ae60; }
+        .btn-import { background-color: #8e44ad; }
+        .btn-cancel { background-color: #95a5a6; display: none; }
+        
+        /* 表格內的操作按鈕 */
+        .action-btns {
             display: flex;
-            gap: 10px;
+            gap: 5px;
+            justify-content: flex-start;
         }
 
+        .btn-delete {
+            background-color: #e74c3c;
+            padding: 6px 12px;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .btn-edit {
+            background-color: #f39c12;
+            padding: 6px 12px;
+            font-size: 14px;
+            white-space: nowrap;
+            margin-right: 0; /* reset margin */
+        }
+
+        .search-section { margin-bottom: 20px; }
         .search-input {
-            flex-grow: 1;
+            width: 100%;
             padding: 12px;
             border: 2px solid var(--accent-color);
             border-radius: 4px;
             font-size: 16px;
         }
 
-        /* 表格樣式 */
+        .import-section {
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
         .table-container {
             background: white;
             padding: 20px;
@@ -121,38 +153,30 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 800px; /* 防止手機版太擠 */
+            min-width: 900px;
         }
 
         th, td {
             padding: 12px;
             text-align: left;
             border-bottom: 1px solid #eee;
+            vertical-align: top;
         }
 
         th {
             background-color: var(--primary-color);
             color: white;
-            white-space: nowrap; /* 標題不換行 */
+            white-space: nowrap;
         }
 
-        tr:hover {
-            background-color: #f1f1f1;
-        }
-
-        .no-data {
-            text-align: center;
-            color: #777;
-            padding: 20px;
-        }
+        tr:hover { background-color: #f1f1f1; }
+        .line-id-text { color: var(--line-color); font-weight: bold; }
+        .no-data { text-align: center; color: #777; padding: 20px; }
 
         @media (max-width: 768px) {
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-            .full-width {
-                grid-column: span 1;
-            }
+            .form-grid { grid-template-columns: 1fr; }
+            .full-width, .half-width { grid-column: span 1; }
+            .import-section { flex-direction: column; align-items: stretch; }
         }
     </style>
 </head>
@@ -161,161 +185,248 @@
 <div class="container">
     <h1>客戶資料管理系統</h1>
 
-    <div class="input-card">
-        <h3>新增資料</h3>
+    <div class="input-card" id="formCard">
+        <div id="editModeMsg" class="edit-mode-indicator">⚠️ 正處於編輯模式</div>
+        <input type="hidden" id="editId" value="">
+
         <div class="form-grid">
             <div>
-                <label>紀錄日期 *</label>
+                <label>紀錄日期 (必填)</label>
                 <input type="date" id="recordDate">
             </div>
             <div>
-                <label>姓名 *</label>
+                <label>姓名 (必填)</label>
                 <input type="text" id="name" placeholder="輸入姓名">
             </div>
             <div>
-                <label>電話 *</label>
+                <label>電話 (必填)</label>
                 <input type="tel" id="phone" placeholder="輸入電話">
+            </div>
+            <div>
+                <label>Line ID</label>
+                <input type="text" id="lineId" placeholder="輸入 Line ID">
             </div>
             <div class="full-width">
                 <label>地址</label>
                 <input type="text" id="address" placeholder="輸入地址">
             </div>
-            <div class="full-width">
+            <div class="half-width">
                 <label>工作經歷</label>
                 <textarea id="experience" rows="2" placeholder="簡述工作經歷"></textarea>
             </div>
-            <div class="full-width">
+            <div class="half-width">
                 <label>聯絡內容 / 備註</label>
-                <textarea id="notes" rows="3" placeholder="記錄聯絡事項..."></textarea>
+                <textarea id="notes" rows="2" placeholder="記錄聯絡事項..."></textarea>
             </div>
         </div>
-        <button onclick="saveData()">儲存資料</button>
-        <button onclick="exportData()" style="background-color: #27ae60; margin-left: 10px;">匯出 Excel (CSV)</button>
+
+        <div class="btn-group">
+            <button onclick="saveData()" id="saveBtn" class="btn-save">儲存資料</button>
+            <button onclick="cancelEdit()" id="cancelBtn" class="btn-cancel">取消編輯</button>
+            <button onclick="exportData()" class="btn-export">匯出 Excel (CSV)</button>
+        </div>
+
+        <div class="import-section">
+            <span style="font-size: 14px; font-weight: bold;">匯入資料：</span>
+            <input type="file" id="csvFileInput" accept=".csv">
+            <button onclick="importCSV()" class="btn-import">確認匯入</button>
+        </div>
     </div>
 
     <div class="search-section">
-        <input type="text" id="searchInput" class="search-input" placeholder="🔍 搜尋姓名、電話、地址或備註..." onkeyup="searchData()">
+        <input type="text" id="searchInput" class="search-input" placeholder="🔍 搜尋姓名、電話、Line ID..." onkeyup="searchData()">
     </div>
 
     <div class="table-container">
         <table>
             <thead>
                 <tr>
-                    <th width="12%">日期</th>
+                    <th width="10%">日期</th>
                     <th width="10%">姓名</th>
                     <th width="12%">電話</th>
+                    <th width="10%">Line ID</th>
                     <th width="20%">地址</th>
-                    <th width="18%">工作經歷</th>
-                    <th width="20%">聯絡內容</th>
-                    <th width="8%">操作</th>
+                    <th width="15%">工作經歷</th>
+                    <th width="13%">聯絡內容</th>
+                    <th width="140px">操作</th>
                 </tr>
             </thead>
-            <tbody id="tableBody">
-                </tbody>
+            <tbody id="tableBody"></tbody>
         </table>
-        <div id="noDataMsg" class="no-data" style="display:none;">沒有找到符合的資料</div>
+        <div id="noDataMsg" class="no-data">目前沒有資料</div>
     </div>
 </div>
 
 <script>
-    // 初始化：當頁面載入時
-    document.addEventListener('DOMContentLoaded', () => {
-        loadData();
-        setDefaultDate();
-    });
-
-    // 設定日期欄位預設為今天
-    function setDefaultDate() {
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('recordDate').value = today;
+    function setTodayDate() {
+        const dateField = document.getElementById('recordDate');
+        if (dateField) {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            dateField.value = `${year}-${month}-${day}`;
+        }
     }
 
-    // 儲存資料功能
+    window.onload = function() {
+        try {
+            loadData();
+            setTodayDate();
+        } catch (e) { console.error("初始化錯誤:", e); }
+    };
+
     function saveData() {
-        const recordDate = document.getElementById('recordDate').value;
-        const name = document.getElementById('name').value.trim();
-        const phone = document.getElementById('phone').value.trim();
-        const address = document.getElementById('address').value.trim();
-        const experience = document.getElementById('experience').value.trim();
-        const notes = document.getElementById('notes').value.trim();
+        try {
+            const editIdField = document.getElementById('editId');
+            const recordDateField = document.getElementById('recordDate');
+            const nameField = document.getElementById('name');
+            const phoneField = document.getElementById('phone');
+            
+            if (!editIdField || !recordDateField || !nameField || !phoneField) {
+                alert("系統錯誤：找不到輸入欄位，請重新整理網頁。");
+                return;
+            }
 
-        if (!name || !phone || !recordDate) {
-            alert('請確認「日期」、「姓名」與「電話」皆已填寫！');
-            return;
+            if (!recordDateField.value) setTodayDate();
+
+            const editId = editIdField.value;
+            const recordDate = recordDateField.value;
+            const name = nameField.value.trim();
+            const phone = phoneField.value.trim();
+            const lineId = document.getElementById('lineId').value.trim();
+            const address = document.getElementById('address').value.trim();
+            const experience = document.getElementById('experience').value.trim();
+            const notes = document.getElementById('notes').value.trim();
+
+            if (!name || !phone) {
+                alert('請至少填寫「姓名」與「電話」！');
+                return;
+            }
+
+            let records = JSON.parse(localStorage.getItem('contactRecords')) || [];
+
+            if (editId) {
+                const index = records.findIndex(r => r.id == editId);
+                if (index !== -1) {
+                    records[index] = { ...records[index], recordDate, name, phone, lineId, address, experience, notes };
+                    // 移除成功提示：alert('資料更新成功！');
+                }
+            } else {
+                const newRecord = {
+                    id: Date.now(),
+                    createdDate: new Date().toLocaleString(),
+                    recordDate, name, phone, lineId, address, experience, notes
+                };
+                records.push(newRecord);
+                // 移除成功提示：alert('資料儲存成功！');
+            }
+
+            localStorage.setItem('contactRecords', JSON.stringify(records));
+            resetForm();
+            loadData();
+
+        } catch (error) {
+            alert("發生錯誤：" + error.message);
         }
+    }
 
-        const newRecord = {
-            id: Date.now(), 
-            recordDate, // 手動選擇的日期
-            name,
-            phone,
-            address,
-            experience,
-            notes,
-            createdDate: new Date().toLocaleString() // 系統自動記錄的建立時間（備用）
-        };
-
-        // 取得舊資料
-        let records = JSON.parse(localStorage.getItem('contactRecords')) || [];
-        records.push(newRecord); 
-
-        // 存回 LocalStorage
-        localStorage.setItem('contactRecords', JSON.stringify(records));
-
-        // 清空輸入框但保留日期為今天
+    function resetForm() {
+        document.getElementById('editId').value = '';
         document.getElementById('name').value = '';
         document.getElementById('phone').value = '';
+        document.getElementById('lineId').value = '';
         document.getElementById('address').value = '';
         document.getElementById('experience').value = '';
         document.getElementById('notes').value = '';
-        setDefaultDate();
+        setTodayDate();
 
-        // 重新載入列表
-        loadData();
-        alert('資料儲存成功！');
+        const saveBtn = document.getElementById('saveBtn');
+        saveBtn.innerText = "儲存資料";
+        saveBtn.style.backgroundColor = ""; 
+        document.getElementById('cancelBtn').style.display = "none";
+        document.getElementById('editModeMsg').style.display = "none";
     }
 
-    // 讀取並顯示資料功能
+    function editData(id) {
+        let records = JSON.parse(localStorage.getItem('contactRecords')) || [];
+        const record = records.find(r => r.id == id);
+        if (!record) return;
+
+        document.getElementById('editId').value = record.id;
+        document.getElementById('recordDate').value = record.recordDate || '';
+        document.getElementById('name').value = record.name;
+        document.getElementById('phone').value = record.phone;
+        document.getElementById('lineId').value = record.lineId || '';
+        document.getElementById('address').value = record.address;
+        document.getElementById('experience').value = record.experience;
+        document.getElementById('notes').value = record.notes;
+
+        const saveBtn = document.getElementById('saveBtn');
+        saveBtn.innerText = "更新資料";
+        saveBtn.style.backgroundColor = "#f39c12"; 
+        document.getElementById('cancelBtn').style.display = "inline-block";
+        document.getElementById('editModeMsg').style.display = "block";
+        
+        document.getElementById('formCard').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function cancelEdit() { resetForm(); }
+
+    function deleteData(id) {
+        // 刪除通常還是建議保留確認框，避免誤刪
+        if(confirm('確定要刪除這筆資料嗎？')) {
+            let records = JSON.parse(localStorage.getItem('contactRecords')) || [];
+            records = records.filter(record => record.id !== id);
+            localStorage.setItem('contactRecords', JSON.stringify(records));
+            if(document.getElementById('editId').value == id) cancelEdit();
+            
+            const searchVal = document.getElementById('searchInput').value;
+            if(searchVal) searchData(); else loadData();
+        }
+    }
+
     function loadData() {
         let records = JSON.parse(localStorage.getItem('contactRecords')) || [];
         renderTable(records);
     }
 
-    // 渲染表格
     function renderTable(data) {
         const tbody = document.getElementById('tableBody');
         const noDataMsg = document.getElementById('noDataMsg');
         tbody.innerHTML = '';
 
-        if (data.length === 0) {
+        if (!data || data.length === 0) {
             noDataMsg.style.display = 'block';
             return;
         } else {
             noDataMsg.style.display = 'none';
         }
 
-        // 排序：日期新的在上面
         data.sort((a, b) => {
-            // 如果有手動日期用手動日期，沒有則用ID(時間戳)
-            const dateA = a.recordDate ? new Date(a.recordDate) : new Date(a.id);
-            const dateB = b.recordDate ? new Date(b.recordDate) : new Date(b.id);
+            const dateA = a.recordDate ? new Date(a.recordDate) : new Date(0);
+            const dateB = b.recordDate ? new Date(b.recordDate) : new Date(0);
             return dateB - dateA;
         });
 
         data.forEach(record => {
-            // 相容舊資料：如果舊資料沒有 recordDate，就顯示建立時間的日期部分
-            let displayDate = record.recordDate || (record.date ? record.date.split(' ')[0] : '無日期');
+            const displayDate = record.recordDate || '';
+            const displayLine = record.lineId ? `<span class="line-id-text">${record.lineId}</span>` : '';
 
             const row = `
                 <tr>
                     <td>${displayDate}</td>
                     <td><strong>${record.name}</strong></td>
                     <td>${record.phone}</td>
+                    <td>${displayLine}</td>
                     <td>${record.address}</td>
                     <td>${record.experience}</td>
                     <td>${record.notes}</td>
                     <td>
-                        <button class="delete-btn" onclick="deleteData(${record.id})">刪除</button>
+                        <div class="action-btns">
+                            <button class="btn-edit" onclick="editData(${record.id})">編輯</button>
+                            <button class="btn-delete" onclick="deleteData(${record.id})">刪除</button>
+                        </div>
                     </td>
                 </tr>
             `;
@@ -323,73 +434,89 @@
         });
     }
 
-    // 搜尋功能
     function searchData() {
         const keyword = document.getElementById('searchInput').value.toLowerCase();
         let records = JSON.parse(localStorage.getItem('contactRecords')) || [];
 
-        const filteredRecords = records.filter(record => {
-            // 處理舊資料可能沒有 recordDate 的情況
-            const rDate = record.recordDate || '';
-            
+        const filtered = records.filter(r => {
+            const line = r.lineId ? r.lineId.toLowerCase() : '';
             return (
-                record.name.toLowerCase().includes(keyword) ||
-                record.phone.includes(keyword) ||
-                record.address.toLowerCase().includes(keyword) ||
-                record.notes.toLowerCase().includes(keyword) ||
-                rDate.includes(keyword) // 也可以搜尋日期
+                r.name.toLowerCase().includes(keyword) ||
+                r.phone.includes(keyword) ||
+                line.includes(keyword) ||
+                (r.address && r.address.toLowerCase().includes(keyword)) ||
+                (r.notes && r.notes.toLowerCase().includes(keyword))
             );
         });
-
-        renderTable(filteredRecords);
+        renderTable(filtered);
     }
 
-    // 刪除功能
-    function deleteData(id) {
-        if(confirm('確定要刪除這筆資料嗎？')) {
-            let records = JSON.parse(localStorage.getItem('contactRecords')) || [];
-            records = records.filter(record => record.id !== id);
-            localStorage.setItem('contactRecords', JSON.stringify(records));
-            
-            const searchKeyword = document.getElementById('searchInput').value;
-            if(searchKeyword) {
-                searchData();
-            } else {
-                loadData();
-            }
-        }
-    }
-
-    // 匯出功能 (CSV)
     function exportData() {
         let records = JSON.parse(localStorage.getItem('contactRecords')) || [];
         if(records.length === 0) {
             alert("沒有資料可以匯出");
             return;
         }
+        let csvContent = "\uFEFF"; 
+        csvContent += "日期,姓名,電話,LineID,地址,工作經歷,聯絡內容\n";
 
-        let csvContent = "\uFEFF";
-        csvContent += "日期,姓名,電話,地址,工作經歷,聯絡內容\n";
-
-        records.forEach(function(row) {
-            let cleanExp = row.experience ? row.experience.replace(/,/g, "，").replace(/\n/g, " ") : "";
-            let cleanNotes = row.notes ? row.notes.replace(/,/g, "，").replace(/\n/g, " ") : "";
-            let rDate = row.recordDate || (row.date ? row.date.split(' ')[0] : ""); // 相容舊資料
-            
-            let rowStr = `${rDate},${row.name},${row.phone},${row.address},${cleanExp},${cleanNotes}`;
-            csvContent += rowStr + "\n";
+        records.forEach(row => {
+            const clean = text => text ? text.replace(/,/g, "，").replace(/\n/g, " ") : "";
+            const line = `${row.recordDate || ''},${clean(row.name)},${clean(row.phone)},${clean(row.lineId)},${clean(row.address)},${clean(row.experience)},${clean(row.notes)}`;
+            csvContent += line + "\n";
         });
 
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
         const url = URL.createObjectURL(blob);
-        
-        link.setAttribute("href", url);
-        link.setAttribute("download", "客戶聯絡資料.csv");
-        link.style.visibility = 'hidden';
+        link.href = url;
+        link.download = `客戶資料_${new Date().toISOString().split('T')[0]}.csv`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+    }
+
+    function importCSV() {
+        const fileInput = document.getElementById('csvFileInput');
+        const file = fileInput.files[0];
+        if (!file) { alert("請先選擇 CSV 檔案"); return; }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const text = e.target.result;
+                const lines = text.split('\n');
+                let records = JSON.parse(localStorage.getItem('contactRecords')) || [];
+                let count = 0;
+
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+                    const cols = line.split(',');
+                    if (cols.length >= 3) {
+                        records.push({
+                            id: Date.now() + i,
+                            createdDate: new Date().toLocaleString(),
+                            recordDate: cols[0].trim(),
+                            name: cols[1].trim(),
+                            phone: cols[2].trim(),
+                            lineId: cols[3] ? cols[3].trim() : "",
+                            address: cols[4] ? cols[4].trim() : "",
+                            experience: cols[5] ? cols[5].trim() : "",
+                            notes: cols[6] ? cols[6].trim() : ""
+                        });
+                        count++;
+                    }
+                }
+                localStorage.setItem('contactRecords', JSON.stringify(records));
+                loadData();
+                alert(`匯入成功！新增了 ${count} 筆資料。`);
+                fileInput.value = '';
+            } catch (err) {
+                alert("匯入失敗，請確認檔案格式正確。");
+            }
+        };
+        reader.readAsText(file);
     }
 </script>
 
