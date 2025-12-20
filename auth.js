@@ -118,18 +118,31 @@ function setupAutoLogout() {
 
 // 🔥 新增功能：執行登出 (公開給 HTML 呼叫)
 // needConfirm: true=要跳詢問視窗, false=直接登出
-window.doLogout = function(needConfirm = true) {
+// 🔥 修改後的登出功能：同步清除雲端紀錄，避免誤判為踢人
+window.doLogout = async function(needConfirm = true) {
     if (needConfirm && !confirm("確定要登出系統嗎？")) {
         return;
     }
     
-    // 清除 Firebase 上的 Session (選擇性：如果要讓後台知道他下線了可加這行，不加也沒關係)
-    // const user = localStorage.getItem('currentUser');
-    // if(user) set(ref(db, 'users/' + user + '/session'), null);
+    // 1. 取得目前的使用者代碼
+    const user = localStorage.getItem('currentUser');
 
+    // 2. 如果找得到人，就去 Firebase 把他的 Session 清空 (設為 null)
+    if (user) {
+        try {
+            // 清空雲端 Session，這樣下次登入就不會被算成「踢出」
+            await set(ref(db, 'users/' + user + '/session'), null);
+        } catch (e) {
+            console.error("雲端登出失敗 (可能是網路問題)，僅執行本地登出", e);
+        }
+    }
+
+    // 3. 清除本地資料
     localStorage.removeItem('currentUser');
     localStorage.removeItem('currentSession');
-    location.reload(); // 重新整理頁面，會自動跳回輸入密碼
+    
+    // 4. 重整頁面
+    location.reload(); 
 }
 
 initAuth();
