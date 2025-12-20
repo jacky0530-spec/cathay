@@ -28,28 +28,54 @@
     }
 })();
 
-// --- 2. 自動產生底部選單 (UI) ---
+
+
+// ... (上半部驗證代碼不變) ...
+
+// --- 2. 自動產生底部選單 (分類版) ---
 document.addEventListener("DOMContentLoaded", function() {
+    const path = window.location.pathname;
+    const page = path.split("/").pop() || "index.html";
+
     const navHTML = `
     <style>
-        body { padding-bottom: 70px; margin: 0; font-family: sans-serif; }
+        body { padding-bottom: 70px; margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f4f4f4; }
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; width: 100%; height: 60px;
-            background: #fff; border-top: 1px solid #ddd;
+            background: #ffffff; border-top: 1px solid #e0e0e0;
             display: flex; justify-content: space-around; align-items: center;
-            box-shadow: 0 -2px 5px rgba(0,0,0,0.1); z-index: 9999;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 9999;
         }
         .nav-item {
-            text-decoration: none; color: #555; font-size: 14px; text-align: center;
-            flex: 1;
+            text-decoration: none; color: #999; text-align: center;
+            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 5px 0;
         }
-        .nav-item span { display: block; font-size: 20px; margin-bottom: 2px; }
+        .nav-item span { font-size: 20px; margin-bottom: 2px; display: block; }
+        .nav-item div { font-size: 11px; } 
         .nav-item.active { color: #00A651; font-weight: bold; }
     </style>
+
     <div class="bottom-nav">
-        <a href="index.html" class="nav-item"><span>🏠</span>首頁</a>
-        <a href="page1.html" class="nav-item"><span>📊</span>報表</a>
-        <a href="#" class="nav-item" onclick="alert('聯絡客服：0912-345-678')"><span>📞</span>客服</a>
+        <a href="index.html" class="nav-item ${page === 'index.html' ? 'active' : ''}">
+            <span>🏠</span><div>首頁</div>
+        </a>
+
+        <a href="client.html" class="nav-item ${page === 'client.html' ? 'active' : ''}">
+            <span>👥</span><div>客戶</div>
+        </a>
+
+        <a href="calc.html" class="nav-item ${page === 'calc.html' ? 'active' : ''}">
+            <span>🧮</span><div>勞保</div>
+        </a>
+
+        <a href="products.html" class="nav-item ${page === 'products.html' ? 'active' : ''}">
+            <span>🏥</span><div>商品</div>
+        </a>
+
+        <a href="event.html" class="nav-item ${page === 'event.html' ? 'active' : ''}">
+            <span>🏆</span><div>高峰會</div>
+        </a>
     </div>
     `;
     document.body.insertAdjacentHTML('beforeend', navHTML);
