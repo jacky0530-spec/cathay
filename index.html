@@ -3,32 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>國泰雲端服務</title>
+    <title>國泰教育訓練專用</title>
     
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon-192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     
     <script src="auth.js"></script> 
+
+    <style>
+        /* 基礎設定 */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background-color: #f4f4f4; 
+            padding: 0; 
+            margin: 0; 
+        }
+        
+        /* ⚠️ 醒目警語樣式 (紅色閃爍感) */
+        .warning-banner {
+            background-color: #ffebee;
+            color: #d32f2f;
+            text-align: center;
+            padding: 12px 10px;
+            font-weight: bold;
+            font-size: 15px;
+            border-bottom: 2px solid #ef5350;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* 連結按鈕樣式 */
+        .link-section {
+            padding: 0 15px;
+            margin-bottom: 80px; /* 預留底部選單空間 */
+        }
+        .link-btn {
+            display: flex;
+            align-items: center;
+            background: white;
+            padding: 16px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #333;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: transform 0.1s;
+            border-left: 5px solid #00A651; /* 國泰綠裝飾 */
+        }
+        .link-btn:active { transform: scale(0.98); background-color: #f9f9f9; }
+        .link-icon { font-size: 24px; margin-right: 15px; }
+        .link-text { font-size: 16px; font-weight: bold; flex: 1; }
+        .link-arrow { color: #ccc; font-weight: bold; }
+
+        /* LOGO 區塊樣式 */
+        .header-logo {
+            text-align: center;
+            padding: 20px;
+            background: white;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
 
-    <div style="padding: 20px; text-align: center;">
-        <img src="icon-192.png" style="width: 80px; margin-top: 20px;">
-        <h2>歡迎使用<br>國泰雲端服務</h2>
-        <p style="color: #666; text-align: left;">
-            這是一個模擬 App 的網頁介面。
-            <br><br>
-            您可以在這裡放置：
-            <ul>
-                <li>公司公告</li>
-                <li>數據儀表板</li>
-                <li>外部連結</li>
-            </ul>
-        </p>
-        <button style="background: #00A651; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-size: 16px;">
-            立即開始
-        </button>
+    <div class="warning-banner">
+        ⚠️ 僅提供教育訓練使用，不可用於行銷！
+    </div>
+
+    <div class="header-logo">
+        <img src="icon-192.png" style="width: 80px; border-radius: 18px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+        <h2 style="color: #00A651; margin: 10px 0 5px;">國泰雲端學習站</h2>
+        <span style="color: #888; font-size: 13px; background: #eee; padding: 4px 10px; border-radius: 20px;">內部專用版本</span>
+    </div>
+
+    <div class="link-section">
+        <h3 style="margin: 0 0 15px 5px; color: #555; font-size: 15px;">🔗 快速查詢工具</h3>
+
+        <a href="https://fund.cathaylife.com.tw/" target="_blank" class="link-btn">
+            <span class="link-icon">📈</span>
+            <span class="link-text">國泰人壽基金查詢</span>
+            <span class="link-arrow">➜</span>
+        </a>
+
+        <a href="https://www.cathaybk.com.tw/cathaybk/personal/product/deposit/currency-billboard/" target="_blank" class="link-btn">
+            <span class="link-icon">💱</span>
+            <span class="link-text">國泰世華銀行匯率</span>
+            <span class="link-arrow">➜</span>
+        </a>
     </div>
 
     <script>
