@@ -14,19 +14,17 @@
             background-color: #f4f4f4;
             margin: 0;
             padding: 20px;
-            padding-bottom: 90px; /* 預留底部選單空間 */
+            padding-bottom: 90px;
         }
 
         h2 { color: #333; margin-bottom: 20px; font-weight: 700; }
 
-        /* 格狀佈局 */
         .grid-menu {
             display: grid;
-            grid-template-columns: 1fr; /* 單欄排列，讓按鈕大氣一點 */
+            grid-template-columns: 1fr;
             gap: 15px;
         }
 
-        /* 一般按鈕樣式 */
         .event-btn {
             background: white;
             border-radius: 12px;
@@ -45,7 +43,7 @@
 
         .icon-box {
             width: 50px; height: 50px;
-            background: #f0fdf4; /* 淺綠底 */
+            background: #f0fdf4;
             color: #00A651;
             border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
@@ -58,27 +56,17 @@
         .text-box p { margin: 0; font-size: 13px; color: #888; }
         .arrow { margin-left: auto; color: #ccc; font-weight: bold; }
 
-
-        /* 🔥 2025 高峰辦法 (榮耀金/紅 漸層強調) */
         .highlight-gold {
-            background: linear-gradient(135deg, #FFD700 0%, #FDB931 100%); /* 金色漸層 */
-            /* 若喜歡紅色喜氣感可用：background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%); */
-            color: #8a5a00; /* 深金色文字 */
+            background: linear-gradient(135deg, #FFD700 0%, #FDB931 100%);
+            color: #8a5a00;
             border: 1px solid #eec900;
         }
-        .highlight-gold .icon-box {
-            background: rgba(255,255,255,0.4);
-            color: #5c3a00;
-        }
+        .highlight-gold .icon-box { background: rgba(255,255,255,0.4); color: #5c3a00; }
         .highlight-gold .text-box h3 { color: #5c3a00; font-weight: 800; font-size: 20px; }
         .highlight-gold .text-box p { color: #7a5e20; font-weight: 500; }
         .highlight-gold .arrow { color: rgba(0,0,0,0.3); }
 
-        /* A&H 試算按鈕 (專業藍/綠) */
-        .calc-style .icon-box {
-            background: #e3f2fd; /* 淺藍底 */
-            color: #1976d2;
-        }
+        .calc-style .icon-box { background: #e3f2fd; color: #1976d2; }
 
     </style>
 </head>
@@ -107,13 +95,16 @@
         </a>
 
         <div style="margin-top:20px; text-align:center;">
-           <div style="margin-top:20px; text-align:center;">
-    <img src="kyushu.jpg" 
-         style="width:100%; border-radius:12px; opacity:0.9; box-shadow:0 4px 10px rgba(0,0,0,0.1); object-fit: cover; min-height: 200px;"
-         alt="九州風景"
-         onerror="this.style.display='none'; document.getElementById('placeholder').style.display='block';">
-    
-   </div>
+            <img src="kyushu.jpg" 
+                 style="width:100%; border-radius:12px; opacity:0.9; box-shadow:0 4px 10px rgba(0,0,0,0.1); object-fit: cover; min-height: 200px;"
+                 alt="九州風景"
+                 onerror="this.style.display='none'; document.getElementById('placeholder').style.display='block';">
+            
+            <div id="placeholder" style="display:none; width:100%; height:200px; background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%); border-radius:12px; color:white; line-height:200px; font-weight:bold; font-size: 20px;">
+                九州福岡・熊本
+            </div>
+            
+            <p style="font-size:12px; color:#999; margin-top:5px;">目標：福岡/熊本</p>
         </div>
 
     </div>
