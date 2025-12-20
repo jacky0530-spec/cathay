@@ -16,7 +16,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// 產生亂數 Session ID
+// ⏱️ 設定：閒置幾分鐘後自動登出？ (預設 30 分鐘)
+const AUTO_LOGOUT_MINUTES = 30; 
+
 function generateUUID() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
         var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
@@ -32,19 +34,16 @@ async function initAuth() {
     if (!localUser || !localSession) {
         await performLogin();
     } else {
-        // 檢查是否被踢出
         monitorSession(localUser, localSession);
+        setupAutoLogout(); // 啟動閒置偵測
     }
 }
 
-// 🔥 修正後的登入邏輯：去 Firebase 檢查 whitelist
-// 🔥 修改後的登入邏輯：增加記錄踢出次數與裝置名稱
+// 登入邏輯
 async function performLogin() {
     let isAuthorized = false;
-    
     while (!isAuthorized) {
         let inputCode = prompt("【單一裝置限制】\n請輸入您的專屬授權碼：");
-        
         if (inputCode === null) {
             document.body.innerHTML = "<h2 style='text-align:center;padding:50px;'>存取被拒絕</h2>";
             throw new Error("User cancelled");
@@ -52,37 +51,25 @@ async function performLogin() {
         
         inputCode = inputCode.toUpperCase().trim();
 
-        // 1. 檢查白名單
         const whitelistRef = ref(db, 'whitelist/' + inputCode);
         const snapshot = await get(whitelistRef);
 
         if (snapshot.exists() && snapshot.val() === true) {
-            // 2. 準備登入
+            // 檢查踢人次數
             const userRef = ref(db, 'users/' + inputCode);
             const userSnapshot = await get(userRef);
-            
             let currentKickCount = 0;
-            
-            // 檢查是否已經有人登入中 (如果有 session 代表有人在線)
             if (userSnapshot.exists()) {
                 const userData = userSnapshot.val();
-                currentKickCount = userData.kickCount || 0; // 讀取舊的次數
-                
-                // 如果舊資料有 session，代表這次登入會把對方踢掉
-                if (userData.session) {
-                    currentKickCount += 1; 
-                }
+                if (userData.session) currentKickCount = (userData.kickCount || 0) + 1;
             }
 
-            // 產生新 Session
             const newSessionID = generateUUID();
-            
-            // 3. 寫入詳細資訊 (包含踢出次數)
             await set(userRef, {
                 session: newSessionID,
-                lastLogin: new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }), // 轉成台灣時間好讀版
-                device: navigator.userAgent, // 紀錄裝置型號
-                kickCount: currentKickCount // 寫入累計的踢人次數
+                lastLogin: new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }),
+                device: navigator.userAgent,
+                kickCount: currentKickCount
             });
 
             localStorage.setItem('currentUser', inputCode);
@@ -91,29 +78,63 @@ async function performLogin() {
             alert("驗證成功！");
             isAuthorized = true;
             monitorSession(inputCode, newSessionID);
+            setupAutoLogout(); // 啟動閒置偵測
         } else {
             alert("授權碼錯誤，或該帳號已被停用。");
         }
     }
 }
 
-// 監聽踢人機制
+// 監聽 Session
 function monitorSession(userCode, mySessionID) {
     const userRef = ref(db, 'users/' + userCode + '/session');
     onValue(userRef, (snapshot) => {
         const cloudSession = snapshot.val();
         if (cloudSession && cloudSession !== mySessionID) {
             alert("⚠️ 您的帳號已在其他裝置登入，本機將自動登出。");
-            localStorage.removeItem('currentUser');
-            localStorage.removeItem('currentSession');
-            location.reload();
+            doLogout(false); // 被踢出時不需確認
         }
     });
 }
 
+// 🔥 新增功能：自動登出計時器
+function setupAutoLogout() {
+    let timer;
+    function resetTimer() {
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+            alert("您已閒置超過 " + AUTO_LOGOUT_MINUTES + " 分鐘，系統自動登出。");
+            doLogout(false);
+        }, AUTO_LOGOUT_MINUTES * 60 * 1000);
+    }
+    
+    // 只要有這些動作，就重算時間
+    window.onload = resetTimer;
+    document.onmousemove = resetTimer; // 滑鼠移動
+    document.onkeypress = resetTimer;  // 打字
+    document.ontouchstart = resetTimer; // 手機觸控
+    document.onclick = resetTimer;      // 點擊
+}
+
+// 🔥 新增功能：執行登出 (公開給 HTML 呼叫)
+// needConfirm: true=要跳詢問視窗, false=直接登出
+window.doLogout = function(needConfirm = true) {
+    if (needConfirm && !confirm("確定要登出系統嗎？")) {
+        return;
+    }
+    
+    // 清除 Firebase 上的 Session (選擇性：如果要讓後台知道他下線了可加這行，不加也沒關係)
+    // const user = localStorage.getItem('currentUser');
+    // if(user) set(ref(db, 'users/' + user + '/session'), null);
+
+    localStorage.removeItem('currentUser');
+    localStorage.removeItem('currentSession');
+    location.reload(); // 重新整理頁面，會自動跳回輸入密碼
+}
+
 initAuth();
 
-// --- 底部選單保持不變 ---
+// --- 底部選單 (保持不變) ---
 document.addEventListener("DOMContentLoaded", function() {
     const path = window.location.pathname;
     const page = path.split("/").pop() || "index.html";
