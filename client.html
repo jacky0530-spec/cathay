@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>客戶聯絡記錄系統 (含日期)</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --bg-color: #f4f7f6;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: #333;
+        }
+
+        .container {
+            max-width: 1100px; /* 稍微加寬以容納日期欄位 */
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+        }
+
+        /* 輸入區塊樣式 */
+        .input-card {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr; /* 改為三欄 */
+            gap: 15px;
+        }
+
+        .full-width {
+            grid-column: span 3;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        /* 日期欄位特別樣式 */
+        input[type="date"] {
+            background-color: #fff;
+            cursor: pointer;
+        }
+
+        button {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        button.delete-btn {
+            background-color: #e74c3c;
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+
+        button.delete-btn:hover {
+            background-color: #c0392b;
+        }
+
+        /* 搜尋區塊 */
+        .search-section {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-input {
+            flex-grow: 1;
+            padding: 12px;
+            border: 2px solid var(--accent-color);
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        /* 表格樣式 */
+        .table-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px; /* 防止手機版太擠 */
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+            white-space: nowrap; /* 標題不換行 */
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .no-data {
+            text-align: center;
+            color: #777;
+            padding: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .full-width {
+                grid-column: span 1;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>客戶資料管理系統</h1>
+
+    <div class="input-card">
+        <h3>新增資料</h3>
+        <div class="form-grid">
+            <div>
+                <label>紀錄日期 *</label>
+                <input type="date" id="recordDate">
+            </div>
+            <div>
+                <label>姓名 *</label>
+                <input type="text" id="name" placeholder="輸入姓名">
+            </div>
+            <div>
+                <label>電話 *</label>
+                <input type="tel" id="phone" placeholder="輸入電話">
+            </div>
+            <div class="full-width">
+                <label>地址</label>
+                <input type="text" id="address" placeholder="輸入地址">
+            </div>
+            <div class="full-width">
+                <label>工作經歷</label>
+                <textarea id="experience" rows="2" placeholder="簡述工作經歷"></textarea>
+            </div>
+            <div class="full-width">
+                <label>聯絡內容 / 備註</label>
+                <textarea id="notes" rows="3" placeholder="記錄聯絡事項..."></textarea>
+            </div>
+        </div>
+        <button onclick="saveData()">儲存資料</button>
+        <button onclick="exportData()" style="background-color: #27ae60; margin-left: 10px;">匯出 Excel (CSV)</button>
+    </div>
+
+    <div class="search-section">
+        <input type="text" id="searchInput" class="search-input" placeholder="🔍 搜尋姓名、電話、地址或備註..." onkeyup="searchData()">
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th width="12%">日期</th>
+                    <th width="10%">姓名</th>
+                    <th width="12%">電話</th>
+                    <th width="20%">地址</th>
+                    <th width="18%">工作經歷</th>
+                    <th width="20%">聯絡內容</th>
+                    <th width="8%">操作</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                </tbody>
+        </table>
+        <div id="noDataMsg" class="no-data" style="display:none;">沒有找到符合的資料</div>
+    </div>
+</div>
+
+<script>
+    // 初始化：當頁面載入時
+    document.addEventListener('DOMContentLoaded', () => {
+        loadData();
+        setDefaultDate();
+    });
+
+    // 設定日期欄位預設為今天
+    function setDefaultDate() {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('recordDate').value = today;
+    }
+
+    // 儲存資料功能
+    function saveData() {
+        const recordDate = document.getElementById('recordDate').value;
+        const name = document.getElementById('name').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        const address = document.getElementById('address').value.trim();
+        const experience = document.getElementById('experience').value.trim();
+        const notes = document.getElementById('notes').value.trim();
+
+        if (!name || !phone || !recordDate) {
+            alert('請確認「日期」、「姓名」與「電話」皆已填寫！');
+            return;
+        }
+
+        const newRecord = {
+            id: Date.now(), 
+            recordDate, // 手動選擇的日期
+            name,
+            phone,
+            address,
+            experience,
+            notes,
+            createdDate: new Date().toLocaleString() // 系統自動記錄的建立時間（備用）
+        };
+
+        // 取得舊資料
+        let records = JSON.parse(localStorage.getItem('contactRecords')) || [];
+        records.push(newRecord); 
+
+        // 存回 LocalStorage
+        localStorage.setItem('contactRecords', JSON.stringify(records));
+
+        // 清空輸入框但保留日期為今天
+        document.getElementById('name').value = '';
+        document.getElementById('phone').value = '';
+        document.getElementById('address').value = '';
+        document.getElementById('experience').value = '';
+        document.getElementById('notes').value = '';
+        setDefaultDate();
+
+        // 重新載入列表
+        loadData();
+        alert('資料儲存成功！');
+    }
+
+    // 讀取並顯示資料功能
+    function loadData() {
+        let records = JSON.parse(localStorage.getItem('contactRecords')) || [];
+        renderTable(records);
+    }
+
+    // 渲染表格
+    function renderTable(data) {
+        const tbody = document.getElementById('tableBody');
+        const noDataMsg = document.getElementById('noDataMsg');
+        tbody.innerHTML = '';
+
+        if (data.length === 0) {
+            noDataMsg.style.display = 'block';
+            return;
+        } else {
+            noDataMsg.style.display = 'none';
+        }
+
+        // 排序：日期新的在上面
+        data.sort((a, b) => {
+            // 如果有手動日期用手動日期，沒有則用ID(時間戳)
+            const dateA = a.recordDate ? new Date(a.recordDate) : new Date(a.id);
+            const dateB = b.recordDate ? new Date(b.recordDate) : new Date(b.id);
+            return dateB - dateA;
+        });
+
+        data.forEach(record => {
+            // 相容舊資料：如果舊資料沒有 recordDate，就顯示建立時間的日期部分
+            let displayDate = record.recordDate || (record.date ? record.date.split(' ')[0] : '無日期');
+
+            const row = `
+                <tr>
+                    <td>${displayDate}</td>
+                    <td><strong>${record.name}</strong></td>
+                    <td>${record.phone}</td>
+                    <td>${record.address}</td>
+                    <td>${record.experience}</td>
+                    <td>${record.notes}</td>
+                    <td>
+                        <button class="delete-btn" onclick="deleteData(${record.id})">刪除</button>
+                    </td>
+                </tr>
+            `;
+            tbody.innerHTML += row;
+        });
+    }
+
+    // 搜尋功能
+    function searchData() {
+        const keyword = document.getElementById('searchInput').value.toLowerCase();
+        let records = JSON.parse(localStorage.getItem('contactRecords')) || [];
+
+        const filteredRecords = records.filter(record => {
+            // 處理舊資料可能沒有 recordDate 的情況
+            const rDate = record.recordDate || '';
+            
+            return (
+                record.name.toLowerCase().includes(keyword) ||
+                record.phone.includes(keyword) ||
+                record.address.toLowerCase().includes(keyword) ||
+                record.notes.toLowerCase().includes(keyword) ||
+                rDate.includes(keyword) // 也可以搜尋日期
+            );
+        });
+
+        renderTable(filteredRecords);
+    }
+
+    // 刪除功能
+    function deleteData(id) {
+        if(confirm('確定要刪除這筆資料嗎？')) {
+            let records = JSON.parse(localStorage.getItem('contactRecords')) || [];
+            records = records.filter(record => record.id !== id);
+            localStorage.setItem('contactRecords', JSON.stringify(records));
+            
+            const searchKeyword = document.getElementById('searchInput').value;
+            if(searchKeyword) {
+                searchData();
+            } else {
+                loadData();
+            }
+        }
+    }
+
+    // 匯出功能 (CSV)
+    function exportData() {
+        let records = JSON.parse(localStorage.getItem('contactRecords')) || [];
+        if(records.length === 0) {
+            alert("沒有資料可以匯出");
+            return;
+        }
+
+        let csvContent = "\uFEFF";
+        csvContent += "日期,姓名,電話,地址,工作經歷,聯絡內容\n";
+
+        records.forEach(function(row) {
+            let cleanExp = row.experience ? row.experience.replace(/,/g, "，").replace(/\n/g, " ") : "";
+            let cleanNotes = row.notes ? row.notes.replace(/,/g, "，").replace(/\n/g, " ") : "";
+            let rDate = row.recordDate || (row.date ? row.date.split(' ')[0] : ""); // 相容舊資料
+            
+            let rowStr = `${rDate},${row.name},${row.phone},${row.address},${cleanExp},${cleanNotes}`;
+            csvContent += rowStr + "\n";
+        });
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        
+        link.setAttribute("href", url);
+        link.setAttribute("download", "客戶聯絡資料.csv");
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
+
+</body>
+</html>
