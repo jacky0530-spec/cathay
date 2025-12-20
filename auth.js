@@ -15,12 +15,14 @@ const firebaseConfig = {
 };
 
 
+// 初始化 Firebase
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 // 設定：閒置 30 分鐘自動登出
 const AUTO_LOGOUT_MINUTES = 30; 
 
+// 產生隨機 Session ID
 function generateUUID() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
         var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
@@ -61,9 +63,8 @@ function getUserLocation() {
                 }
             },
             (error) => {
-                // 🔥 這裡是關鍵：回傳明確的錯誤訊息
                 switch(error.code) {
-                    case error.PERMISSION_DENIED: resolve("使用者拒絕定位"); break; // 使用者按了「封鎖」
+                    case error.PERMISSION_DENIED: resolve("使用者拒絕定位"); break;
                     case error.TIMEOUT: resolve("定位逾時"); break;
                     case error.POSITION_UNAVAILABLE: resolve("定位無法使用"); break;
                     default: resolve("定位錯誤"); break;
@@ -87,7 +88,7 @@ async function initAuth() {
     }
 }
 
-// 🔥 修改後的 performLogin：加入 30 天足跡紀錄
+// --- 登入邏輯 (🔥 修正歷史紀錄儲存問題) ---
 async function performLogin() {
     let isAuthorized = false;
     
@@ -107,7 +108,7 @@ async function performLogin() {
 
         if (snapshot.exists() && snapshot.val() === true) {
             
-            // 提示定位中
+            // 2. 開始定位
             alert("系統將開始偵測您的位置，請務必點選「允許」。");
 
             let userLocation = "讀取中...";
@@ -124,59 +125,71 @@ async function performLogin() {
                 return; 
             }
 
-            // 2. 讀取舊資料
+            // 3. 讀取與更新使用者資料
             const userRef = ref(db, 'users/' + inputCode);
             const userSnapshot = await get(userRef);
             
             let finalKickCount = 0; 
             let isKicking = 0;
-            let history = []; // 準備存放歷史紀錄
+            let history = []; 
 
+            // 取得當前時間 (顯示用字串 & 計算用數字)
             const now = new Date();
             const timeString = now.toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
+            const timestamp = now.getTime(); // 🔥 用這個數字來過濾 30 天，絕對準確
 
             if (userSnapshot.exists()) {
                 const userData = userSnapshot.val();
                 
-                // --- 處理踢人次數 ---
                 const oldKickCount = userData.kickCount || 0;
                 if (userData.session) isKicking = 1;
                 finalKickCount = oldKickCount + isKicking;
 
-                // --- 🔥 處理 30 天歷史紀錄 ---
+                // --- 讀取舊紀錄 (加入陣列防呆) ---
                 if (userData.loginHistory) {
-                    history = userData.loginHistory;
+                    if (Array.isArray(userData.loginHistory)) {
+                        history = userData.loginHistory;
+                    } else {
+                        // 萬一 Firebase 存成物件格式，轉回陣列
+                        history = Object.values(userData.loginHistory);
+                    }
                 }
             }
 
             // A. 清除超過 30 天的舊紀錄
-            const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+            // 使用新欄位 timestamp 來判斷，如果舊資料沒有 timestamp (undefined)，預設給它通過(保留)，或者要刪除也可
+            // 這裡設定：如果有 timestamp 就用 timestamp 比對；如果沒有(舊資料)，就暫時保留，避免誤刪
+            const thirtyDaysAgo = timestamp - 30 * 24 * 60 * 60 * 1000;
+            
             history = history.filter(record => {
-                // 假設紀錄格式有 time 欄位，轉換回 Date 物件比較
-                // 如果是舊資料沒有 time 欄位就保留或是刪除，這裡預設保留近期
-                return new Date(record.time) > thirtyDaysAgo;
+                if (record.timestamp) {
+                    return record.timestamp > thirtyDaysAgo;
+                }
+                // 如果是舊版資料(只有 time 字串)，為了安全起見先保留，或是您可以選擇刪除 (return false)
+                // 建議保留，等下次這些舊資料慢慢被洗掉
+                return true; 
             });
 
-            // B. 加入本次新紀錄
-            history.unshift({ // unshift 放最前面，最新的在上面
-                time: timeString,
+            // B. 加入本次新紀錄 (放在最前面)
+            history.unshift({
+                time: timeString,      // 顯示給人看
+                timestamp: timestamp,  // 🔥 程式運算用
                 location: userLocation,
                 device: navigator.userAgent
             });
             
-            // C. 為了節省空間，最多只留最近 50 筆 (可選)
+            // C. 限制最大筆數 (例如只留最近 50 筆)
             if (history.length > 50) history.length = 50;
 
             const newSessionID = generateUUID();
             
-            // 3. 寫入資料 (包含 loginHistory)
             await update(userRef, {
                 session: newSessionID,
                 lastLogin: timeString,
                 device: navigator.userAgent,
                 kickCount: finalKickCount,
-                location: userLocation,     // 這是給首頁快速看的「最新位置」
-                loginHistory: history       // 🔥 這是完整的歷史紀錄
+                location: userLocation,
+                loginHistory: history  // 更新陣列
             });
 
             localStorage.setItem('currentUser', inputCode);
@@ -192,9 +205,9 @@ async function performLogin() {
     }
 }
 
-// ... (以下 monitorSession, setupAutoLogout, doLogout, 底部選單 程式碼完全不變) ...
-// 請保留您原本的這部分程式碼
-// 為了避免篇幅過長，這裡省略下半部，請確認您的檔案下半部是完整的
+// ... 下半部 (monitorSession, setupAutoLogout, doLogout, 底部選單) ...
+// 請保持原樣，不需要修改，確認複製時有包含即可
+
 function monitorSession(userCode, mySessionID) {
     const userRef = ref(db, 'users/' + userCode + '/session');
     onValue(userRef, (snapshot) => {
