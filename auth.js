@@ -1,5 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+// 記得加上 update
+import { getDatabase, ref, set, update, onValue, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 // ⚠️⚠️⚠️ 這裡記得填回您自己的 Firebase 設定 ⚠️⚠️⚠️
 const firebaseConfig = {
@@ -26,24 +28,13 @@ function generateUUID() {
     });
 }
 
-// 初始化
-async function initAuth() {
-    const localUser = localStorage.getItem('currentUser');
-    const localSession = localStorage.getItem('currentSession');
-
-    if (!localUser || !localSession) {
-        await performLogin();
-    } else {
-        monitorSession(localUser, localSession);
-        setupAutoLogout(); // 啟動閒置偵測
-    }
-}
-
-// 登入邏輯
+// 🔥 修正版：累積次數邏輯，不會歸零
 async function performLogin() {
     let isAuthorized = false;
+    
     while (!isAuthorized) {
         let inputCode = prompt("【單一裝置限制】\n請輸入您的專屬授權碼：");
+        
         if (inputCode === null) {
             document.body.innerHTML = "<h2 style='text-align:center;padding:50px;'>存取被拒絕</h2>";
             throw new Error("User cancelled");
@@ -51,25 +42,46 @@ async function performLogin() {
         
         inputCode = inputCode.toUpperCase().trim();
 
+        // 1. 檢查白名單
         const whitelistRef = ref(db, 'whitelist/' + inputCode);
         const snapshot = await get(whitelistRef);
 
         if (snapshot.exists() && snapshot.val() === true) {
-            // 檢查踢人次數
+            // 2. 讀取使用者目前的狀態 (為了拿舊的累積次數)
             const userRef = ref(db, 'users/' + inputCode);
             const userSnapshot = await get(userRef);
-            let currentKickCount = 0;
+            
+            let finalKickCount = 0; // 最終要寫入的次數
+            let isKicking = 0;      // 本次是否發生踢人 (0或1)
+
             if (userSnapshot.exists()) {
                 const userData = userSnapshot.val();
-                if (userData.session) currentKickCount = (userData.kickCount || 0) + 1;
+                
+                // A. 先把「舊的次數」抓出來 (如果沒有就是0)
+                const oldKickCount = userData.kickCount || 0;
+                
+                // B. 判斷這次有沒有踢人？ (如果雲端上有 session，代表有人在線上，我要把他踢掉)
+                if (userData.session) {
+                    isKicking = 1;
+                }
+
+                // C. 計算新的總數 = 舊次數 + 本次踢人
+                finalKickCount = oldKickCount + isKicking;
+
+            } else {
+                // 如果是第一次使用這個系統，次數就是 0
+                finalKickCount = 0;
             }
 
+            // 產生新 Session
             const newSessionID = generateUUID();
-            await set(userRef, {
+            
+            // 3. 使用 update 更新資料 (比 set 更安全，不會洗掉其他欄位)
+            await update(userRef, {
                 session: newSessionID,
                 lastLogin: new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }),
                 device: navigator.userAgent,
-                kickCount: currentKickCount
+                kickCount: finalKickCount // ✅ 寫入累積後的數字
             });
 
             localStorage.setItem('currentUser', inputCode);
@@ -78,7 +90,7 @@ async function performLogin() {
             alert("驗證成功！");
             isAuthorized = true;
             monitorSession(inputCode, newSessionID);
-            setupAutoLogout(); // 啟動閒置偵測
+            setupAutoLogout();
         } else {
             alert("授權碼錯誤，或該帳號已被停用。");
         }
