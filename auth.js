@@ -87,7 +87,7 @@ async function initAuth() {
     }
 }
 
-// --- 登入邏輯 (🔥 已加入強制定位檢查) ---
+// 🔥 修改後的 performLogin：加入 30 天足跡紀錄
 async function performLogin() {
     let isAuthorized = false;
     
@@ -107,8 +107,7 @@ async function performLogin() {
 
         if (snapshot.exists() && snapshot.val() === true) {
             
-            // 2. 開始定位 (顯示提示)
-            // 由於定位需要時間，建議這裡可以做個簡單的 Loading 提示
+            // 提示定位中
             alert("系統將開始偵測您的位置，請務必點選「允許」。");
 
             let userLocation = "讀取中...";
@@ -118,38 +117,66 @@ async function performLogin() {
                 userLocation = "定位錯誤";
             }
 
-            // 🔥🔥🔥 關鍵檢查點：如果定位結果是「拒絕」或「不支援」，直接阻擋 🔥🔥🔥
+            // 強制定位檢查
             if (userLocation === "使用者拒絕定位" || userLocation === "不支援定位" || userLocation === "定位無法使用") {
-                alert("⛔【登入失敗】\n\n為了確保資安，本系統必須「允許」定位權限才能使用。\n\n請檢查您的瀏覽器設定，開啟定位權限後重新整理網頁。");
-                
-                // 強制重新整理，不讓程式碼往下跑
+                alert("⛔【登入失敗】\n\n必須允許定位權限才能使用本系統。");
                 location.reload();
                 return; 
             }
 
-            // --- 只有通過上面檢查，才會執行下面的登入寫入 ---
-
+            // 2. 讀取舊資料
             const userRef = ref(db, 'users/' + inputCode);
             const userSnapshot = await get(userRef);
             
             let finalKickCount = 0; 
             let isKicking = 0;
+            let history = []; // 準備存放歷史紀錄
+
+            const now = new Date();
+            const timeString = now.toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
 
             if (userSnapshot.exists()) {
                 const userData = userSnapshot.val();
+                
+                // --- 處理踢人次數 ---
                 const oldKickCount = userData.kickCount || 0;
                 if (userData.session) isKicking = 1;
                 finalKickCount = oldKickCount + isKicking;
+
+                // --- 🔥 處理 30 天歷史紀錄 ---
+                if (userData.loginHistory) {
+                    history = userData.loginHistory;
+                }
             }
+
+            // A. 清除超過 30 天的舊紀錄
+            const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+            history = history.filter(record => {
+                // 假設紀錄格式有 time 欄位，轉換回 Date 物件比較
+                // 如果是舊資料沒有 time 欄位就保留或是刪除，這裡預設保留近期
+                return new Date(record.time) > thirtyDaysAgo;
+            });
+
+            // B. 加入本次新紀錄
+            history.unshift({ // unshift 放最前面，最新的在上面
+                time: timeString,
+                location: userLocation,
+                device: navigator.userAgent
+            });
+            
+            // C. 為了節省空間，最多只留最近 50 筆 (可選)
+            if (history.length > 50) history.length = 50;
 
             const newSessionID = generateUUID();
             
+            // 3. 寫入資料 (包含 loginHistory)
             await update(userRef, {
                 session: newSessionID,
-                lastLogin: new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }),
+                lastLogin: timeString,
                 device: navigator.userAgent,
                 kickCount: finalKickCount,
-                location: userLocation
+                location: userLocation,     // 這是給首頁快速看的「最新位置」
+                loginHistory: history       // 🔥 這是完整的歷史紀錄
             });
 
             localStorage.setItem('currentUser', inputCode);
