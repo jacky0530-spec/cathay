@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>115年高峰會 & Q1 業績試算 (Updated)</title>
+<style>
+  body {
+    font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+    background-color: #f4f7f6;
+    padding: 20px;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  .card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .header {
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    color: white;
+    padding: 25px;
+    text-align: center;
+  }
+  .header h2 { margin: 0; font-size: 1.5rem; font-weight: bold; }
+  .header p { margin: 8px 0 0; opacity: 0.9; font-size: 0.9rem; }
+  
+  /* 累積業績 & 差距提示 */
+  .accum-section {
+    background-color: #e3f2fd;
+    padding: 20px;
+    border-bottom: 2px solid #bbdefb;
+    text-align: center;
+  }
+  .accum-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 12px;
+  }
+  .accum-section label { font-weight: bold; color: #1565c0; font-size: 1.1rem; }
+  .accum-section input {
+    width: 130px;
+    padding: 10px;
+    border: 2px solid #64b5f6;
+    border-radius: 8px;
+    font-size: 1.4rem;
+    text-align: center;
+    color: #0d47a1;
+    font-weight: bold;
+    background: #fff;
+  }
+  .gap-bar {
+    background: #fff;
+    border-radius: 20px;
+    padding: 8px 18px;
+    display: inline-block;
+    color: #455a64;
+    font-size: 0.95rem;
+    font-weight: bold;
+    border: 1px solid #90caf9;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  }
+  .gap-highlight { color: #d32f2f; font-size: 1.2rem; font-weight: 800; }
+
+  /* 輸入區 */
+  .section-title {
+    padding: 12px 20px;
+    font-weight: bold;
+    color: #37474f;
+    background: #eceff1;
+    border-bottom: 1px solid #cfd8dc;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .badge-3x { background: #ff6f00; color: white; padding: 4px 10px; border-radius: 15px; font-size: 0.8rem; }
+  .badge-2x { background: #2e7d32; color: white; padding: 4px 10px; border-radius: 15px; font-size: 0.8rem; }
+  
+  .input-row {
+    padding: 18px;
+    display: grid;
+    grid-template-columns: 1.8fr 1.2fr 1.5fr;
+    gap: 12px;
+    border-bottom: 1px dashed #cfd8dc;
+    align-items: center;
+  }
+  .input-group { display: flex; flex-direction: column; }
+  .input-group label { font-size: 0.85rem; color: #607d8b; margin-bottom: 5px; font-weight: 600; }
+  .input-group select, .input-group input {
+    padding: 10px;
+    border: 1px solid #b0bec5;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: all 0.2s;
+  }
+  .input-group select:focus, .input-group input:focus {
+    border-color: #1e88e5;
+    outline: none;
+  }
+  .age-options { display: flex; gap: 12px; font-size: 0.95rem; color: #455a64; }
+  .age-options label { cursor: pointer; display: flex; align-items: center; }
+  
+  /* 結果區 */
+  .result-area { padding: 25px; background: #fff; }
+  .result-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  .result-box {
+    background: #fff;
+    padding: 15px;
+    border-radius: 12px;
+    text-align: center;
+    border: 1px solid #eee;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  }
+  .result-label { font-size: 0.95rem; color: #78909c; margin-bottom: 5px; }
+  .result-val { font-size: 2rem; font-weight: 800; color: #37474f; }
+  
+  .bonus-total-box {
+    grid-column: span 2;
+    background: linear-gradient(to right, #fff8e1, #ffecb3);
+    border: 2px solid #ffca28;
+  }
+  .bonus-val { font-size: 3rem; color: #e65100; text-shadow: 2px 2px 0 rgba(255,255,255,0.6); margin: 5px 0; }
+
+  .note {
+    padding: 15px 25px;
+    font-size: 0.8rem;
+    color: #90a4ae;
+    background: #fafafa;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="header">
+    <h2>🏆 115Q1 業績 & 獎金試算</h2>
+    <p>規則更新：L66/ZCN/FG/FV6/AGG 皆採 Q1 20年期加成</p>
+  </div>
+
+  <div class="accum-section">
+    <div class="accum-row">
+      <label for="currentP">目前已累積 A&H 業績 (P)</label>
+      <input type="number" id="currentP" value="24" min="0" step="0.1" oninput="calculate()">
+    </div>
+    <div id="gapDisplay" class="gap-bar">
+      計算中...
+    </div>
+  </div>
+
+  <div class="section-title">
+    <span>🔥 3倍計績商品 (高峰會)</span>
+    <span class="badge-3x">Summit x3</span>
+  </div>
+  <div class="input-row">
+    <div class="input-group">
+      <label>商品</label>
+      <select id="prod3x" onchange="calculate()">
+        <option value="FSE">滿溢康愛 (FSE)</option>
+        <option value="L66">真康順 (L66)</option>
+        <option value="ZCN">新鍾心滿福 (ZCN)</option>
+      </select>
+    </div>
+    <div class="input-group">
+      <label>年齡</label>
+      <div class="age-options">
+        <label><input type="radio" name="age3x" value="low" checked onchange="calculate()"> 0-50</label>
+        <label><input type="radio" name="age3x" value="high" onchange="calculate()"> 51+</label>
+      </div>
+    </div>
+    <div class="input-group">
+      <label>保費</label>
+      <input type="number" id="prem3x" placeholder="$" min="0" oninput="calculate()">
+    </div>
+  </div>
+
+  <div class="section-title">
+    <span>✨ 2倍計績商品 (其他A&H)</span>
+    <span class="badge-2x">Summit x2</span>
+  </div>
+  <div class="input-row">
+    <div class="input-group">
+      <label>商品</label>
+      <select id="prod2x" onchange="calculate()">
+        <option value="FG">倍愛醫靠 (FG)</option>
+        <option value="FV6">真心安 (FV6)</option>
+        <option value="AGG">真漾心安 (AGG)</option>
+        <option value="FSB">滿溢寶 (FSB)</option>
+        <option value="MFA">豪康愛 (MFA)</option>
+        <option value="VS">安心守護 (VSA/B)</option>
+        <option value="RIDER_HIGH">高倍數附約 (CQ4/B93...)</option>
+        <option value="CV4">實全心意 (CV4/WV4)</option>
+        <option value="OTHER">其他 (無加成)</option>
+      </select>
+    </div>
+    <div class="input-group">
+      <label>年齡</label>
+      <div class="age-options">
+        <label><input type="radio" name="age2x" value="low" checked onchange="calculate()"> 0-50</label>
+        <label><input type="radio" name="age2x" value="high" onchange="calculate()"> 51+</label>
+      </div>
+    </div>
+    <div class="input-group">
+      <label>保費</label>
+      <input type="number" id="prem2x" placeholder="$" min="0" oninput="calculate()">
+    </div>
+  </div>
+
+  <div id="resultArea" class="result-area">
+    <div class="result-grid">
+      <div class="result-box">
+        <div class="result-label">高峰會 P 數 (含3倍/2倍)</div>
+        <div class="result-val" id="summitP" style="color:#1e88e5;">0 P</div>
+      </div>
+      <div class="result-box">
+        <div class="result-label">本次新增 A&H 業績 (計獎用)</div>
+        <div class="result-val" id="newTotalP">0 P</div>
+      </div>
+
+      <div class="result-box bonus-total-box">
+        <div class="result-label" style="font-weight:bold; color:#bf360c;">預估 A&H 總現金獎金</div>
+        <div class="bonus-val" id="totalBonus">$0</div>
+        <div id="rateInfo" style="font-size:0.9rem; color:#d84315;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    * <b>滿溢康愛 (FSE)</b>：維持 0-50歲 143%, 51歲+ 132%。<br>
+    * <b>其他長年期商品</b>：L66, ZCN, FG, FV6, AGG, FSB 採 Q1 20年期標準 (156%/144%)。<br>
+    * <b>附約</b>：高倍數指 CQ4, B93, XB7, XJ2, PX5, PP2 (180%/168%)。
+  </div>
+</div>
+
+<script>
+// Updated Q1 Rates (Base 10000 = 1P)
+// Based on 115Q1 document (20yr term for main products)
+const q1Rates = {
+  // 3x Products
+  "FSE": { low: 1.43, high: 1.32 }, // FIXED as requested
+  "L66": { low: 1.56, high: 1.44 }, // Q1 20yr [cite: 705]
+  "ZCN": { low: 1.56, high: 1.44 }, // Q1 20yr [cite: 707]
+  
+  // 2x Products
+  "FG":  { low: 1.56, high: 1.44 }, // FG1/FG2 20yr [cite: 705]
+  "FV6": { low: 1.56, high: 1.44 }, // 20yr [cite: 705]
+  "AGG": { low: 1.56, high: 1.44 }, // 20yr [cite: 705]
+  "FSB": { low: 1.56, high: 1.44 }, // FSB 20yr [cite: 707]
+  "MFA": { low: 1.43, high: 1.43 }, // MFA 20yr (110% -> 143%) [cite: 707]
+  "VS":  { low: 1.44, high: 1.32 }, // VSA/B 20yr [cite: 707]
+  "RIDER_HIGH": { low: 1.80, high: 1.68 }, // CQ4, B93 etc [cite: 710]
+  "CV4": { low: 1.56, high: 1.44 }, // CV4, WV4 [cite: 710]
+  "OTHER": { low: 1.00, high: 1.00 }
+};
+
+function calculate() {
+  // 1. Get Inputs
+  let currentAccumP = parseFloat(document.getElementById('currentP').value) || 0;
+  
+  let prod3 = document.getElementById('prod3x').value;
+  let age3 = document.querySelector('input[name="age3x"]:checked').value;
+  let prem3 = parseFloat(document.getElementById('prem3x').value) || 0;
+  
+  let prod2 = document.getElementById('prod2x').value;
+  let age2 = document.querySelector('input[name="age2x"]:checked').value;
+  let prem2 = parseFloat(document.getElementById('prem2x').value) || 0;
+
+  // 2. Calculate New P
+  // Formula: Premium * Rate / 10000
+  let p3 = (prem3 * q1Rates[prod3][age3]) / 10000;
+  let p2 = (prem2 * q1Rates[prod2][age2]) / 10000;
+  let newP = p3 + p2;
+  
+  // 3. Calculate Summit P (3x / 2x)
+  let summitP = (p3 * 3) + (p2 * 2);
+
+  // 4. Calculate Bonus
+  let totalP = currentAccumP + newP;
+  let excessP = totalP - 24;
+  let bonus = 0;
+  let rate = 0;
+
+  if (excessP >= 1) {
+    let countP = Math.floor(excessP);
+    if (countP < 25) { rate = 800; }
+    else if (countP < 100) { rate = 1000; }
+    else { rate = 1200; }
+    bonus = countP * rate;
+  }
+
+  // 5. Gap Analysis
+  let gapMsg = "";
+  let gapP = 0;
+  
+  // Thresholds: Start (>24), Tier 1->2 (Total 49), Tier 2->3 (Total 124)
+  // Excess < 1  => Need Total 25
+  // Excess < 25 => Need Total 49
+  // Excess < 100 => Need Total 124
+  
+  if (excessP < 1) {
+    gapP = 25 - totalP;
+    gapMsg = `距離 <span style="color:#d81b60;">起算門檻 ($800)</span> 還差 <span class="gap-highlight">${gapP.toFixed(2)}</span> P`;
+  } else if (excessP < 25) {
+    gapP = 49 - totalP;
+    gapMsg = `距離 <span style="color:#fb8c00;">升級 $1,000</span> 還差 <span class="gap-highlight">${gapP.toFixed(2)}</span> P`;
+  } else if (excessP < 100) {
+    gapP = 124 - totalP;
+    gapMsg = `距離 <span style="color:#43a047;">最高階 $1,200</span> 還差 <span class="gap-highlight">${gapP.toFixed(2)}</span> P`;
+  } else {
+    gapMsg = `<span style="color:#2e7d32;">🎉 已達最高階 $1,200/P</span>`;
+  }
+
+  // 6. Update UI
+  document.getElementById('newTotalP').innerText = newP.toFixed(2) + " P";
+  document.getElementById('summitP').innerText = summitP.toFixed(2) + " P";
+  document.getElementById('totalBonus').innerText = "$" + bonus.toLocaleString();
+  document.getElementById('gapDisplay').innerHTML = gapMsg;
+  
+  let rateInfo = `總業績: ${totalP.toFixed(2)} P`;
+  if (excessP >= 1) {
+    rateInfo += ` (適用 $${rate}/P)`;
+  }
+  document.getElementById('rateInfo').innerText = rateInfo;
+}
+
+// Init
+calculate();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>高峰會專區</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <script src="auth.js"></script>
+
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            padding-bottom: 90px; /* 預留底部選單空間 */
+        }
+
+        h2 { color: #333; margin-bottom: 20px; font-weight: 700; }
+
+        /* 格狀佈局 */
+        .grid-menu {
+            display: grid;
+            grid-template-columns: 1fr; /* 單欄排列，讓按鈕大氣一點 */
+            gap: 15px;
+        }
+
+        /* 一般按鈕樣式 */
+        .event-btn {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: left;
+            text-decoration: none;
+            color: #444;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+            display: flex;
+            align-items: center;
+            transition: transform 0.1s;
+            position: relative;
+            overflow: hidden;
+        }
+        .event-btn:active { transform: scale(0.98); }
+
+        .icon-box {
+            width: 50px; height: 50px;
+            background: #f0fdf4; /* 淺綠底 */
+            color: #00A651;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .text-box h3 { margin: 0 0 5px 0; font-size: 18px; }
+        .text-box p { margin: 0; font-size: 13px; color: #888; }
+        .arrow { margin-left: auto; color: #ccc; font-weight: bold; }
+
+
+        /* 🔥 2025 高峰辦法 (榮耀金/紅 漸層強調) */
+        .highlight-gold {
+            background: linear-gradient(135deg, #FFD700 0%, #FDB931 100%); /* 金色漸層 */
+            /* 若喜歡紅色喜氣感可用：background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%); */
+            color: #8a5a00; /* 深金色文字 */
+            border: 1px solid #eec900;
+        }
+        .highlight-gold .icon-box {
+            background: rgba(255,255,255,0.4);
+            color: #5c3a00;
+        }
+        .highlight-gold .text-box h3 { color: #5c3a00; font-weight: 800; font-size: 20px; }
+        .highlight-gold .text-box p { color: #7a5e20; font-weight: 500; }
+        .highlight-gold .arrow { color: rgba(0,0,0,0.3); }
+
+        /* A&H 試算按鈕 (專業藍/綠) */
+        .calc-style .icon-box {
+            background: #e3f2fd; /* 淺藍底 */
+            color: #1976d2;
+        }
+
+    </style>
+</head>
+<body>
+
+    <h2>🏆 前進九州高峰會</h2>
+
+    <div class="grid-menu">
+        
+        <a href="event_rules.html" class="event-btn highlight-gold">
+            <div class="icon-box">🇯🇵</div>
+            <div class="text-box">
+                <h3>2025 高峰辦法</h3>
+                <p>九州之旅 • 競賽規則 • 獎勵資格</p>
+            </div>
+            <span class="arrow">➜</span>
+        </a>
+
+        <a href="calc_ah.html" class="event-btn calc-style">
+            <div class="icon-box">🔢</div>
+            <div class="text-box">
+                <h3>A&H 獎金試算</h3>
+                <p>輸入業績預估獎金 • 衝刺目標</p>
+            </div>
+            <span class="arrow">➜</span>
+        </a>
+
+        <div style="margin-top:20px; text-align:center;">
+            <img src="https://images.unsplash.com/photo-1542640244-7e67286feb8f?q=80&w=600&auto=format&fit=crop" 
+                 style="width:100%; border-radius:12px; opacity:0.8; box-shadow:0 4px 10px rgba(0,0,0,0.1);"
+                 alt="九州風景示意圖">
+            <p style="font-size:12px; color:#999; margin-top:5px;">目標：福岡/熊本</p>
+        </div>
+
+    </div>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+    </script>
+
+</body>
+</html>

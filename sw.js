@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cathay-app-v7';
+const CACHE_NAME = 'cathay-app-v8';
 const urlsToCache = [
   '/',
   'index.html',
@@ -18,6 +18,9 @@ const urlsToCache = [
   'prod_bone.html', 
   'prod_invest_forever.html', 
   'prod_invest_full.html', 
+  'event.html',
+  'event_rules.html', // 新增
+  'calc_ah.html',     // 新增
 ];
 
 // 安裝 Service Worker
