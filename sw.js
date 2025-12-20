@@ -21,6 +21,7 @@ const urlsToCache = [
   'event.html',
   'event_rules.html', // 新增
   'calc_ah.html',     // 新增
+  'kyushu.jpg',
 ];
 
 // 安裝 Service Worker
