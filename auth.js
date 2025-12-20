@@ -2,7 +2,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, set, update, onValue, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-// ⚠️⚠️⚠️ 【請修改】這裡要填入您自己的 Firebase 設定 ⚠️⚠️⚠️
 // ⚠️⚠️⚠️ 這裡記得填回您自己的 Firebase 設定 ⚠️⚠️⚠️
 const firebaseConfig = {
   apiKey: "AIzaSyAXmxp2R7oeM-DJsbDoT6YAVlHV4vKC_Xo",
@@ -16,14 +15,12 @@ const firebaseConfig = {
 };
 
 
-// 初始化 Firebase
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 // 設定：閒置 30 分鐘自動登出
 const AUTO_LOGOUT_MINUTES = 30; 
 
-// 產生隨機 Session ID
 function generateUUID() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
         var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
@@ -31,7 +28,7 @@ function generateUUID() {
     });
 }
 
-// 🔥 取得詳細位置 (含路名) - 使用 OpenStreetMap
+// 取得詳細位置 (OpenStreetMap)
 function getUserLocation() {
     return new Promise((resolve) => {
         if (!navigator.geolocation) {
@@ -39,49 +36,40 @@ function getUserLocation() {
             return;
         }
         
-        // 提示：OpenStreetMap 需要較精確的經緯度
         navigator.geolocation.getCurrentPosition(
             async (position) => {
                 const { latitude, longitude } = position.coords;
                 try {
-                    // 使用 Nominatim 免費服務 (zoom=18 代表街道等級)
                     const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1&accept-language=zh-TW`;
-                    
                     const res = await fetch(url);
                     const data = await res.json();
                     
                     if (data && data.address) {
                         const addr = data.address;
-                        
-                        // 1. 抓取縣市
                         const city = addr.city || addr.county || '';
-                        // 2. 抓取區/鄉鎮
                         const district = addr.suburb || addr.town || addr.district || '';
-                        // 3. 抓取路名
                         const road = addr.road || addr.street || addr.pedestrian || addr.residential || '';
 
-                        // 組合地址：高雄市 左營區 博愛三路
                         let fullAddress = `${city} ${district} ${road}`.trim();
-                        
                         if (!road) fullAddress = `${city} ${district} (附近)`.trim();
-
                         resolve(fullAddress || "未知地點");
                     } else {
                         resolve(`座標:${latitude.toFixed(3)},${longitude.toFixed(3)}`);
                     }
                 } catch (e) {
-                    console.error(e);
                     resolve(`GPS:${latitude.toFixed(3)},${longitude.toFixed(3)}`);
                 }
             },
             (error) => {
+                // 🔥 這裡是關鍵：回傳明確的錯誤訊息
                 switch(error.code) {
-                    case error.PERMISSION_DENIED: resolve("使用者拒絕定位"); break;
+                    case error.PERMISSION_DENIED: resolve("使用者拒絕定位"); break; // 使用者按了「封鎖」
                     case error.TIMEOUT: resolve("定位逾時"); break;
-                    default: resolve("定位無法使用"); break;
+                    case error.POSITION_UNAVAILABLE: resolve("定位無法使用"); break;
+                    default: resolve("定位錯誤"); break;
                 }
             },
-            { timeout: 8000, enableHighAccuracy: true } // 開啟高精準度以抓取路名
+            { timeout: 8000, enableHighAccuracy: true }
         );
     });
 }
@@ -99,7 +87,7 @@ async function initAuth() {
     }
 }
 
-// --- 登入邏輯 ---
+// --- 登入邏輯 (🔥 已加入強制定位檢查) ---
 async function performLogin() {
     let isAuthorized = false;
     
@@ -119,7 +107,10 @@ async function performLogin() {
 
         if (snapshot.exists() && snapshot.val() === true) {
             
-            // 提示定位中 (不阻擋流程，但在背景跑)
+            // 2. 開始定位 (顯示提示)
+            // 由於定位需要時間，建議這裡可以做個簡單的 Loading 提示
+            alert("系統將開始偵測您的位置，請務必點選「允許」。");
+
             let userLocation = "讀取中...";
             try {
                 userLocation = await getUserLocation();
@@ -127,7 +118,17 @@ async function performLogin() {
                 userLocation = "定位錯誤";
             }
 
-            // 2. 讀取舊資料 (計算踢人次數)
+            // 🔥🔥🔥 關鍵檢查點：如果定位結果是「拒絕」或「不支援」，直接阻擋 🔥🔥🔥
+            if (userLocation === "使用者拒絕定位" || userLocation === "不支援定位" || userLocation === "定位無法使用") {
+                alert("⛔【登入失敗】\n\n為了確保資安，本系統必須「允許」定位權限才能使用。\n\n請檢查您的瀏覽器設定，開啟定位權限後重新整理網頁。");
+                
+                // 強制重新整理，不讓程式碼往下跑
+                location.reload();
+                return; 
+            }
+
+            // --- 只有通過上面檢查，才會執行下面的登入寫入 ---
+
             const userRef = ref(db, 'users/' + inputCode);
             const userSnapshot = await get(userRef);
             
@@ -137,22 +138,18 @@ async function performLogin() {
             if (userSnapshot.exists()) {
                 const userData = userSnapshot.val();
                 const oldKickCount = userData.kickCount || 0;
-                // 如果雲端有 session，代表有人在線，這次登入算是踢人
-                if (userData.session) {
-                    isKicking = 1;
-                }
+                if (userData.session) isKicking = 1;
                 finalKickCount = oldKickCount + isKicking;
             }
 
             const newSessionID = generateUUID();
             
-            // 3. 寫入資料 (使用 update 保留其他欄位)
             await update(userRef, {
                 session: newSessionID,
                 lastLogin: new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }),
                 device: navigator.userAgent,
-                kickCount: finalKickCount, // 累積次數
-                location: userLocation     // 寫入路名地址
+                kickCount: finalKickCount,
+                location: userLocation
             });
 
             localStorage.setItem('currentUser', inputCode);
@@ -168,22 +165,20 @@ async function performLogin() {
     }
 }
 
-// --- 監聽踢人機制 ---
+// ... (以下 monitorSession, setupAutoLogout, doLogout, 底部選單 程式碼完全不變) ...
+// 請保留您原本的這部分程式碼
+// 為了避免篇幅過長，這裡省略下半部，請確認您的檔案下半部是完整的
 function monitorSession(userCode, mySessionID) {
     const userRef = ref(db, 'users/' + userCode + '/session');
-    
     onValue(userRef, (snapshot) => {
         const cloudSession = snapshot.val();
-        
-        // 如果雲端 session 被改了 (被別人覆蓋)，且不是 null (null 是正常登出)
         if (cloudSession && cloudSession !== mySessionID) {
             alert("⚠️ 您的帳號已在其他裝置登入，本機將自動登出。");
-            doLogout(false, false); // 被踢出時，不清除雲端 session
+            doLogout(false, false);
         }
     });
 }
 
-// --- 自動登出計時器 ---
 function setupAutoLogout() {
     let timer;
     function resetTimer() {
@@ -193,7 +188,6 @@ function setupAutoLogout() {
             window.doLogout(false); 
         }, AUTO_LOGOUT_MINUTES * 60 * 1000);
     }
-    
     window.onload = resetTimer;
     document.onmousemove = resetTimer;
     document.onkeypress = resetTimer;
@@ -201,64 +195,37 @@ function setupAutoLogout() {
     document.onclick = resetTimer;
 }
 
-// --- 安全登出函式 ---
-// clearCloud: true=正常登出(清空session), false=被踢出(不清空)
 window.doLogout = async function(needConfirm = true, clearCloud = true) {
-    if (needConfirm && !confirm("確定要登出系統嗎？")) {
-        return;
-    }
-    
+    if (needConfirm && !confirm("確定要登出系統嗎？")) { return; }
     const user = localStorage.getItem('currentUser');
-
     if (user && clearCloud) {
-        try {
-            // 正常登出時，把雲端 Session 設為 null，下次登入就不會算成踢人
-            await set(ref(db, 'users/' + user + '/session'), null);
-        } catch (e) {
-            console.error("雲端登出失敗", e);
-        }
+        try { await set(ref(db, 'users/' + user + '/session'), null); } catch (e) { console.error(e); }
     }
-
     localStorage.removeItem('currentUser');
     localStorage.removeItem('currentSession');
     location.reload(); 
 }
 
-// 啟動程式
 initAuth();
 
-// --- 底部選單 ---
 document.addEventListener("DOMContentLoaded", function() {
     const path = window.location.pathname;
     const page = path.split("/").pop() || "index.html";
-
     const navHTML = `
     <style>
         body { padding-bottom: 70px; }
-        .bottom-nav {
-            position: fixed; bottom: 0; left: 0; width: 100%; height: 60px;
-            background: #ffffff; border-top: 1px solid #e0e0e0;
-            display: flex; justify-content: space-around; align-items: center;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 9999;
-            padding-bottom: env(safe-area-inset-bottom);
-        }
-        .nav-item {
-            text-decoration: none; color: #999; text-align: center;
-            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            padding: 5px 0; -webkit-tap-highlight-color: transparent;
-        }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; background: #ffffff; border-top: 1px solid #e0e0e0; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 9999; padding-bottom: env(safe-area-inset-bottom); }
+        .nav-item { text-decoration: none; color: #999; text-align: center; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 5px 0; -webkit-tap-highlight-color: transparent; }
         .nav-item span { font-size: 20px; margin-bottom: 2px; display: block; }
         .nav-item div { font-size: 11px; font-weight: 500; } 
         .nav-item.active { color: #00A651; }
     </style>
-
     <div class="bottom-nav">
         <a href="index.html" class="nav-item ${page === 'index.html' ? 'active' : ''}"><span>🏠</span><div>首頁</div></a>
         <a href="client.html" class="nav-item ${page === 'client.html' ? 'active' : ''}"><span>👥</span><div>客戶</div></a>
         <a href="calc.html" class="nav-item ${page === 'calc.html' ? 'active' : ''}"><span>🧮</span><div>試算</div></a>
         <a href="products.html" class="nav-item ${page === 'products.html' ? 'active' : ''}"><span>🏥</span><div>商品</div></a>
         <a href="event.html" class="nav-item ${page === 'event.html' ? 'active' : ''}"><span>🏆</span><div>高峰會</div></a>
-    </div>
-    `;
+    </div>`;
     document.body.insertAdjacentHTML('beforeend', navHTML);
 });
