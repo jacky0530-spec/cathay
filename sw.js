@@ -10,6 +10,7 @@ const urlsToCache = [
   'calc_labor.html',  // 新增
   'calc_combo.html',  // 新增
   'calc_retire.html', // 新增
+  'products.html',
   'prod_overflow_love.html',   // 新增
   'prod_accident.html', 
   'prod_rider.html', 
