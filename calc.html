@@ -16,49 +16,86 @@
             padding: 20px;
         }
 
-        h2 { color: #333; margin-bottom: 20px; font-size: 22px; }
+        h2 { color: #333; margin-bottom: 20px; font-size: 22px; font-weight: 700; }
 
         /* 格狀佈局：兩欄 */
         .grid-menu {
             display: grid;
             grid-template-columns: 1fr 1fr; /* 左右各一半 */
             gap: 15px; /* 間距 */
-            padding-bottom: 80px; /* 預留底部選單空間 */
+            padding-bottom: 90px; /* 預留底部選單空間 */
         }
 
-        /* 按鈕卡片樣式 */
+        /* 一般白色按鈕樣式 */
         .calc-btn {
             background: white;
-            border-radius: 15px;
+            border-radius: 16px;
             padding: 20px 10px;
             text-align: center;
             text-decoration: none;
             color: #444;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            transition: transform 0.1s, box-shadow 0.1s;
+            transition: transform 0.1s;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100px; /* 固定高度讓版面整齊 */
+            height: 110px;
+            position: relative;
+            overflow: hidden;
         }
 
-        .calc-btn:active {
-            transform: scale(0.96);
-            background-color: #fafafa;
-        }
-
-        .icon { font-size: 32px; margin-bottom: 10px; }
+        .calc-btn:active { transform: scale(0.96); }
+        .icon { font-size: 36px; margin-bottom: 8px; }
         .title { font-size: 15px; font-weight: bold; line-height: 1.4; }
-        
-        /* 特別強調的按鈕 (例如最後一個規劃類) 可以跨欄 */
-        .full-width {
+
+        /* 🔥 重點按鈕樣式 (遺產稅規劃) */
+        .highlight-btn {
             grid-column: span 2; /* 佔滿整行 */
             flex-direction: row; /* 改成橫向排列 */
             height: auto;
-            padding: 15px;
+            padding: 25px 20px;
+            /* 國泰綠漸層背景 */
+            background: linear-gradient(135deg, #00A651 0%, #008c44 100%);
+            color: white;
+            box-shadow: 0 8px 20px rgba(0, 166, 81, 0.3); /* 綠色光暈陰影 */
+            border: 1px solid #007a3b;
         }
-        .full-width .icon { margin-bottom: 0; margin-right: 15px; }
+
+        .highlight-btn:active { transform: scale(0.98); }
+
+        /* 重點按鈕的圖示 */
+        .highlight-btn .icon {
+            font-size: 32px;
+            margin-bottom: 0;
+            margin-right: 18px;
+            background: rgba(255,255,255,0.2); /* 半透明圓底 */
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        /* 重點按鈕的文字區塊 */
+        .highlight-text {
+            text-align: left;
+            flex: 1;
+        }
+        .highlight-btn .title {
+            font-size: 19px; /* 字體加大 */
+            color: white;
+            margin-bottom: 4px;
+        }
+        .subtitle {
+            font-size: 12px;
+            color: #e8f5e9; /* 淺綠色文字 */
+            opacity: 0.9;
+        }
+        
+        .arrow { font-size: 20px; color: rgba(255,255,255,0.8); font-weight: bold; }
+
     </style>
 </head>
 <body>
@@ -82,10 +119,13 @@
             <div class="title">退休儲蓄<br>目標設定</div>
         </a>
 
-        <a href="calc_plan.html" class="calc-btn full-width">
+        <a href="calc_plan.html" class="calc-btn highlight-btn">
             <div class="icon">💰</div>
-            <div class="title">進階功能：遺產稅預先規劃</div>
-            <span style="margin-left:auto; color:#ccc;">➜</span>
+            <div class="highlight-text">
+                <div class="title">進階功能：遺產稅預先規劃</div>
+                <div class="subtitle">資產傳承 • 預留稅源 • 節稅策略</div>
+            </div>
+            <span class="arrow">➜</span>
         </a>
 
     </div>
