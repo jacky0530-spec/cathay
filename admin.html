@@ -82,16 +82,18 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // ⚠️⚠️⚠️ 【請修改】這裡務必填入您自己的 Firebase 設定 ⚠️⚠️⚠️
-        const firebaseConfig = {
-            apiKey: "AIzaSy...",
-            authDomain: "...",
-            databaseURL: "...",
-            projectId: "...",
-            storageBucket: "...",
-            messagingSenderId: "...",
-            appId: "..."
-        };
+// ⚠️⚠️⚠️ 這裡記得填回您自己的 Firebase 設定 ⚠️⚠️⚠️
+const firebaseConfig = {
+  apiKey: "AIzaSyAXmxp2R7oeM-DJsbDoT6YAVlHV4vKC_Xo",
+  authDomain: "cathay-app-5889a.firebaseapp.com",
+  databaseURL: "https://cathay-app-5889a-default-rtdb.firebaseio.com",
+  projectId: "cathay-app-5889a",
+  storageBucket: "cathay-app-5889a.firebasestorage.app",
+  messagingSenderId: "222981030218",
+  appId: "1:222981030218:web:5f557a386a38cf3d1c41b3",
+  measurementId: "G-2C57S9M2H5"
+};
+
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
@@ -171,7 +173,7 @@
             if (match && match[1]) {
                 return match[1].substring(0, 40) + '...'; 
             }
-            return userAgent.substring(0, 30) + '...';
+            return userAgent.substring(0, 30) + '...'; 
         }
 
         // 🔥 修改處：顯示完整時間
