@@ -1,8 +1,7 @@
-// --- 引入 Firebase SDK (透過網路讀取) ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-// ⚠️⚠️⚠️ 請將下方內容替換成您在 Firebase Console 複製的設定 ⚠️⚠️⚠️
+// ⚠️⚠️⚠️ 這裡記得填回您自己的 Firebase 設定 ⚠️⚠️⚠️
 const firebaseConfig = {
   apiKey: "AIzaSyAXmxp2R7oeM-DJsbDoT6YAVlHV4vKC_Xo",
   authDomain: "cathay-app-5889a.firebaseapp.com",
@@ -14,14 +13,10 @@ const firebaseConfig = {
   measurementId: "G-2C57S9M2H5"
 };
 
-// 初始化 Firebase
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// 允許的授權碼清單 (您可以隨時新增)
-const validCodes = [ "VIP888", "CATHAY2025", "USER001" ];
-
-// 產生隨機 Session ID (用來識別不同次登入)
+// 產生亂數 Session ID
 function generateUUID() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
         var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
@@ -29,70 +24,86 @@ function generateUUID() {
     });
 }
 
-// --- 主要驗證邏輯 ---
+// 初始化
 async function initAuth() {
     const localUser = localStorage.getItem('currentUser');
     const localSession = localStorage.getItem('currentSession');
 
-    // 1. 如果本地沒有登入紀錄，或是被強制登出了
     if (!localUser || !localSession) {
         await performLogin();
     } else {
-        // 2. 如果有登入，開始監聽雲端，看有沒有被踢掉
+        // 檢查是否被踢出
         monitorSession(localUser, localSession);
     }
 }
 
-// 執行登入動作
+// 🔥 修正後的登入邏輯：去 Firebase 檢查 whitelist
+// 🔥 修改後的登入邏輯：增加記錄踢出次數與裝置名稱
 async function performLogin() {
     let isAuthorized = false;
     
     while (!isAuthorized) {
-        const inputCode = prompt("【單一裝置限制】\n請輸入授權碼登入：");
+        let inputCode = prompt("【單一裝置限制】\n請輸入您的專屬授權碼：");
         
         if (inputCode === null) {
             document.body.innerHTML = "<h2 style='text-align:center;padding:50px;'>存取被拒絕</h2>";
             throw new Error("User cancelled");
         }
+        
+        inputCode = inputCode.toUpperCase().trim();
 
-        // 檢查代碼是否在白名單內
-        if (validCodes.includes(inputCode)) {
-            // 產生新的 Session ID
+        // 1. 檢查白名單
+        const whitelistRef = ref(db, 'whitelist/' + inputCode);
+        const snapshot = await get(whitelistRef);
+
+        if (snapshot.exists() && snapshot.val() === true) {
+            // 2. 準備登入
+            const userRef = ref(db, 'users/' + inputCode);
+            const userSnapshot = await get(userRef);
+            
+            let currentKickCount = 0;
+            
+            // 檢查是否已經有人登入中 (如果有 session 代表有人在線)
+            if (userSnapshot.exists()) {
+                const userData = userSnapshot.val();
+                currentKickCount = userData.kickCount || 0; // 讀取舊的次數
+                
+                // 如果舊資料有 session，代表這次登入會把對方踢掉
+                if (userData.session) {
+                    currentKickCount += 1; 
+                }
+            }
+
+            // 產生新 Session
             const newSessionID = generateUUID();
             
-            // 🔥 關鍵：將新 Session 寫入雲端 (這會踢掉舊裝置)
-            await set(ref(db, 'users/' + inputCode), {
+            // 3. 寫入詳細資訊 (包含踢出次數)
+            await set(userRef, {
                 session: newSessionID,
-                lastLogin: new Date().toISOString()
+                lastLogin: new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }), // 轉成台灣時間好讀版
+                device: navigator.userAgent, // 紀錄裝置型號
+                kickCount: currentKickCount // 寫入累計的踢人次數
             });
 
-            // 儲存到本地
             localStorage.setItem('currentUser', inputCode);
             localStorage.setItem('currentSession', newSessionID);
             
-            alert("驗證成功！若有其他裝置使用此帳號，將會被登出。");
+            alert("驗證成功！");
             isAuthorized = true;
-            
-            // 開始監聽
             monitorSession(inputCode, newSessionID);
         } else {
-            alert("無效的授權碼，請重新輸入。");
+            alert("授權碼錯誤，或該帳號已被停用。");
         }
     }
 }
 
-// 監聽雲端 Session 變化 (踢人機制)
+// 監聽踢人機制
 function monitorSession(userCode, mySessionID) {
     const userRef = ref(db, 'users/' + userCode + '/session');
-    
     onValue(userRef, (snapshot) => {
         const cloudSession = snapshot.val();
-        
-        // 如果雲端沒有資料，或者雲端的 Session 跟我的不一樣
         if (cloudSession && cloudSession !== mySessionID) {
-            alert("⚠️ 偵測到重複登入！\n\n您的帳號已在另一台裝置登入，本機將自動登出。");
-            
-            // 清除本地資料並重整
+            alert("⚠️ 您的帳號已在其他裝置登入，本機將自動登出。");
             localStorage.removeItem('currentUser');
             localStorage.removeItem('currentSession');
             location.reload();
@@ -100,22 +111,19 @@ function monitorSession(userCode, mySessionID) {
     });
 }
 
-// 啟動驗證
 initAuth();
 
-// --- 自動產生選單 (保持原本的選單邏輯) ---
+// --- 底部選單保持不變 ---
 document.addEventListener("DOMContentLoaded", function() {
-    // ... 這裡放您原本的選單程式碼，保持不變 ...
-    // ... 為了節省篇幅，請保留您上一版 auth.js 下半部的選單代碼 ...
     const path = window.location.pathname;
     const page = path.split("/").pop() || "index.html";
     const navHTML = `
     <style>
-        /* 您原本的 CSS */
         body { padding-bottom: 70px; }
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; background: #fff; border-top: 1px solid #ddd; display: flex; justify-content: space-around; align-items: center; z-index: 9999; }
-        .nav-item { text-decoration: none; color: #999; text-align: center; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; }
-        .nav-item span { font-size: 20px; display: block; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; background: #fff; border-top: 1px solid #ddd; display: flex; justify-content: space-around; align-items: center; z-index: 9999; padding-bottom: env(safe-area-inset-bottom); }
+        .nav-item { text-decoration: none; color: #999; text-align: center; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 5px 0; -webkit-tap-highlight-color: transparent; }
+        .nav-item span { font-size: 20px; margin-bottom: 2px; display: block; }
+        .nav-item div { font-size: 11px; font-weight: 500; } 
         .nav-item.active { color: #00A651; }
     </style>
     <div class="bottom-nav">
