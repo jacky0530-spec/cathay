@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>試算工具</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <script src="auth.js"></script>
+
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h2 { color: #333; margin-bottom: 20px; font-size: 22px; }
+
+        /* 格狀佈局：兩欄 */
+        .grid-menu {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* 左右各一半 */
+            gap: 15px; /* 間距 */
+            padding-bottom: 80px; /* 預留底部選單空間 */
+        }
+
+        /* 按鈕卡片樣式 */
+        .calc-btn {
+            background: white;
+            border-radius: 15px;
+            padding: 20px 10px;
+            text-align: center;
+            text-decoration: none;
+            color: #444;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.1s, box-shadow 0.1s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100px; /* 固定高度讓版面整齊 */
+        }
+
+        .calc-btn:active {
+            transform: scale(0.96);
+            background-color: #fafafa;
+        }
+
+        .icon { font-size: 32px; margin-bottom: 10px; }
+        .title { font-size: 15px; font-weight: bold; line-height: 1.4; }
+        
+        /* 特別強調的按鈕 (例如最後一個規劃類) 可以跨欄 */
+        .full-width {
+            grid-column: span 2; /* 佔滿整行 */
+            flex-direction: row; /* 改成橫向排列 */
+            height: auto;
+            padding: 15px;
+        }
+        .full-width .icon { margin-bottom: 0; margin-right: 15px; }
+    </style>
+</head>
+<body>
+
+    <h2>🧮 財務試算工具</h2>
+
+    <div class="grid-menu">
+        
+        <a href="calc_labor.html" class="calc-btn">
+            <div class="icon">👷</div>
+            <div class="title">勞保年金<br>試算</div>
+        </a>
+
+        <a href="calc_combo.html" class="calc-btn">
+            <div class="icon">🤝</div>
+            <div class="title">勞保+國保<br>雙年金</div>
+        </a>
+
+        <a href="calc_retire.html" class="calc-btn">
+            <div class="icon">🎯</div>
+            <div class="title">退休儲蓄<br>目標設定</div>
+        </a>
+
+        <a href="calc_plan.html" class="calc-btn full-width">
+            <div class="icon">💰</div>
+            <div class="title">進階功能：遺產稅預先規劃</div>
+            <span style="margin-left:auto; color:#ccc;">➜</span>
+        </a>
+
+    </div>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+    </script>
+
+</body>
+</html>

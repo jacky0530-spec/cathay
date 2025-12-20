@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>勞保+國保 雙年金試算表</title>
+    <style>
+        :root {
+            --labor-color: #2980b9;    /* 勞保藍 */
+            --national-color: #d35400; /* 國保橘 */
+            --total-color: #27ae60;    /* 總計綠 */
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 25px;
+        }
+
+        /* Input Sections */
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            border-left: 5px solid #333;
+            padding-left: 10px;
+        }
+
+        .input-group-wrapper {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .input-card {
+            flex: 1;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #fafafa;
+            border: 1px solid #eee;
+            min-width: 250px;
+        }
+
+        .input-card.labor { border-top: 4px solid var(--labor-color); }
+        .input-card.national { border-top: 4px solid var(--national-color); }
+        .input-card.general { border-top: 4px solid #7f8c8d; }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: bold; font-size: 0.9rem; color: #555; }
+        .form-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--total-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .btn:hover { background-color: #219150; }
+
+        /* Table Styling */
+        #resultArea {
+            display: none;
+            margin-top: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        th, td {
+            padding: 10px 6px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        /* Header Colors */
+        th.th-info { background-color: #34495e; color: white; }
+        th.th-labor { background-color: var(--labor-color); color: white; }
+        th.th-national { background-color: var(--national-color); color: white; }
+        th.th-total { background-color: var(--total-color); color: white; }
+
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        
+        .highlight-row {
+            background-color: #e8f6f3 !important;
+            font-weight: bold;
+            border: 2px solid var(--total-color);
+        }
+
+        .money { font-family: 'Courier New', monospace; font-weight: bold; }
+        .labor-text { color: var(--labor-color); }
+        .national-text { color: var(--national-color); }
+        .total-text { color: var(--total-color); font-size: 1.1em; }
+
+        .note {
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: #666;
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 6px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>勞保 + 國保 雙年金試算</h1>
+
+    <div class="input-group-wrapper">
+        <div class="input-card labor">
+            <div class="section-title" style="color:var(--labor-color)">勞工保險 (勞保)</div>
+            <div class="form-group">
+                <label>最高60個月平均薪資</label>
+                <input type="number" id="laborSalary" value="45800" placeholder="例如: 45800">
+            </div>
+            <div class="form-group">
+                <label>目前勞保年資 (年)</label>
+                <input type="number" id="laborYears" value="20" step="0.5">
+            </div>
+        </div>
+
+        <div class="input-card national">
+            <div class="section-title" style="color:var(--national-color)">國民年金 (國保)</div>
+            <div class="form-group">
+                <label>目前國保年資 (年)</label>
+                <input type="number" id="nationalYears" value="5" step="0.5" placeholder="例如: 5">
+            </div>
+            <div class="form-group">
+                <label>月投保金額 (固定)</label>
+                <input type="number" id="nationalSalary" value="19761" readonly style="background:#eee; color:#777;">
+            </div>
+        </div>
+
+        <div class="input-card general">
+            <div class="section-title">請領設定</div>
+            <div class="form-group">
+                <label>預計開始請領年齡</label>
+                <input type="number" id="targetAge" value="65" placeholder="法定為65歲">
+            </div>
+            <div class="form-group" style="font-size:0.8rem; color:#666;">
+                *此試算假設您目前正在工作中 (持續累積勞保年資)，而國保年資暫停累積。
+            </div>
+        </div>
+    </div>
+
+    <button class="btn" onclick="calculate()">開始合併試算</button>
+
+    <div id="resultArea">
+        <table id="resultTable">
+            <thead>
+                <tr>
+                    <th class="th-info" rowspan="2">情境</th>
+                    <th class="th-info" rowspan="2">請領<br>年齡</th>
+                    <th class="th-labor" colspan="2">勞保 (B式)</th>
+                    <th class="th-national" colspan="2">國保 (B式)</th>
+                    <th class="th-total" rowspan="2">每月合計<br>領取金額</th>
+                    <th class="th-total" rowspan="2">70歲<br>累積總額</th>
+                    <th class="th-total" rowspan="2">75歲<br>累積總額</th>
+                </tr>
+                <tr>
+                    <th class="th-labor" style="font-size:0.8em">年資</th>
+                    <th class="th-labor" style="font-size:0.8em">金額</th>
+                    <th class="th-national" style="font-size:0.8em">年資</th>
+                    <th class="th-national" style="font-size:0.8em">金額</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                </tbody>
+        </table>
+
+        <div class="note">
+            <strong>💡 計算說明：</strong><br>
+            1. <strong>公式選擇</strong>：當您同時請領勞保年金時，國民年金依規定僅能使用 <strong>B式</strong> (月投保金額×年資×1.3%) 計算，不能享有A式的3,772元基本保障。<br>
+            2. <strong>增減給比例</strong>：勞保與國保皆有提早/延後機制 (每一年±4%)。此表假設您在「預計請領年齡」同時啟動兩者的年金給付。<br>
+            3. <strong>情境假設</strong>：表格中的「再保 X 年」是假設您 **持續從事勞保工作**。因此勞保年資會增加，但國保年資維持不變 (因為有勞保時不用繳國保)。<br>
+            4. <strong>國保投保金額</strong>：目前固定為 19,761 元 (隨物價指數調整，此處採現行費率)。
+        </div>
+    </div>
+</div>
+
+<script>
+    const NATIONAL_INSURED_AMOUNT = 19761; // 國保月投保金額
+    const STANDARD_RETIRE_AGE = 65;
+
+    function formatMoney(num) {
+        return new Intl.NumberFormat('zh-TW', { style: 'currency', currency: 'TWD', minimumFractionDigits: 0 }).format(num);
+    }
+
+    function calculate() {
+        // 1. 取得輸入值
+        const lSalary = parseFloat(document.getElementById('laborSalary').value);
+        const lYearsStart = parseFloat(document.getElementById('laborYears').value);
+        const nYearsStart = parseFloat(document.getElementById('nationalYears').value);
+        const targetAge = parseFloat(document.getElementById('targetAge').value);
+
+        if (isNaN(lSalary) || isNaN(lYearsStart) || isNaN(nYearsStart) || isNaN(targetAge)) {
+            alert("請輸入完整數值");
+            return;
+        }
+
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = "";
+        document.getElementById('resultArea').style.display = "block";
+
+        // 2. 定義情境：目前, +1年, +3年, +5年, +10年
+        const scenarios = [0, 1, 3, 5, 10];
+
+        scenarios.forEach((addYears, index) => {
+            const currentAge = targetAge + addYears; // 假設年齡隨工作年資增加
+            
+            // --- 勞保計算 ---
+            // 假設新增的年資都是勞保 (持續工作)
+            const finalLaborYears = lYearsStart + addYears;
+            
+            // 勞保基本額 (B式較常適用於長期工作者，且為了與國保邏輯一致，此處Demo以B式為主，實際系統會擇優)
+            // 嚴謹計算應包含A式，但顯示欄位有限，此處以 (薪資 * 年資 * 1.55%) 估算
+            let lBase = lSalary * finalLaborYears * 0.0155;
+            
+            // 計算勞保係數 (65歲基準)
+            let ageDiff = currentAge - STANDARD_RETIRE_AGE;
+            // 限制最多增減給 20% (5年)
+            let effectiveDiff = Math.max(-5, Math.min(5, ageDiff));
+            let lMultiplier = 1 + (effectiveDiff * 0.04);
+            
+            // 勞保月領
+            let lAmount = Math.round(lBase * lMultiplier);
+            if (currentAge < 60) lAmount = 0; // 勞保最早60歲(扣20%)
+
+            // --- 國保計算 ---
+            // 國保年資不變 (因為正在做勞保)
+            const finalNationalYears = nYearsStart;
+            
+            // 國保只能用 B式 (月投保金額 * 年資 * 1.3%) 因為有勞保年金
+            let nBase = NATIONAL_INSURED_AMOUNT * finalNationalYears * 0.013;
+            
+            // 國保係數 (65歲基準，規則與勞保類似)
+            let nMultiplier = 1 + (effectiveDiff * 0.04);
+            
+            // 國保月領
+            let nAmount = Math.round(nBase * nMultiplier);
+            if (currentAge < 60) nAmount = 0; // 國保最早亦為60
+
+            // --- 總計 ---
+            let totalMonth = lAmount + nAmount;
+
+            // --- 終身累積 ---
+            // 簡單計算：(70 - 開始領的年齡) * 12 * 月領
+            let sum70 = 0;
+            if (currentAge < 70) {
+                sum70 = totalMonth * (70 - currentAge) * 12;
+            }
+
+            let sum75 = 0;
+            if (currentAge < 75) {
+                sum75 = totalMonth * (75 - currentAge) * 12;
+            }
+
+            // --- 產生表格列 ---
+            const rowClass = index === 0 ? "highlight-row" : "";
+            const label = addYears === 0 ? "目前狀態" : `再工作 ${addYears} 年`;
+
+            const html = `
+                <tr class="${rowClass}">
+                    <td>${label}</td>
+                    <td>${currentAge} 歲</td>
+                    
+                    <td class="labor-text">${finalLaborYears} 年</td>
+                    <td class="money labor-text">${formatMoney(lAmount)}</td>
+                    
+                    <td class="national-text">${finalNationalYears} 年</td>
+                    <td class="money national-text">${formatMoney(nAmount)}</td>
+                    
+                    <td class="money total-text">${formatMoney(totalMonth)}</td>
+                    <td class="money">${formatMoney(sum70)}</td>
+                    <td class="money">${formatMoney(sum75)}</td>
+                </tr>
+            `;
+            tbody.innerHTML += html;
+        });
+    }
+</script>
+
+</body>
+</html>

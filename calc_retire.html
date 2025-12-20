@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>退休儲蓄目標試算表 (萬元版)</title>
+    <style>
+        :root {
+            --primary-color: #00695c; /* 改為沈穩的青綠色 */
+            --secondary-color: #e0f2f1;
+            --text-color: #333;
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f4f6f8;
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .container {
+            background: white;
+            width: 100%;
+            max-width: 600px;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .description {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 0.95rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 12px;
+            padding-right: 50px; /* Space for unit */
+            border: 1px solid #ccc;
+            border-radius: var(--border-radius);
+            font-size: 1.1rem; /* 稍微加大字體 */
+            box-sizing: border-box;
+            transition: border 0.3s;
+        }
+
+        .input-wrapper input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+
+        .unit {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #555;
+            font-weight: bold;
+            pointer-events: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background-color: #004d40;
+        }
+
+        .result-section {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: var(--secondary-color);
+            border-radius: var(--border-radius);
+            display: none;
+        }
+
+        .result-title {
+            text-align: center;
+            font-size: 1rem;
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        .result-amount {
+            text-align: center;
+            font-size: 2rem;
+            color: var(--primary-color);
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .result-sub-amount {
+            text-align: center;
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .breakdown {
+            font-size: 0.9rem;
+            color: #555;
+            border-top: 1px solid #ccc;
+            padding-top: 15px;
+        }
+
+        .breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .note {
+            margin-top: 20px;
+            font-size: 0.8rem;
+            color: #888;
+            text-align: justify;
+        }
+
+        .progress-container {
+            margin-top: 15px;
+            height: 20px;
+            background-color: #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+        }
+        .bar-principal { background-color: #26a69a; height: 100%; }
+        .bar-interest { background-color: #80cbc4; height: 100%; }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+        .legend-item { display: flex; align-items: center; gap: 5px; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>退休儲蓄計算機 (萬元版)</h1>
+    <div class="description">
+        輸入單位已改為「萬」。輸入 2000 代表 2000 萬。<br>
+        輸入您退休後 20 年的總花費目標，計算每月需存多少錢。
+    </div>
+
+    <div class="form-group">
+        <label for="currentAge">現在年齡</label>
+        <div class="input-wrapper">
+            <input type="number" id="currentAge" placeholder="30" value="30">
+            <span class="unit">歲</span>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="retireAge">預計退休年齡</label>
+        <div class="input-wrapper">
+            <input type="number" id="retireAge" placeholder="65" value="65">
+            <span class="unit">歲</span>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="targetAmount">退休後 20 年總花費目標</label>
+        <div class="input-wrapper">
+            <input type="number" id="targetAmount" placeholder="例如：2000" value="2000">
+            <span class="unit">萬</span>
+        </div>
+        <small style="color:#666; font-size: 0.8em;">(約等於退休後每月可花 <span id="monthlySpendPreview">--</span>)</small>
+    </div>
+
+    <div class="form-group">
+        <label for="currentSavings">目前已累積存款 (選填)</label>
+        <div class="input-wrapper">
+            <input type="number" id="currentSavings" placeholder="例如：50" value="0">
+            <span class="unit">萬</span>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="rate">預期年化報酬率</label>
+        <div class="input-wrapper">
+            <input type="number" id="rate" placeholder="例如：5" value="5" step="0.1">
+            <span class="unit">%</span>
+        </div>
+        <small style="color:#888; font-size: 0.8em;">保守 3-5%，積極 6-8%</small>
+    </div>
+
+    <button onclick="calculate()">開始試算</button>
+
+    <div id="resultSection" class="result-section">
+        <div class="result-title">為了達成目標，您每月需要存入</div>
+        <div class="result-amount" id="monthlyResult">0 萬</div>
+        <div class="result-sub-amount" id="monthlyResultRaw">(約 0 元)</div>
+        
+        <div class="breakdown">
+            <div class="breakdown-item">
+                <span>距離退休還有：</span>
+                <span id="yearsLeft">0 年</span>
+            </div>
+            <div class="breakdown-item">
+                <span>目前存款複利增值至：</span>
+                <span id="existingFutureVal">0 萬</span>
+            </div>
+            <div class="breakdown-item">
+                <span>實際需要補足缺口：</span>
+                <span id="gapNeeded">0 萬</span>
+            </div>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <div class="result-title">退休時資產構成預估</div>
+            <div class="progress-container">
+                <div id="barPrincipal" class="bar-principal" style="width: 0%"></div>
+                <div id="barInterest" class="bar-interest" style="width: 0%"></div>
+            </div>
+            <div class="legend">
+                <div class="legend-item"><div class="dot" style="background:#26a69a"></div>本金投入</div>
+                <div class="legend-item"><div class="dot" style="background:#80cbc4"></div>投資獲利</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="note">
+        * 計算假設：金額單位為「萬元」。<br>
+        * 「退休後每月可花」為簡單平均（總目標 ÷ 20年 ÷ 12月），未計入退休後繼續投資的收益或通膨。<br>
+        * 此試算按月複利計算。
+    </div>
+</div>
+
+<script>
+    // 即時更新「退休後每月可花」的預覽文字
+    document.getElementById('targetAmount').addEventListener('input', updatePreview);
+
+    function formatCurrency(wanValue) {
+        // 如果大於 1 萬，顯示 "XX.XX 萬"
+        // 如果小於 1 萬，顯示 "0.XX 萬"
+        return parseFloat(wanValue).toFixed(2) + " 萬";
+    }
+    
+    function formatRaw(wanValue) {
+        // 將萬轉回元，並加上千分位
+        let raw = wanValue * 10000;
+        return "(約 " + Math.round(raw).toLocaleString() + " 元)";
+    }
+
+    function updatePreview() {
+        const targetWan = parseFloat(document.getElementById('targetAmount').value) || 0;
+        // 20年 = 240個月
+        const monthlyWan = targetWan / 240; 
+        document.getElementById('monthlySpendPreview').innerText = formatCurrency(monthlyWan) + " " + formatRaw(monthlyWan);
+    }
+
+    function calculate() {
+        // 1. 獲取輸入值 (單位皆為 萬)
+        const currentAge = parseInt(document.getElementById('currentAge').value);
+        const retireAge = parseInt(document.getElementById('retireAge').value);
+        const targetAmountWan = parseFloat(document.getElementById('targetAmount').value);
+        const currentSavingsWan = parseFloat(document.getElementById('currentSavings').value) || 0;
+        const annualRate = parseFloat(document.getElementById('rate').value);
+
+        // 2. 驗證
+        if (!currentAge || !retireAge || !targetAmountWan || isNaN(annualRate)) {
+            alert("請填寫所有必要欄位");
+            return;
+        }
+        if (retireAge <= currentAge) {
+            alert("退休年齡必須大於現在年齡");
+            return;
+        }
+
+        // 3. 計算邏輯 (全部使用「萬」作為基礎單位計算，數學上結果相同)
+        const yearsToGrow = retireAge - currentAge;
+        const monthsToGrow = yearsToGrow * 12;
+        const monthlyRate = (annualRate / 100) / 12;
+
+        // 步驟 A: 計算「目前已累積存款」在退休時會變成多少 (複利終值)
+        let existingFutureValueWan = 0;
+        if (monthlyRate > 0) {
+            existingFutureValueWan = currentSavingsWan * Math.pow((1 + monthlyRate), monthsToGrow);
+        } else {
+            existingFutureValueWan = currentSavingsWan;
+        }
+
+        // 步驟 B: 計算資金缺口
+        let gapWan = targetAmountWan - existingFutureValueWan;
+        if (gapWan < 0) gapWan = 0;
+
+        // 步驟 C: 計算每月需存多少 (萬)
+        let monthlyNeedWan = 0;
+        if (gapWan > 0) {
+            if (monthlyRate > 0) {
+                monthlyNeedWan = (gapWan * monthlyRate) / (Math.pow((1 + monthlyRate), monthsToGrow) - 1);
+            } else {
+                monthlyNeedWan = gapWan / monthsToGrow;
+            }
+        }
+
+        // 4. 更新 UI
+        document.getElementById('resultSection').style.display = 'block';
+        
+        // 顯示每月需存
+        document.getElementById('monthlyResult').innerText = formatCurrency(monthlyNeedWan);
+        document.getElementById('monthlyResultRaw').innerText = formatRaw(monthlyNeedWan);
+        
+        document.getElementById('yearsLeft').innerText = yearsToGrow + " 年 (" + monthsToGrow + " 個月)";
+        document.getElementById('existingFutureVal').innerText = formatCurrency(existingFutureValueWan);
+        document.getElementById('gapNeeded').innerText = formatCurrency(gapWan);
+
+        // 5. 圖表計算
+        // 總本金 = 初始存款 + (每月存 * 月數)
+        const totalPrincipalWan = currentSavingsWan + (monthlyNeedWan * monthsToGrow);
+        const totalInterestWan = targetAmountWan - totalPrincipalWan;
+        
+        // 防止負數造成的顯示錯誤
+        let displayPrincipal = totalPrincipalWan;
+        let displayInterest = totalInterestWan;
+        if(gapWan === 0) {
+             displayPrincipal = targetAmountWan;
+             displayInterest = 0;
+        }
+
+        const percentPrincipal = Math.max(0, Math.min(100, (displayPrincipal / targetAmountWan) * 100));
+        const percentInterest = Math.max(0, Math.min(100, (displayInterest / targetAmountWan) * 100));
+
+        document.getElementById('barPrincipal').style.width = percentPrincipal + "%";
+        document.getElementById('barInterest').style.width = percentInterest + "%";
+
+        updatePreview();
+    }
+
+    updatePreview();
+</script>
+
+</body>
+</html>

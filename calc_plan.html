@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>遺產稅規劃工具 (含估價提示版)</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #3498db;
+            --benefit-color: #27ae60;
+            --loss-color: #c0392b;
+            --warning-bg: #fff3cd;
+            --warning-text: #856404;
+            --info-bg: #d1ecf1;
+            --info-text: #0c5460;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+        }
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            line-height: 1.5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        h2 { text-align: center; color: var(--primary-color); margin-top: 0; margin-bottom: 10px; }
+        h3 {
+            color: var(--secondary-color);
+            border-left: 5px solid var(--accent-color);
+            padding-left: 10px;
+            margin-top: 30px;
+            margin-bottom: 20px;
+            background-color: #f8f9fa;
+            padding-top: 5px; padding-bottom: 5px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;
+        }
+        .form-group label { flex: 1; min-width: 200px; font-weight: 500; }
+        .input-wrapper { flex: 1; display: flex; justify-content: flex-end; align-items: center; position: relative; }
+        
+        /* 輸入框樣式 */
+        input[type="number"], select, input[type="text"] {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            width: 140px;
+            text-align: right;
+            font-size: 16px;
+        }
+        /* 單位後綴 */
+        .unit-suffix {
+            margin-left: 5px;
+            font-size: 0.9em;
+            color: #7f8c8d;
+            width: 30px;
+        }
+        
+        /* 專門的欄位下方提示文字 */
+        .field-hint-text {
+            width: 100%;
+            text-align: right;
+            font-size: 0.85em;
+            color: #2980b9; /* 藍色提示 */
+            margin-top: 5px;
+            font-weight: 500;
+        }
+
+        .checkbox-wrapper input { width: 20px; height: 20px; margin-right: 10px; }
+        
+        .info-box {
+            background-color: var(--info-bg); color: var(--info-text); padding: 12px;
+            border-radius: 6px; font-size: 0.9em; margin-bottom: 15px; border-left: 4px solid #17a2b8;
+        }
+        
+        .result-box { background-color: #ecf0f1; padding: 20px; border-radius: 8px; margin-top: 20px; }
+        .result-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+        .money { font-family: monospace; font-weight: bold; }
+        .final-tax { color: var(--loss-color); font-size: 1.4em; font-weight: bold; }
+
+        .tax-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9em; margin-bottom: 15px; }
+        .tax-table th, .tax-table td { border: 1px solid #ddd; padding: 6px; text-align: center; }
+        .tax-table th { background-color: var(--primary-color); color: white; }
+        .active-row { background-color: #fff3cd !important; border: 2px solid #e67e22; font-weight: bold; color: #d35400; }
+
+        .plan-inputs {
+            background-color: #eef2f3; padding: 20px; border-radius: 10px; margin-bottom: 20px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+        }
+        .readonly-input { background-color: #e8e8e8; border: 1px solid #ccc; color: #555; cursor: not-allowed; }
+        .auto-calc-tax {
+            border: 2px solid var(--loss-color) !important;
+            background-color: #fff0f0 !important;
+            color: var(--loss-color) !important;
+            font-weight: bold;
+        }
+
+        .comparison-container { display: flex; gap: 20px; margin-bottom: 30px; flex-wrap: wrap; }
+        .card { flex: 1; padding: 20px; border-radius: 12px; border: 1px solid #eee; min-width: 280px; display: flex; flex-direction: column; }
+        .card.left { background-color: #fff; border-top: 5px solid #95a5a6; }
+        .card.right { background-color: #f9fff9; border-top: 5px solid var(--benefit-color); }
+        .card-title { text-align: center; font-size: 1.2em; font-weight: bold; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        
+        .highlight-row {
+            background-color: #ffecec; padding: 8px; border-radius: 6px; margin-bottom: 10px;
+            border-left: 3px solid var(--loss-color); display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .summary-bar {
+            background-color: var(--primary-color); color: white; padding: 20px;
+            border-radius: 10px; text-align: center; margin-top: 20px;
+        }
+        .summary-value { font-size: 2em; font-weight: bold; color: #f1c40f; display: block; margin-top: 5px; }
+
+        @media (max-width: 600px) {
+            .plan-inputs { grid-template-columns: 1fr; }
+            .comparison-container { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>全方位遺產稅規劃工具</h2>
+    
+    <h3>第一步：現況設定 (2025)</h3>
+    <div class="info-box">
+        <strong>💡 單位提示：</strong>所有金額輸入欄位皆為 <strong>「萬元」</strong>。<br>
+        (例如：資產 5,000 萬，請輸入 5000)
+    </div>
+
+    <div class="form-group">
+        <label for="calc_assets">被繼承人資產總額</label>
+        <div class="input-wrapper">
+            <input type="number" id="calc_assets" placeholder="例: 5000" oninput="updateAll()">
+            <span class="unit-suffix">萬元</span>
+        </div>
+        <div class="field-hint-text">
+            *計算基礎：土地(公告現值)、房屋(評定現值)、股票(收盤價)
+        </div>
+    </div>
+    
+    <div class="form-group">
+        <label for="calc_gifts" style="color:#d35400;">死亡前 2 年內贈與</label>
+        <div class="input-wrapper">
+            <input type="number" id="calc_gifts" placeholder="0" oninput="updateAll()">
+            <span class="unit-suffix">萬元</span>
+        </div>
+    </div>
+    
+    <div class="form-group" style="margin-top:20px;">
+        <label>是否有配偶 (扣 553 萬)</label>
+        <div class="input-wrapper checkbox-wrapper">
+            <input type="checkbox" id="calc_spouse" onchange="updateAll()"> 
+            <span style="width:30px;">是</span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label>直系卑親屬人數 (每人 56 萬)</label>
+        <div class="input-wrapper">
+            <input type="number" id="calc_children" value="0" min="0" oninput="updateAll()">
+            <span class="unit-suffix">人</span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label>受扶養父母人數 (每人 138 萬)</label>
+        <div class="input-wrapper">
+            <input type="number" id="calc_parents" value="0" min="0" max="2" oninput="updateAll()">
+            <span class="unit-suffix">人</span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label>身心障礙親屬人數 (每人 693 萬)</label>
+        <div class="input-wrapper">
+            <input type="number" id="calc_disabled" value="0" min="0" oninput="updateAll()">
+            <span class="unit-suffix">人</span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label>其他扣除額/債務</label>
+        <div class="input-wrapper">
+            <input type="number" id="calc_other" value="0" oninput="updateAll()">
+            <span class="unit-suffix">萬元</span>
+        </div>
+    </div>
+
+    <div class="result-box">
+        <div class="result-row">
+            <span>遺產總額 (含2年內贈與)：</span>
+            <span class="money" id="res_grossEstate">0</span>
+        </div>
+        <div class="result-row">
+            <span>扣除額+免稅額合計：</span>
+            <span class="money" id="res_deductions">0</span>
+        </div>
+        <div class="result-row">
+            <span>課稅遺產淨額：</span>
+            <span class="money" id="res_netEstate" style="color:#2980b9;">0</span>
+        </div>
+        <table class="tax-table">
+            <thead>
+                <tr><th width="50%">課稅遺產淨額</th><th>稅率</th><th>累進差額</th></tr>
+            </thead>
+            <tbody>
+                <tr id="bracket-1"><td>5,000 萬以下</td><td>10%</td><td>0</td></tr>
+                <tr id="bracket-2"><td>5,000 萬 ~ 1 億</td><td>15%</td><td>250 萬</td></tr>
+                <tr id="bracket-3"><td>超過 1 億</td><td>20%</td><td>750 萬</td></tr>
+            </tbody>
+        </table>
+        <div class="result-row" style="border-top: 1px dashed #ccc; padding-top:10px;">
+            <span style="font-size:1.2em; font-weight:bold;">目前應納遺產稅：</span>
+            <span class="money final-tax" id="res_finalTax">0</span>
+        </div>
+    </div>
+
+    <h3>第二步：資產活化效益分析 (保險規劃)</h3>
+    <div class="info-box" style="background-color: #e8f8f5; border-color: #27ae60; color: #1e8449;">
+        <strong>🚀 全自動計算：</strong>輸入保費(萬元)後，系統將自動重算稅額。
+    </div>
+    
+    <div class="plan-inputs">
+        <div>
+            <div class="form-group">
+                <label>1. 目前資產總額</label>
+                <input type="text" id="plan_assets" class="readonly-input" readonly>
+                </div>
+            <div class="form-group">
+                <label>2. 目前遺產稅</label>
+                <input type="text" id="plan_oldTax" class="readonly-input" readonly>
+            </div>
+        </div>
+        <div>
+            <div class="form-group">
+                <label style="color:var(--benefit-color);">3. 規劃保費投入</label>
+                <div class="input-wrapper">
+                    <input type="number" id="plan_premium" placeholder="例: 1000" oninput="updateAll()">
+                    <span class="unit-suffix">萬元</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label style="color:var(--benefit-color);">4. 保險理賠金額</label>
+                <div class="input-wrapper">
+                    <input type="number" id="plan_coverage" placeholder="例: 1100" oninput="updateAll()">
+                    <span class="unit-suffix">萬元</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label style="color:var(--loss-color);">5. 降低資產後遺產稅</label>
+                <input type="text" id="plan_newTax" class="auto-calc-tax" readonly value="0">
+            </div>
+        </div>
+    </div>
+
+    <div class="comparison-container">
+        <div class="card left">
+            <div class="card-title">方案 A：維持現狀</div>
+            <div class="result-row">
+                <span>資產總額：</span>
+                <span id="disp_planA_assets">0</span>
+            </div>
+            <div class="highlight-row">
+                <span>原本遺產稅：</span>
+                <span style="color:var(--loss-color); font-weight:bold;" id="disp_planA_tax">0</span>
+            </div>
+            <div class="result-row" style="margin-top:auto; border-top:2px dashed #ccc; padding-top:10px;">
+                <span style="font-size:1.1em; font-weight:bold;">實際繼承金額</span>
+            </div>
+            <div style="text-align:right; font-size:1.4em; font-weight:bold; color:#2c3e50;" id="disp_planA_legacy">0</div>
+        </div>
+
+        <div class="card right">
+            <div class="card-title">方案 B：保險規劃</div>
+            <div class="result-row">
+                <span>剩餘應稅資產：</span>
+                <span id="disp_planB_assets">0</span>
+            </div>
+            <div class="highlight-row">
+                <span>🔻 降低後遺產稅：</span>
+                <span style="color:var(--loss-color); font-weight:bold;" id="disp_planB_tax">0</span>
+            </div>
+            <div class="result-row">
+                <span>+ 保險理賠 (免稅)：</span>
+                <span style="color:var(--benefit-color); font-weight:bold;" id="disp_planB_coverage">0</span>
+            </div>
+            <div class="result-row" style="margin-top:auto; border-top:2px dashed #ccc; padding-top:10px;">
+                <span style="font-size:1.1em; font-weight:bold;">實際繼承金額</span>
+            </div>
+            <div style="text-align:right; font-size:1.4em; font-weight:bold; color:var(--benefit-color);" id="disp_planB_legacy">0</div>
+        </div>
+    </div>
+
+    <div class="summary-bar">
+        規劃總效益 (多留給家人的錢)
+        <span class="summary-value" id="totalBenefit">+ 0</span>
+    </div>
+</div>
+
+<script>
+    // === 設定 ===
+    const CONSTANTS = {
+        EXEMPTION: 13330000,
+        SPOUSE: 5530000,
+        CHILD: 560000,
+        PARENT: 1380000,
+        DISABILITY: 6930000,
+        FUNERAL: 1380000
+    };
+    
+    // 定義單位換算 (1萬元 = 10000元)
+    const UNIT_WAN = 10000;
+
+    function formatMoney(num) {
+        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    function updateAll() {
+        // 1. 取得 Part 1 輸入 (注意：這裡將萬元轉換為元)
+        // input 5000 -> 5000 * 10000 = 50,000,000
+        let assetsInput = parseFloat(document.getElementById('calc_assets').value) || 0;
+        let assets = assetsInput * UNIT_WAN;
+        
+        let giftsInput = parseFloat(document.getElementById('calc_gifts').value) || 0;
+        let gifts = giftsInput * UNIT_WAN;
+        
+        let totalGrossEstate = assets + gifts; // A. 遺產總額
+
+        // 2. 計算扣除額
+        let deductionSum = CONSTANTS.FUNERAL;
+        if (document.getElementById('calc_spouse').checked) deductionSum += CONSTANTS.SPOUSE;
+        deductionSum += (parseInt(document.getElementById('calc_children').value) || 0) * CONSTANTS.CHILD;
+        deductionSum += (parseInt(document.getElementById('calc_parents').value) || 0) * CONSTANTS.PARENT;
+        deductionSum += (parseInt(document.getElementById('calc_disabled').value) || 0) * CONSTANTS.DISABILITY;
+        
+        // 其他扣除額也是萬元單位
+        let otherInput = parseFloat(document.getElementById('calc_other').value) || 0;
+        deductionSum += (otherInput * UNIT_WAN);
+
+        let totalDeductions = deductionSum + CONSTANTS.EXEMPTION; // B. 免稅額+扣除額
+
+        // 3. 計算 【方案 A】 稅額
+        let netEstateA = totalGrossEstate - totalDeductions;
+        if (netEstateA < 0) netEstateA = 0;
+        let taxA = calculateTaxFromNet(netEstateA);
+
+        // 4. 更新 Part 1 UI
+        document.getElementById('res_grossEstate').innerText = formatMoney(totalGrossEstate);
+        document.getElementById('res_deductions').innerText = formatMoney(totalDeductions);
+        document.getElementById('res_netEstate').innerText = formatMoney(netEstateA);
+        document.getElementById('res_finalTax').innerText = formatMoney(taxA);
+        updateBracketHighlight(netEstateA, totalGrossEstate);
+
+        // 5. 取得 Part 2 保費與理賠 (萬元單位)
+        let premiumInput = parseFloat(document.getElementById('plan_premium').value) || 0;
+        let premium = premiumInput * UNIT_WAN;
+        
+        let coverageInput = parseFloat(document.getElementById('plan_coverage').value) || 0;
+        let coverage = coverageInput * UNIT_WAN;
+
+        // 6. 計算 【方案 B】 稅額 (資產搬移)
+        let assetsB = totalGrossEstate - premium;
+        let netEstateB = assetsB - totalDeductions;
+        if (netEstateB < 0) netEstateB = 0;
+        let taxB = calculateTaxFromNet(netEstateB);
+
+        // 7. 更新 Part 2 UI
+        document.getElementById('plan_assets').value = formatMoney(totalGrossEstate);
+        document.getElementById('plan_oldTax').value = formatMoney(taxA);
+        document.getElementById('plan_newTax').value = formatMoney(taxB);
+
+        // 繼承金額計算
+        let legacyA = totalGrossEstate - taxA;
+        let legacyB = (assetsB - taxB) + coverage;
+        let benefit = legacyB - legacyA;
+
+        // 比較卡片
+        document.getElementById('disp_planA_assets').innerText = formatMoney(totalGrossEstate);
+        document.getElementById('disp_planA_tax').innerText = "-" + formatMoney(taxA);
+        document.getElementById('disp_planA_legacy').innerText = formatMoney(Math.round(legacyA));
+
+        document.getElementById('disp_planB_assets').innerText = formatMoney(assetsB);
+        document.getElementById('disp_planB_tax').innerText = "-" + formatMoney(taxB);
+        document.getElementById('disp_planB_coverage').innerText = "+" + formatMoney(coverage);
+        document.getElementById('disp_planB_legacy').innerText = formatMoney(Math.round(legacyB));
+
+        let benefitEl = document.getElementById('totalBenefit');
+        benefitEl.innerText = (benefit >= 0 ? "+" : "") + formatMoney(Math.round(benefit));
+        benefitEl.style.color = benefit >= 0 ? "#f1c40f" : "#c0392b";
+    }
+
+    function calculateTaxFromNet(netEstate) {
+        let tax = 0;
+        if (netEstate <= 50000000) {
+            tax = netEstate * 0.10;
+        } else if (netEstate <= 100000000) {
+            tax = (netEstate * 0.15) - 2500000;
+        } else {
+            tax = (netEstate * 0.20) - 7500000;
+        }
+        return Math.round(tax);
+    }
+
+    function updateBracketHighlight(netEstate, totalGrossEstate) {
+        ['bracket-1', 'bracket-2', 'bracket-3'].forEach(id => document.getElementById(id).classList.remove('active-row'));
+        
+        if (netEstate <= 50000000) {
+            if(totalGrossEstate > 0) document.getElementById('bracket-1').classList.add('active-row');
+        } else if (netEstate <= 100000000) {
+            document.getElementById('bracket-2').classList.add('active-row');
+        } else {
+            document.getElementById('bracket-3').classList.add('active-row');
+        }
+    }
+
+    updateAll();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>勞保年金進階試算：提早退休與總額分析</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #27ae60;
+            --warning-color: #e67e22;
+            --danger-color: #c0392b;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px; /* 加寬以容納新表格 */
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 25px;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .input-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            background-color: #34495e;
+        }
+
+        /* Result Section */
+        #resultArea {
+            display: none;
+            margin-top: 30px;
+            border-top: 2px solid #eee;
+            padding-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.95rem;
+        }
+
+        th, td {
+            padding: 12px 8px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background-color: #2c3e50;
+            color: white;
+            font-weight: normal;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .highlight-row {
+            background-color: #e8f6f3 !important;
+            font-weight: bold;
+            border: 2px solid var(--accent-color);
+        }
+
+        .money-col {
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .total-col {
+            color: var(--danger-color);
+            background-color: #fff5f5;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: white;
+        }
+        .tag-early { background-color: var(--warning-color); }
+        .tag-late { background-color: var(--accent-color); }
+        .tag-normal { background-color: #95a5a6; }
+
+        .note {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            margin-top: 20px;
+            line-height: 1.6;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>勞保年金試算：年資增長 vs 提早/延後請領</h1>
+
+    <div class="input-grid">
+        <div class="form-group">
+            <label for="salary">最高60個月平均薪資</label>
+            <input type="number" id="salary" value="45800" placeholder="例如：45800">
+        </div>
+        <div class="form-group">
+            <label for="years">目前累積年資 (年)</label>
+            <input type="number" id="years" value="25" step="0.5" placeholder="例如：25">
+        </div>
+        <div class="form-group">
+            <label for="age">預計開始請領年齡 (歲)</label>
+            <input type="number" id="age" value="60" placeholder="法定為65歲">
+        </div>
+    </div>
+
+    <button class="btn" onclick="calculateAll()">開始分析比較</button>
+
+    <div id="resultArea">
+        <h3>📊 試算結果與未來模擬</h3>
+        <p style="text-align:center; color:#666;">假設法定退休年齡為 65 歲 (民國51年次後出生適用)</p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>情境</th>
+                    <th>請領<br>年齡</th>
+                    <th>總年資</th>
+                    <th>增減給<br>比例</th>
+                    <th>預估月領</th>
+                    <th>領到70歲<br>累積總額</th>
+                    <th>領到75歲<br>累積總額</th>
+                </tr>
+            </thead>
+            <tbody id="projectionTableBody">
+                </tbody>
+        </table>
+
+        <div class="note">
+            <strong>💡 分析重點：</strong><br>
+            1. <strong>提早請領 (減給年金)</strong>：每提早1年扣4%，最多提早5年(扣20%)。<br>
+            2. <strong>延後請領 (展延年金)</strong>：每延後1年加4%，最多延後5年(加20%)。<br>
+            3. <strong>累積總額</strong> = 月領金額 × 領取月數。若「領到70歲」顯示 $0，代表該情境下您70歲時尚未開始領取或剛開始領。<br>
+            4. 此試算以 B 式公式 (年資×1.55%) 為主，因為對於長期投保者，B式配合展延/減給通常較為優勢。<br>
+            5. 法定退休年齡設定為65歲為基準。
+        </div>
+    </div>
+</div>
+
+<script>
+    const STANDARD_RETIRE_AGE = 65;
+
+    function formatCurrency(num) {
+        return new Intl.NumberFormat('zh-TW', { style: 'currency', currency: 'TWD', minimumFractionDigits: 0 }).format(num);
+    }
+
+    function calculateAll() {
+        // 1. Get Inputs
+        const salary = parseFloat(document.getElementById('salary').value);
+        const currentYears = parseFloat(document.getElementById('years').value);
+        const startAge = parseFloat(document.getElementById('age').value);
+
+        if (isNaN(salary) || isNaN(currentYears) || isNaN(startAge)) {
+            alert("請輸入完整的數字資料");
+            return;
+        }
+
+        const tbody = document.getElementById('projectionTableBody');
+        tbody.innerHTML = '';
+        document.getElementById('resultArea').style.display = 'block';
+
+        // Scenarios: Current, +1 year, +3 years, +5 years, Wait until 65 (if current < 65)
+        // We simulate that if you add seniority, you are also getting older by that amount.
+        
+        const scenarios = [0, 1, 2, 3, 5, 10];
+        
+        scenarios.forEach((addYears, index) => {
+            const projectedAge = startAge + addYears;
+            const projectedSeniority = currentYears + addYears;
+
+            // Calculate Base Pension (Formula B usually applies for reduction/increase logic mostly)
+            // B式： Salary * Seniority * 1.55%
+            const baseAmount = salary * projectedSeniority * 0.0155;
+
+            // Calculate Coefficient (Early or Late)
+            // Limit age diff to +/- 5 years for calculation
+            let ageDiff = projectedAge - STANDARD_RETIRE_AGE; 
+            
+            let percentage = 0;
+            let statusTag = '';
+
+            if (ageDiff < -5) ageDiff = -5; // Max early 5 years
+            if (ageDiff > 5) ageDiff = 5;   // Max delayed 5 years
+
+            if (ageDiff < 0) {
+                // Early
+                percentage = ageDiff * 4; // e.g. -20
+                statusTag = `<span class="tag tag-early">提早 ${Math.abs(ageDiff)}年 (-${Math.abs(percentage)}%)</span>`;
+            } else if (ageDiff > 0) {
+                // Delayed
+                percentage = ageDiff * 4; // e.g. +20
+                statusTag = `<span class="tag tag-late">延後 ${Math.abs(ageDiff)}年 (+${Math.abs(percentage)}%)</span>`;
+            } else {
+                statusTag = `<span class="tag tag-normal">法定年齡</span>`;
+            }
+
+            // Calculate Final Monthly Amount
+            const multiplier = 1 + (percentage / 100);
+            let monthlyPension = Math.round(baseAmount * multiplier);
+
+            // Special check: If age is too young (below 60), can they claim? 
+            // Currently law allows claiming 5 years early (60). If input is 50, it's invalid really, but we calculate as if 60 is min.
+            // Let's assume input is valid or warn visually if < 60.
+            let validRow = true;
+            if (projectedAge < 60) {
+                statusTag = `<span class="tag" style="background:#333">未達請領門檻</span>`;
+                monthlyPension = 0;
+                validRow = false; // logic placeholder
+            }
+
+            // Calculate Total Received by Age 70
+            let total70 = 0;
+            if (projectedAge < 70) {
+                total70 = monthlyPension * (70 - projectedAge) * 12;
+            }
+
+            // Calculate Total Received by Age 75
+            let total75 = 0;
+            if (projectedAge < 75) {
+                total75 = monthlyPension * (75 - projectedAge) * 12;
+            }
+
+            // Styling for current scenario
+            const rowClass = (index === 0) ? 'highlight-row' : '';
+            const scenarioName = (addYears === 0) ? '目前狀態' : `再保 ${addYears} 年`;
+
+            const row = `
+                <tr class="${rowClass}">
+                    <td>${scenarioName}</td>
+                    <td>${projectedAge} 歲</td>
+                    <td>${projectedSeniority} 年</td>
+                    <td style="font-size:0.85rem">${statusTag}</td>
+                    <td class="money-col">${formatCurrency(monthlyPension)}</td>
+                    <td class="total-col">${formatCurrency(total70)}</td>
+                    <td class="total-col">${formatCurrency(total75)}</td>
+                </tr>
+            `;
+
+            tbody.innerHTML += row;
+        });
+    }
+</script>
+
+</body>
+</html>

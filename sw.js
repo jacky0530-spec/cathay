@@ -7,6 +7,10 @@ const urlsToCache = [
   'manifest.json',
   'icon-192.png',
   'icon-512.png'
+  'calc_labor.html',  // 新增
+  'calc_combo.html',  // 新增
+  'calc_retire.html', // 新增
+  'calc_plan.html',   // 新增
 ];
 
 // 安裝 Service Worker
