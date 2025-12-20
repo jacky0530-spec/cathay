@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>國泰人壽月月滿溢 - 配息模擬試算</title>
+    <style>
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1100px; /* 加寬以容納分開顯示的欄位 */
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            border-top: 6px solid #00994e;
+            position: relative;
+        }
+        
+        h1 {
+            color: #00994e;
+            text-align: center;
+            font-size: 26px;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .input-panel {
+            background-color: #f8fcf9;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #444;
+        }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+            background-color: white;
+        }
+        .input-group input:focus, .input-group select:focus {
+            border-color: #00994e;
+            outline: none;
+        }
+
+        button.calc-btn {
+            width: 100%;
+            padding: 16px;
+            background-color: #00994e;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        button.calc-btn:hover {
+            background-color: #007a3e;
+        }
+        button.calc-btn:active {
+            transform: scale(0.98);
+        }
+
+        .result-section {
+            margin-top: 30px;
+            display: block; 
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 900px) {
+            .result-grid { grid-template-columns: 1fr; }
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+        .card-header {
+            font-size: 18px;
+            font-weight: bold;
+            color: #00994e;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e8f5e9;
+        }
+        
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 15px;
+        }
+        .data-val {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .highlight-val {
+            color: #d32f2f;
+            font-size: 1.1em;
+        }
+
+        /* 配息級距表樣式 */
+        .table-container {
+            overflow-x: auto;
+        }
+        .payout-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 14px;
+            min-width: 800px;
+        }
+        .payout-table th, .payout-table td {
+            border: 1px solid #e0e0e0;
+            padding: 10px;
+            text-align: center;
+        }
+        .payout-table th {
+            background-color: #f5f5f5;
+            color: #666;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+        /* 特別強調年度配息欄位 */
+        .th-annual, .td-annual {
+            background-color: #fff8e1;
+            border-left: 2px solid #ffecb3;
+        }
+        .th-annual {
+            color: #b38600 !important;
+        }
+        
+        .payout-table tr.active-row {
+            background-color: #e8f5e9;
+            border: 2px solid #00994e;
+        }
+        .payout-table tr.active-row td {
+            color: #007a3e;
+            font-weight: bold;
+        }
+        
+        .source-note {
+            text-align: right;
+            font-size: 12px;
+            color: #888;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        .warning-box {
+            background-color: #fff5f5;
+            border: 2px solid #e53e3e;
+            color: #c53030;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 40px; 
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            box-shadow: 0 2px 5px rgba(229, 62, 62, 0.2);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(229, 62, 62, 0.4); }
+            70% { box-shadow: 0 0 0 6px rgba(229, 62, 62, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(229, 62, 62, 0); }
+        }
+        
+        .note-text {
+            font-size: 13px;
+            color: #d32f2f;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <h1>國泰人壽月月滿溢 - 配息模擬試算(可切換基金)</h1>
+    <div class="subtitle">輸入參數以預估配息與費用</div>
+
+    <div class="input-panel">
+        <div class="input-group">
+            <label for="investTWD">投入金額 (新台幣)</label>
+            <input type="number" id="investTWD" value="1000000">
+        </div>
+        <div class="input-group">
+            <label for="rateUSD">美金匯率 (即期賣出)</label>
+            <input type="number" id="rateUSD" value="31.5" step="0.01">
+        </div>
+        <div class="input-group">
+            <label for="fundSelect">投資標的 (配息帳戶)</label>
+            <select id="fundSelect" onchange="calculate()">
+                <option value="schroder">委託施羅德 - 強積金成長型</option>
+                <option value="ab">委託聯博 - 全球多元資產收益型</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label for="nav">基金淨值 (USD)</label>
+            <input type="number" id="nav" value="10.3" step="0.01">
+        </div>
+    </div>
+
+    <button type="button" class="calc-btn" id="calcBtn">更新試算結果</button>
+    <div class="source-note">匯率參考：國泰世華銀行即期賣出匯率</div>
+
+    <div id="resultSection" class="result-section">
+        <div class="result-grid">
+            <div class="card">
+                <div class="card-header">📊 投資明細</div>
+                <div class="data-row">
+                    <span>原始投入：</span>
+                    <span class="data-val" id="dispTWD">1,000,000 元</span>
+                </div>
+                <div class="data-row">
+                    <span>換算美金本金：</span>
+                    <span class="data-val" id="dispUSD">$31,746.03</span>
+                </div>
+                <div class="data-row">
+                    <span>取得單位數：</span>
+                    <span class="data-val" id="dispUnits">3,082.14 單位</span>
+                </div>
+                <div style="margin-top:10px; font-size:13px; color:#666; border-top:1px dashed #ccc; padding-top:8px;">
+                    *本金未扣除相關費用，僅做匯率換算參考。
+                </div>
+            </div>
+
+            <div class="card" style="border-left: 4px solid #fbc02d;">
+                <div class="card-header" style="color: #f57f17;">💰 費用預估 (前3年行政費)</div>
+                <div class="data-row">
+                    <span>每月費率：</span>
+                    <span class="data-val">0.1% (帳戶價值)</span>
+                </div>
+                <div class="data-row">
+                    <span>每年預估費用：</span>
+                    <span class="data-val" id="feeYearly">12,000 元</span>
+                </div>
+                <div class="data-row" style="background:#fffde7; padding:5px; border-radius:4px;">
+                    <span>3年總費用合計：</span>
+                    <span class="data-val highlight-val" id="feeTotal">36,000 元</span>
+                </div>
+                <div style="margin-top:10px; font-size:13px; color:#666;">
+                    *費用以目前淨值估算，實際依每月帳戶價值變動。第4年起行政費為0%。
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 20px; border-left: 4px solid #00994e;">
+            <div class="card-header">💵 配息機制與試算</div>
+            
+            <div class="data-row">
+                <span>選擇帳戶：</span>
+                <span class="data-val" id="selectedFundName">施羅德</span>
+            </div>
+            <div class="data-row">
+                <span>目前淨值：</span>
+                <span class="data-val" style="font-size:1.2em;" id="currentNav">10.3</span>
+            </div>
+            <div class="data-row">
+                <span>符合級距：</span>
+                <span class="data-val highlight-val" id="matchLevel">--</span>
+            </div>
+            
+            <div class="table-container">
+                <table class="payout-table">
+                    <thead>
+                        <tr>
+                            <th width="15%">淨值區間 (USD)</th>
+                            <th width="15%">每月撥回 (USD)<br><span style="font-size:12px; font-weight:normal;">(含固定+不定期)</span></th>
+                            <th width="15%" class="th-annual">年度加碼 (USD)<br><span style="font-size:12px; font-weight:normal;">(僅12月1日且達標)</span></th>
+                            <th width="25%" style="background-color: #e8f5e9; color: #007a3e;">預估每月配息 (台幣)<br><span style="font-size:12px; font-weight:normal;">(不含年度加碼)</span></th>
+                            <th width="25%" class="th-annual">預估年度加碼 (台幣)<br><span style="font-size:12px; font-weight:normal;">(僅12月一次性)</span></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        </tbody>
+                </table>
+            </div>
+
+            <div id="abNote" class="note-text" style="display:none;">
+                * 注意：聯博帳戶之「年度加碼撥回 (0.1 USD)」僅限於每年12月第一個資產評價日，且當日淨值 ≧ 10.2 時才會發放。非12月或淨值未達標則不發放。
+            </div>
+
+            <div style="background-color: #f1f8f6; padding: 15px; border-radius: 8px; margin-top: 15px; border: 1px dashed #00994e;">
+                <div class="data-row">
+                    <span>目前淨值對應 - 預估每月配息 (台幣)：</span>
+                    <span class="data-val highlight-val" style="font-size:1.3em;" id="monthlyPayoutTWD">0 元</span>
+                </div>
+                <div class="data-row">
+                    <span>目前淨值對應 - 預估年化總配息 (台幣)：</span>
+                    <span class="data-val highlight-val" style="font-size:1.3em;" id="annualPayoutTotalTWD">0 元</span>
+                </div>
+                <div style="font-size: 12px; color: #666; margin-top: 5px; text-align: right;">
+                    (年化總配息 = 每月配息x12 + 預估年度加碼x1)
+                </div>
+                <div class="data-row" style="margin-top:10px; border-top:1px solid #ddd; padding-top:10px;">
+                    <span>預估年化配息率 (台幣)：</span>
+                    <span class="data-val" id="annualYield">0.00%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="warning-box">
+        ⚠️ 警語：本試算畫面僅供內部教育訓練，實際數值請按照保單條款為準。
+    </div>
+</div>
+
+<script>
+    function formatMoney(num) {
+        return num.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+    
+    function formatMoneyUSD(num) {
+        return num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    // 定義各投資帳戶的配息規則
+    // monthlyUnit: 每月合計撥回 (固定+不定期)
+    // annualUnit: 年度特別撥回 (僅特定時間)
+    const fundRules = {
+        'schroder': {
+            name: '委託施羅德 - 強積金成長型',
+            type: 'monthly_only', // 主要是月配
+            tiers: [
+                { limit: 10.3, text: "≧ 10.3", monthlyUnit: 0.12501, annualUnit: 0 },
+                { limit: 10.2, text: "10.2 ≦ 淨值 < 10.3", monthlyUnit: 0.08334, annualUnit: 0 },
+                { limit: 8.0, text: "8.0 ≦ 淨值 < 10.2", monthlyUnit: 0.04167, annualUnit: 0 },
+                { limit: 0, text: "< 8.0", monthlyUnit: 0, annualUnit: 0 }
+            ]
+        },
+        'ab': {
+            name: '委託聯博 - 全球多元資產收益型',
+            type: 'hybrid', // 月配+年配
+            tiers: [
+                { 
+                    limit: 10.2, 
+                    text: "≧ 10.2", 
+                    monthlyUnit: 0.08334, // 固定0.04167 + 月加碼0.04167
+                    annualUnit: 0.1,      // 12月加碼
+                    annualText: "0.1 (12月限定)"
+                },
+                { 
+                    limit: 8.0, 
+                    text: "8.0 ≦ 淨值 < 10.2", 
+                    monthlyUnit: 0.04167, // 僅固定
+                    annualUnit: 0,
+                    annualText: "-"
+                },
+                { 
+                    limit: 0, 
+                    text: "< 8.0", 
+                    monthlyUnit: 0, 
+                    annualUnit: 0,
+                    annualText: "-"
+                }
+            ]
+        }
+    };
+
+    function calculate() {
+        const twd = parseFloat(document.getElementById('investTWD').value) || 0;
+        const rate = parseFloat(document.getElementById('rateUSD').value) || 0;
+        const nav = parseFloat(document.getElementById('nav').value) || 0;
+        const fundKey = document.getElementById('fundSelect').value;
+
+        if(twd <= 0 || rate <= 0 || nav <= 0) {
+            return;
+        }
+
+        const usd = twd / rate;
+        const units = usd / nav;
+        const currentFund = fundRules[fundKey];
+
+        // 顯示基本資料
+        document.getElementById('dispTWD').innerText = formatMoney(twd) + " 元";
+        document.getElementById('dispUSD').innerText = "$ " + formatMoneyUSD(usd);
+        document.getElementById('dispUnits').innerText = formatMoneyUSD(units) + " 單位";
+        document.getElementById('selectedFundName').innerText = currentFund.name;
+        document.getElementById('currentNav').innerText = nav;
+
+        // 顯示聯博專屬提示
+        const abNote = document.getElementById('abNote');
+        if (fundKey === 'ab') {
+            abNote.style.display = 'block';
+        } else {
+            abNote.style.display = 'none';
+        }
+
+        // 費用計算
+        const monthlyFeeUSD = usd * 0.001;
+        const yearlyFeeTWD = monthlyFeeUSD * 12 * rate;
+        const totalFeeTWD = yearlyFeeTWD * 3;
+
+        document.getElementById('feeYearly').innerText = formatMoney(yearlyFeeTWD) + " 元";
+        document.getElementById('feeTotal').innerText = formatMoney(totalFeeTWD) + " 元";
+
+        // 動態繪製表格
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = ""; 
+
+        let userMonthlyPayoutTWD = 0;
+        let userAnnualOneOffTWD = 0;
+        let matchText = "";
+        let matched = false;
+
+        currentFund.tiers.forEach((tier) => {
+            // 計算 Monthly TWD
+            const monthlyTWD = tier.monthlyUnit * units * rate;
+            // 計算 Annual One-off TWD
+            const annualOneOffTWD = tier.annualUnit * units * rate;
+
+            const tr = document.createElement('tr');
+            
+            // 判斷當前區間
+            let isCurrentRow = false;
+            if (!matched) {
+                if (nav >= tier.limit) {
+                    isCurrentRow = true;
+                    matched = true;
+                    matchText = tier.text;
+                    userMonthlyPayoutTWD = monthlyTWD;
+                    userAnnualOneOffTWD = annualOneOffTWD;
+                    
+                    if (tier.monthlyUnit === 0) matchText += " (無配息)";
+                    else matchText += " (符合)";
+                }
+            }
+
+            if (isCurrentRow) {
+                tr.classList.add('active-row');
+            }
+
+            // 處理年度欄位顯示文字
+            let annualDisplay = "-";
+            if (fundKey === 'ab') {
+                 // 聯博顯示具體規則或數值
+                 annualDisplay = tier.annualText || (tier.annualUnit > 0 ? tier.annualUnit : "-");
+            } else {
+                 annualDisplay = "不適用";
+            }
+
+            tr.innerHTML = `
+                <td>${tier.text}</td>
+                <td>${tier.monthlyUnit > 0 ? tier.monthlyUnit.toFixed(5) : '-'}</td>
+                <td class="td-annual">${annualDisplay}</td>
+                <td style="color: #007a3e;">${monthlyTWD > 0 ? formatMoney(monthlyTWD) : '-'}</td>
+                <td class="td-annual" style="color: #b38600; font-weight:bold;">${annualOneOffTWD > 0 ? formatMoney(annualOneOffTWD) : '-'}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById('matchLevel').innerText = matchText;
+
+        // 計算總結
+        // 年化配息總額 = (每月配息 x 12) + (年度一次性配息 x 1)
+        const totalAnnualPayoutTWD = (userMonthlyPayoutTWD * 12) + userAnnualOneOffTWD;
+        const yieldRate = (totalAnnualPayoutTWD / twd) * 100;
+
+        document.getElementById('monthlyPayoutTWD').innerText = formatMoney(userMonthlyPayoutTWD) + " 元";
+        document.getElementById('annualPayoutTotalTWD').innerText = formatMoney(totalAnnualPayoutTWD) + " 元";
+        document.getElementById('annualYield').innerText = yieldRate.toFixed(2) + "%";
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const btn = document.getElementById('calcBtn');
+        if (btn) {
+            btn.addEventListener('click', calculate);
+        }
+        calculate();
+    });
+</script>
+
+</body>
+</html>

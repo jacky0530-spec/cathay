@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>國泰人壽手術險全系列進化比較表</title>
+    <style>
+        /* 全局設定 */
+        body { font-family: "Microsoft JhengHei", "Heiti TC", sans-serif; padding: 20px; background-color: #f0f4f8; color: #333; }
+        
+        /* 標題區 */
+        h2 { text-align: center; color: #2c3e50; margin-bottom: 5px; font-size: 1.8em; }
+        .subtitle { text-align: center; color: #7f8c8d; margin-bottom: 25px; font-size: 1em; }
+
+        /* 表格容器 */
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        /* 表格本體 */
+        table { width: 100%; border-collapse: collapse; min-width: 1400px; }
+        
+        /* 表頭 */
+        th { 
+            background-color: #34495e; 
+            color: #ffffff; 
+            padding: 18px 12px; 
+            text-align: left; 
+            white-space: nowrap;
+            position: sticky; 
+            top: 0; 
+            z-index: 100;
+            font-size: 1.05em;
+            letter-spacing: 0.5px;
+        }
+        
+        /* 表格內容 */
+        td { 
+            padding: 16px 12px; 
+            border-bottom: 1px solid #ecf0f1; 
+            vertical-align: top;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+
+        tr:nth-child(even) { background-color: #fdfdfd; }
+        tr:hover { background-color: #f1f8ff; transition: 0.2s; }
+
+        /* --- 特色標籤與高亮樣式 --- */
+        
+        /* 特別理賠項目區塊 */
+        .special-section {
+            background-color: #fffcfc;
+            border-left: 4px solid #e74c3c;
+            padding: 8px 12px;
+            border-radius: 0 6px 6px 0;
+            margin: -5px 0;
+        }
+        
+        /* 重點文字顏色 */
+        .hl-red { color: #c0392b; font-weight: bold; display: block; margin-bottom: 3px; } /* 重大疾病 */
+        .hl-blue { color: #2980b9; font-weight: bold; display: block; margin-bottom: 3px; } /* 意外 */
+        .hl-green { color: #27ae60; font-weight: bold; display: block; margin-bottom: 3px; } /* 增額/外溢 */
+        
+        /* 標籤 Badge */
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        .badge-life { background-color: #e8f6f3; color: #16a085; border: 1px solid #16a085; }
+        .badge-term { background-color: #fff7e6; color: #d35400; border: 1px solid #d35400; }
+
+        /* 處置與牙齒狀態 */
+        .stat-high { color: #e74c3c; font-weight: bold; font-size: 1.1em; }
+        .stat-std { color: #95a5a6; }
+        .stat-none { color: #bdc3c7; font-style: italic; }
+        
+        .dental-broad { color: #27ae60; font-weight: bold; }
+        .dental-special { color: #d35400; font-weight: bold; background-color: #fef9e7; padding: 2px 6px; border-radius: 4px; }
+        .dental-narrow { color: #95a5a6; font-size: 0.9em; }
+
+        /* 欄位字體調整 */
+        .col-date { font-family: Consolas, monospace; font-weight: bold; color: #7f8c8d; }
+        .col-name { font-weight: bold; color: #2c3e50; font-size: 1.1em; }
+
+        .footer-note { max-width: 1000px; margin: 20px auto; font-size: 0.9em; color: #666; line-height: 1.6; }
+    </style>
+</head>
+<body>
+
+    <h2>國泰人壽手術險全系列比較表</h2>
+    <div class="subtitle">排序：商品停售日 (舊 ➔ 新) | 基準：日額/保額 1,000元 | 資料來源：各商品保單條款</div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th width="8%">停售日</th>
+                    <th width="12%">商品名稱</th>
+                    <th width="8%">類型</th>
+                    <th width="20%">核心特色</th>
+                    <th width="27%">特別理賠項目 (重點標示)</th>
+                    <th width="10%">特定處置</th>
+                    <th width="15%">牙齒手術定義</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="col-date">99/06/30</td>
+                    <td class="col-name">安順 (YI)</td>
+                    <td><span class="badge badge-life">終身</span></td>
+                    <td>早期的手術+重疾二合一商品，架構簡單。</td>
+                    <td class="special-section">
+                        <span class="hl-red">★ 重大疾病/特定傷病：10萬 (100倍)</span>
+                        <span class="hl-red">★ 重大手術慰問金：2.5萬~4萬</span>
+                    </td>
+                    <td class="stat-none">無 (或僅縫合)</td>
+                    <td class="dental-narrow">❌ 窄 (2-2-7)</td>
+                </tr>
+
+                <tr>
+                    <td class="col-date">101/06/30</td>
+                    <td class="col-name">新安順 (E6)</td>
+                    <td><span class="badge badge-life">終身</span></td>
+                    <td>安順系列改版，維持重疾給付特色。</td>
+                    <td class="special-section">
+                        <span class="hl-red">★ 重大疾病/特定傷病：10萬 (100倍)</span>
+                        <span class="hl-red">★ 重大手術慰問金：2.5萬~4萬</span>
+                    </td>
+                    <td class="stat-none">無 (或僅縫合)</td>
+                    <td class="dental-narrow">❌ 窄 (2-2-7)</td>
+                </tr>
+
+                <tr>
+                    <td class="col-date">104/12/31</td>
+                    <td class="col-name">真安順 (L6)</td>
+                    <td><span class="badge badge-life">終身</span></td>
+                    <td>經典熱銷款，含無理賠增值與特定處置。</td>
+                    <td class="special-section">
+                        <span class="hl-red">★ 重大疾病/特定傷病：10萬 (100倍)</span>
+                        <span class="hl-red">★ 重大手術慰問金：2.5萬~4萬</span>
+                        <span>▲ 無理賠增值：20%~50%</span>
+                    </td>
+                    <td class="stat-std">20 項</td>
+                    <td class="dental-narrow">❌ 窄 (2-2-7)</td>
+                </tr>
+
+                <tr>
+                    <td class="col-date">108/12/31</td>
+                    <td class="col-name">新真安順 (L62)</td>
+                    <td><span class="badge badge-life">終身</span></td>
+                    <td>延續 L6 架構，條款微調。</td>
+                    <td class="special-section">
+                        <span class="hl-red">★ 重大疾病/特定傷病：10萬 (100倍)</span>
+                        <span class="hl-red">★ 重大手術慰問金：2.5萬~4萬</span>
+                    </td>
+                    <td class="stat-std">20 項</td>
+                    <td class="dental-narrow">❌ 窄 (2-2-7)</td>
+                </tr>
+
+                <tr>
+                    <td class="col-date">108/12/31</td>
+                    <td class="col-name">永康定期 (R31)</td>
+                    <td><span class="badge badge-term">定期</span></td>
+                    <td>定期險 (至80歲)，保費較低，純手術保障。</td>
+                    <td>
+                        無重大疾病及慰問金。<br>
+                        專注於基礎手術醫療。
+                    </td>
+                    <td class="stat-std">20 項</td>
+                    <td class="dental-narrow">❌ 窄 (2-2-7)</td>
+                </tr>
+
+                <tr>
+                    <td class="col-date">109/06/30</td>
+                    <td class="col-name">新超安順 (L63)</td>
+                    <td><span class="badge badge-life">終身</span></td>
+                    <td><strong>安順系列高階版</strong><br>大幅擴充處置項目，牙齒保障最明確。</td>
+                    <td class="special-section">
+                        <span class="hl-red">★ 重大疾病/特定傷病：10萬 (100倍)</span>
+                        <span class="hl-red">★ 重大手術慰問金：2.5萬~4萬</span>
+                    </td>
+                    <td class="stat-high">🔥 168 項</td>
+                    <td class="dental-special">🌟 廣 (含獨立牙齒表 N)</td>
+                </tr>
+
+                <tr>
+                    <td class="col-date">109/06/30</td>
+                    <td class="col-name">永康定期 (R32)</td>
+                    <td><span class="badge badge-term">定期</span></td>
+                    <td>R31 改版，維持定期險架構。</td>
+                    <td>
+                        無重大疾病及慰問金。
+                    </td>
+                    <td class="stat-std">20 項</td>
+                    <td class="dental-narrow">❌ 窄 (2-2-7)</td>
+                </tr>
+
+                <tr>
+                    <td class="col-date">110/06/30</td>
+                    <td class="col-name">好安順 (L64)</td>
+                    <td><span class="badge badge-life">終身</span></td>
+                    <td>回歸標準安順架構，處置項目縮減回標準版。</td>
+                    <td class="special-section">
+                        <span class="hl-red">★ 重大疾病/特定傷病：10萬 (100倍)</span>
+                        <span class="hl-red">★ 重大手術慰問金：2.5萬~4萬</span>
+                    </td>
+                    <td class="stat-std">20 項</td>
+                    <td class="dental-narrow">❌ 窄 (2-2-7)</td>
+                </tr>
+
+                <tr>
+                    <td class="col-date">111/11/30</td>
+                    <td class="col-name">真順心 (L65)</td>
+                    <td><span class="badge badge-life">終身</span></td>
+                    <td><strong>意外強化版</strong><br>取消重疾給付，改強打意外保障。</td>
+                    <td class="special-section">
+                        <span class="hl-blue">★ 意外住院手術：給付 3倍 (3,000元 x 倍數)</span>
+                        <span class="hl-blue">▲ 意外縫合(含臉部)：最高 3倍</span>
+                    </td>
+                    <td class="stat-std">20 項</td>
+                    <td class="dental-broad">✅ 廣 (3-3-4-3)</td>
+                </tr>
+
+                <tr>
+                    <td class="col-date" style="color:#27ae60;">未停售</td>
+                    <td class="col-name">真康順 (L66)</td>
+                    <td><span class="badge badge-life">終身</span></td>
+                    <td><strong>外溢增額版</strong><br>保額會長大，保障範圍最廣。</td>
+                    <td class="special-section">
+                        <span class="hl-green">★ 增額係數：手術給付乘上 1.0 ~ 1.2倍</span>
+                        <span class="hl-green">★ 外溢機制：健康達標折減保費</span>
+                        <span class="hl-blue">★ 意外住院手術：給付 3倍</span>
+                    </td>
+                    <td class="stat-high">🔥 168 項</td>
+                    <td class="dental-special">🌟 廣 (含獨立牙齒表 N)</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="footer-note">
+        <p>
+            <strong>【名詞解釋】</strong><br>
+            ● <strong>3-3-4-2 (窄義)</strong>：全民健保支付標準第三部第三章第四節<strong>第二項</strong>。此定義通常排除大部分牙齒手術。<br>
+            ● <strong>3-3-4-3 (廣義)</strong>：放寬至<strong>第三項</strong>，包含牙齒移植及牙周病手術。<br>
+            ● <strong>獨立牙齒表 N</strong>：保單手術表中獨立列出「N. 牙齒」類別，保障項目最明確且豐富。<br>
+            ● <strong>特別理賠金額</strong>：以投保日額 1,000 元為計算範例。
+        </p>
+    </div>
+
+</body>
+</html>

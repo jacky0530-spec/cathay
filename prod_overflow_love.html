@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>國泰人壽滿溢康愛防癌定期健康保險（外溢型）試算</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.0"></script>
+    <style>
+        body {
+            font-family: "Microsoft JhengHei", Arial, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #009945; /* Cathay Green */
+            text-align: center;
+            border-bottom: 2px solid #009945;
+            padding-bottom: 15px;
+        }
+        .controls {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            background: #e8f5e9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #2c3e50;
+        }
+        select, input {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .chart-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        #result-box {
+            background-color: #fff8e1;
+            border-left: 5px solid #ffc107;
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+        .result-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #d35400;
+            margin-bottom: 10px;
+        }
+        .result-detail {
+            line-height: 1.6;
+        }
+        .highlight {
+            color: #c0392b;
+            font-weight: bold;
+        }
+        .premium-highlight {
+            color: #009945;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        .note {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-top: 20px;
+            text-align: center;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+        .warning-text {
+            color: #c0392b;
+            font-weight: bold;
+            font-size: 1.1em;
+            display: block;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>滿溢康愛防癌定期健康保險 (FSE) 互動試算</h1>
+
+    <div class="controls">
+        <div class="control-group">
+            <label>性別</label>
+            <select id="gender" onchange="updateChart()">
+                <option value="male">男性</option>
+                <option value="female" selected>女性</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <label>投保年齡 (0-60歲)</label>
+            <input type="number" id="age" value="40" min="0" max="60" onchange="updateChart()">
+        </div>
+        <div class="control-group">
+            <label>保險金額 (萬元)</label>
+            <input type="number" id="amount" value="100" min="10" step="10" onchange="updateChart()">
+        </div>
+    </div>
+
+    <div class="chart-container">
+        <canvas id="insuranceChart"></canvas>
+    </div>
+
+    <div id="result-box">
+        <div class="result-title" id="res-title">請點擊上方圖表查看特定年度理賠</div>
+        <div class="result-detail" id="res-detail"></div>
+    </div>
+
+    <div class="note">
+        <span class="warning-text">本試算畫面僅供內部教育訓練，實際理賠數值 請按照保單條款為準。</span>
+        *資料來源：依據國泰人壽滿溢康愛防癌定期健康保險（外溢型）DM費率表及條款繪製。<br>
+        *無理賠紀錄期間為「繳費期間(20年)+10年」，共30年。<br>
+        *第31年起（無理賠紀錄期間屆滿後），重度癌症理賠回歸「保額1倍」，不再包含保費退還。<br>
+        *圖表X軸經過比例調整：前30年佔圖表寬度65%，以呈現重點觀察期間。
+    </div>
+</div>
+
+<script>
+    // 費率表 Data Source: DM Page 4
+    const premiumRates = {
+        0: {m: 365, f: 364}, 1: {m: 375, f: 373}, 2: {m: 381, f: 378}, 3: {m: 385, f: 383}, 4: {m: 390, f: 388},
+        5: {m: 395, f: 393}, 6: {m: 400, f: 398}, 7: {m: 405, f: 404}, 8: {m: 407, f: 405}, 9: {m: 408, f: 406},
+        10: {m: 409, f: 407}, 11: {m: 423, f: 419}, 12: {m: 432, f: 427}, 13: {m: 441, f: 435}, 14: {m: 450, f: 443},
+        15: {m: 459, f: 452}, 16: {m: 469, f: 461}, 17: {m: 479, f: 470}, 18: {m: 489, f: 479}, 19: {m: 495, f: 485},
+        20: {m: 498, f: 488}, 21: {m: 516, f: 505}, 22: {m: 530, f: 517}, 23: {m: 544, f: 529}, 24: {m: 558, f: 541},
+        25: {m: 573, f: 554}, 26: {m: 588, f: 567}, 27: {m: 604, f: 580}, 28: {m: 620, f: 593}, 29: {m: 636, f: 607},
+        30: {m: 643, f: 610}, 31: {m: 666, f: 633}, 32: {m: 685, f: 652}, 33: {m: 704, f: 671}, 34: {m: 724, f: 691},
+        35: {m: 744, f: 711}, 36: {m: 765, f: 732}, 37: {m: 786, f: 754}, 38: {m: 808, f: 776}, 39: {m: 831, f: 799},
+        40: {m: 843, f: 812}, 41: {m: 877, f: 844}, 42: {m: 907, f: 872}, 43: {m: 938, f: 901}, 44: {m: 970, f: 931},
+        45: {m: 1003, f: 962}, 46: {m: 1037, f: 994}, 47: {m: 1072, f: 1027}, 48: {m: 1108, f: 1061}, 49: {m: 1145, f: 1096},
+        50: {m: 1170, f: 1125}, 51: {m: 1223, f: 1163}, 52: {m: 1273, f: 1197}, 53: {m: 1325, f: 1232}, 54: {m: 1379, f: 1268},
+        55: {m: 1436, f: 1305}, 56: {m: 1495, f: 1343}, 57: {m: 1556, f: 1382}, 58: {m: 1620, f: 1423}, 59: {m: 1687, f: 1465},
+        60: {m: 1747, f: 1498}
+    };
+
+    let chartInstance = null;
+
+    function formatCurrency(num) {
+        return new Intl.NumberFormat('zh-TW', { style: 'currency', currency: 'TWD', minimumFractionDigits: 0 }).format(num);
+    }
+
+    // 視覺座標轉換函數
+    // 0-30年 -> 0-65 (範圍65)
+    // 31-End -> 65-100 (範圍35)
+    function getVisualX(policyYear, totalYears) {
+        const thresholdYear = 30;
+        const firstSegmentWidth = 65;
+        const totalWidth = 100;
+        
+        if (policyYear <= thresholdYear) {
+            // 前30年：線性映射到 0-65
+            return (policyYear / thresholdYear) * firstSegmentWidth;
+        } else {
+            // 30年後：線性映射到 65-100
+            const remainingYears = totalYears - thresholdYear;
+            if (remainingYears <= 0) return firstSegmentWidth; // 防呆
+            
+            const offset = policyYear - thresholdYear;
+            const segmentWidth = totalWidth - firstSegmentWidth;
+            
+            return firstSegmentWidth + (offset / remainingYears) * segmentWidth;
+        }
+    }
+
+    function calculateData() {
+        const age = parseInt(document.getElementById('age').value);
+        const gender = document.getElementById('gender').value;
+        const amountWan = parseInt(document.getElementById('amount').value);
+        const amount = amountWan * 10000; 
+        
+        if (age > 60 || age < 0) {
+            alert("投保年齡需為 0-60 歲");
+            return null;
+        }
+
+        const rate = gender === 'male' ? premiumRates[age].m : premiumRates[age].f;
+        const annualPremium = rate * amountWan;
+
+        const severeCancerData = []; // 存物件 {x, y, ...}
+        const deathBenefitData = []; // 存物件 {x, y, ...}
+        // 為了方便查詢，另外存一個 Map: visualX -> dataObject
+        const dataMap = {};
+        
+        const endOfPaymentYear = 20;
+        const endOfNCRYear = 30; 
+        const totalPolicyYears = 90 - age;
+        
+        const tickValues = []; // 用於 afterBuildTicks
+
+        // 決定顯示間隔
+        let interval = 5;
+        if (age <= 20) interval = 5;
+        else if (age > 20 && age <= 30) interval = 4;
+        else interval = 5;
+
+        for (let i = 1; i <= totalPolicyYears; i++) {
+            const currentAge = age + i - 1; 
+            const policyYear = i;
+            
+            // 計算視覺座標 X
+            const vX = getVisualX(policyYear, totalPolicyYears);
+
+            // 決定是否加入刻度 (Ticks)
+            // 規則：前30年每年加；後30年依 interval 加；最後一年必加
+            let showLabel = false;
+            if (policyYear <= 30) {
+                showLabel = true;
+            } else {
+                if (policyYear % interval === 0) showLabel = true;
+                if (policyYear === totalPolicyYears) showLabel = true;
+            }
+
+            if (showLabel) {
+                tickValues.push(vX);
+            }
+            
+            // 計算理賠
+            const paidYears = Math.min(i, endOfPaymentYear);
+            const currentTotalPremiumReturn = annualPremium * paidYears * 1.02;
+
+            let severeBenefit = 0;
+            if (i <= endOfNCRYear) {
+                const baseAmount = (i === 1) ? (amount * 0.1) : amount;
+                severeBenefit = baseAmount + currentTotalPremiumReturn;
+            } else {
+                severeBenefit = amount;
+            }
+
+            let deathBenefit = 0;
+            if (i <= endOfNCRYear) {
+                deathBenefit = currentTotalPremiumReturn;
+            } else {
+                deathBenefit = 0;
+            }
+
+            // 構建數據點物件
+            const dataObj = {
+                x: vX, 
+                y: severeBenefit,
+                deathBenefit: deathBenefit,
+                policyYear: policyYear,
+                age: currentAge,
+                showPoint: showLabel // 標記是否顯示點點
+            };
+            
+            severeCancerData.push(dataObj);
+            
+            // 對於身故，我們只需要存值，圖表用上面的 dataObj 就可以查到
+            // 但為了讓 datasets 結構一致，也可存物件
+            deathBenefitData.push({ x: vX, y: deathBenefit });
+            
+            // 存入 Map 方便反查 (key 用 visualX 的字串)
+            dataMap[vX.toFixed(4)] = dataObj;
+        }
+
+        return {
+            severeCancerData,
+            deathBenefitData, // 其實只有重度癌症畫圖，身故是用來查詢
+            dataMap,
+            tickValues,
+            annualPremium,
+            endOfNCRYear,
+            endOfPaymentYear,
+            currentAge: age,
+            totalPolicyYears
+        };
+    }
+
+    function updateChart() {
+        const data = calculateData();
+        if (!data) return;
+
+        const ctx = document.getElementById('insuranceChart').getContext('2d');
+
+        if (chartInstance) {
+            chartInstance.destroy();
+        }
+
+        // 計算 Annotations 的 Visual X
+        const xPaymentEnd = getVisualX(data.endOfPaymentYear, data.totalPolicyYears);
+        const xNCREnd = getVisualX(data.endOfNCRYear, data.totalPolicyYears);
+
+        const annotations = {
+            line1: {
+                type: 'line',
+                scaleID: 'x',
+                value: xPaymentEnd,
+                borderColor: 'rgba(100, 100, 100, 0.5)',
+                borderWidth: 2,
+                borderDash: [5, 5],
+                label: {
+                    display: true,
+                    content: '繳費期滿 (20年)',
+                    position: 'start',
+                    backgroundColor: 'rgba(100, 100, 100, 0.7)'
+                }
+            },
+            line2: {
+                type: 'line',
+                scaleID: 'x',
+                value: xNCREnd,
+                borderColor: 'rgba(255, 159, 64, 0.8)',
+                borderWidth: 3,
+                label: {
+                    display: true,
+                    content: '無理賠紀錄期間屆滿 (30年)',
+                    position: 'start',
+                    backgroundColor: 'rgba(255, 159, 64, 0.8)'
+                }
+            }
+        };
+
+        chartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                datasets: [{
+                    label: '初次罹患癌症(重度) 理賠金',
+                    data: data.severeCancerData, // {x, y} array
+                    borderColor: '#009945',
+                    backgroundColor: 'rgba(0, 153, 69, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    // 點的顯示邏輯：只顯示有 Label 的點
+                    pointRadius: function(context) {
+                        const raw = context.raw; // {x, y, showPoint...}
+                        // 最後一點強制顯示
+                        const index = context.dataIndex;
+                        const isLast = index === context.dataset.data.length - 1;
+                        if (raw && (raw.showPoint || isLast)) return 3;
+                        return 0;
+                    },
+                    pointHoverRadius: function(context) {
+                        const raw = context.raw;
+                        const index = context.dataIndex;
+                        const isLast = index === context.dataset.data.length - 1;
+                        if (raw && (raw.showPoint || isLast)) return 8;
+                        return 0;
+                    },
+                    pointHitRadius: function(context) {
+                        const raw = context.raw;
+                        const index = context.dataIndex;
+                        const isLast = index === context.dataset.data.length - 1;
+                        if (raw && (raw.showPoint || isLast)) return 10;
+                        return 0;
+                    }
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: '金額 (TWD)'
+                        }
+                    },
+                    x: {
+                        type: 'linear', // 關鍵：改為線性軸
+                        min: 0,
+                        max: 100, // 固定範圍
+                        title: {
+                            display: true,
+                            text: '年齡 (前30年為重點顯示區)'
+                        },
+                        afterBuildTicks: function(axis) {
+                            // 強制設定刻度位置
+                            axis.ticks = data.tickValues.map(val => ({value: val}));
+                        },
+                        ticks: {
+                            // 將 Visual X 轉回 年齡字串
+                            callback: function(value, index, ticks) {
+                                // 由於浮點數誤差，用 toFixed 匹配 map key
+                                const key = value.toFixed(4);
+                                const dataObj = data.dataMap[key];
+                                if (dataObj) {
+                                    return dataObj.age + "歲";
+                                }
+                                return "";
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    annotation: {
+                        annotations: annotations
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: function(tooltipItems) {
+                                const raw = tooltipItems[0].raw;
+                                return `${raw.policyYear}年 (${raw.age}歲)`;
+                            },
+                            label: function(context) {
+                                return ' 重度癌症理賠: ' + formatCurrency(context.raw.y);
+                            }
+                        }
+                    }
+                },
+                onClick: (e, activeElements) => {
+                    if (activeElements.length > 0) {
+                        const element = activeElements[0];
+                        // 取得點擊到的數據點
+                        const datasetIndex = element.datasetIndex;
+                        const index = element.index;
+                        const rawData = chartInstance.data.datasets[datasetIndex].data[index];
+                        
+                        showDetail(rawData, data);
+                    }
+                }
+            }
+        });
+        
+        document.getElementById('result-box').style.display = 'none';
+    }
+
+    function showDetail(pointData, globalData) {
+        const box = document.getElementById('result-box');
+        const title = document.getElementById('res-title');
+        const detail = document.getElementById('res-detail');
+        
+        const year = pointData.policyYear;
+        const age = pointData.age;
+        const severeBenefit = pointData.y;
+        const deathBenefit = pointData.deathBenefit;
+        
+        box.style.display = 'block';
+        title.innerHTML = `保單第 ${year} 年 ( ${age} 歲 )`;
+
+        let currentYearPremium = 0;
+        let premiumNote = "";
+        
+        if (year <= globalData.endOfPaymentYear) {
+            currentYearPremium = globalData.annualPremium;
+            premiumNote = "(繳費期間內)";
+        } else {
+            currentYearPremium = 0;
+            premiumNote = "(繳費期滿，無需繳費)";
+        }
+
+        const paidYears = Math.min(year, globalData.endOfPaymentYear);
+
+        let severeCalcDesc = "";
+        if (year <= globalData.endOfNCRYear) {
+            if (year === 1) {
+                severeCalcDesc = `保額10% + ${paidYears}年保費 x 1.02`;
+            } else {
+                severeCalcDesc = `保額 + ${paidYears}年保費 x 1.02`;
+            }
+        } else {
+            severeCalcDesc = `僅理賠保額 1 倍 (無理賠紀錄期間已屆滿)`;
+        }
+
+        let htmlContent = `
+            <p>
+                <strong>該年度應繳保費：</strong> 
+                <span class="premium-highlight">${formatCurrency(currentYearPremium)}</span> 
+                <span style="font-size:0.9em; color:#666;">${premiumNote}</span>
+            </p>
+            <p style="font-size:0.9em; color:#666; margin-bottom:15px;">
+                ( 累積已繳費年度：${paidYears} 年 )
+            </p>
+            <hr style="border-top: 1px solid #ddd; margin: 15px 0;">
+            <p><strong>狀況一：初次罹患癌症 (重度)</strong><br>
+            可領取保險金：<span class="highlight">${formatCurrency(severeBenefit)}</span><br>
+            <span style="font-size:0.9em; color:#666;">(理賠計算：${severeCalcDesc})</span></p>
+        `;
+
+        if (year <= globalData.endOfNCRYear) {
+             htmlContent += `
+                <hr style="border-top: 1px dashed #ccc;">
+                <p><strong>狀況二：身故 (未罹患重度癌症)</strong><br>
+                可領取「無理賠關懷保險金」：<span class="highlight">${formatCurrency(deathBenefit)}</span><br>
+                <span style="font-size:0.9em; color:#666;">(理賠計算：${paidYears}年保費 x 1.02)</span></p>
+             `;
+        }
+
+        if (year === globalData.endOfNCRYear) {
+             htmlContent += `
+                <hr style="border-top: 2px solid #ffc107;">
+                <p><strong>⭐ 特別時間點：無理賠紀錄期間屆滿仍生存</strong><br>
+                若此時未曾罹患重度癌症，可領取「無理賠關懷保險金」：<span class="highlight">${formatCurrency(deathBenefit)}</span><br>
+                <span style="font-size:0.9em; color:#666;">(領取後契約繼續有效，保障持續至90歲，但重度癌症保險金將不再包含保費退還部分)</span></p>
+             `;
+        }
+        
+        detail.innerHTML = htmlContent;
+    }
+
+    window.onload = updateChart;
+</script>
+
+</body>
+</html>

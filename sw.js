@@ -10,7 +10,13 @@ const urlsToCache = [
   'calc_labor.html',  // 新增
   'calc_combo.html',  // 新增
   'calc_retire.html', // 新增
-  'calc_plan.html',   // 新增
+  'prod_overflow_love.html',   // 新增
+  'prod_accident.html', 
+  'prod_rider.html', 
+  'prod_surgery.html', 
+  'prod_bone.html', 
+  'prod_invest_forever.html', 
+  'prod_invest_full.html', 
 ];
 
 // 安裝 Service Worker

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-family: "Microsoft JhengHei", Arial, sans-serif;
+    font-size: 15px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+    border: 1px solid #e0e0e0;
+  }
+  th, td {
+    border: 1px solid #bdc3c7;
+    padding: 14px;
+    text-align: left;
+    vertical-align: top;
+    line-height: 1.6;
+  }
+  th {
+    background-color: #2c3e50;
+    color: white;
+    font-weight: bold;
+    text-align: center;
+    width: 12%;
+    font-size: 16px;
+  }
+  /* 差異視覺化設計 */
+  .diff-good {
+    background-color: #eafaf1; /* 綠色背景：優勢 */
+    border-left: 5px solid #2ecc71;
+    color: #117864;
+    font-weight: bold;
+  }
+  .diff-bad {
+    background-color: #fdedec; /* 紅色背景：限制/缺口 */
+    border-left: 5px solid #e74c3c;
+    color: #943126;
+    font-weight: bold;
+  }
+  .diff-neutral {
+    background-color: #ebf5fb; /* 藍色背景：新特色/中性 */
+    border-left: 5px solid #3498db;
+    color: #1a5276;
+    font-weight: bold;
+  }
+  .diff-warn {
+    background-color: #fcf3cf; /* 黃色背景：特別注意 */
+    border-left: 5px solid #f1c40f;
+    color: #7d6608;
+    font-weight: bold;
+  }
+  
+  /* 標籤樣式 */
+  .tag {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: white;
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+  }
+  .tag-green { background-color: #27ae60; }
+  .tag-red { background-color: #c0392b; }
+  .tag-blue { background-color: #2980b9; }
+  .tag-yellow { background-color: #f39c12; }
+
+  .sub-text {
+    font-size: 13px;
+    color: #555;
+    font-weight: normal;
+    display: block;
+    margin-top: 5px;
+  }
+  .header-sub {
+    font-size: 12px;
+    font-weight: normal;
+    display: block;
+    margin-top: 4px;
+    color: #bdc3c7;
+  }
+</style>
+</head>
+<body>
+
+<table>
+  <thead>
+    <tr>
+      <th>比較項目</th>
+      <th width="20%">早期世代<br><span class="header-sub">溫心 (BA)</span></th>
+      <th width="24%">中期世代<br><span class="header-sub">新溫心 (B5) / 全心 (BG)</span></th>
+      <th width="44%">新世代 (大心/真大心系列)<br><span class="header-sub">大心(B9) / 真大心(B91/B92) / 真大心+(B93)</span></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><b>門診手術<br>理賠範圍</b></td>
+      <td class="diff-bad">
+        <span class="tag tag-red">不賠</span><br>
+        <b>僅限「住院」手術</b>
+        <span class="sub-text">條款明確約定需在「住院期間」接受手術。這是早期保單最大的缺口。</span>
+      </td>
+      <td class="diff-good">
+        <span class="tag tag-green">賠</span><br>
+        <b>住院 或 門診 皆可</b>
+        <span class="sub-text">包含門診手術，且無次數限制。</span>
+      </td>
+      <td class="diff-neutral">
+        <span class="tag tag-blue">賠 (有限制)</span><br>
+        <b>住院 或 門診 皆可</b>
+        <span class="sub-text">但門診手術同一保單年度<b>限 10 次</b>。</span>
+      </td>
+    </tr>
+
+    <tr>
+      <td><b>手術定義<br>(不在附表時)</b></td>
+      <td colspan="2" class="diff-good">
+        <span class="tag tag-green">優勢</span> <b>協議理賠 (廣義)</b><br>
+        若手術不在附表，採「協議比照」辦理。<br>
+        <span class="sub-text">條款<b>未限制</b>需符合健保章節，只要是醫學認定的手術皆有爭取空間。</span>
+      </td>
+      <td class="diff-bad">
+        <span class="tag tag-red">限制</span> <b>限制健保 2-2-7</b><br>
+        若手術不在附表，<b>必須</b>符合健保支付標準特定章節：<br>
+        1. 第二部第二章第七節 (手術)<br>
+        2. 第三部第三章第四節第三項 (牙醫手術)<br>
+        <span class="sub-text" style="color:#c0392b;">※若健保歸類為「處置 (2-2-6)」，手術險無法啟動。</span>
+      </td>
+    </tr>
+
+    <tr>
+      <td><b>特定處置<br>保險金</b></td>
+      <td colspan="2" class="diff-bad">
+        <span class="tag tag-red">無</span><br>
+        無此項目。
+        <span class="sub-text">早期條款無 2-2-7 限制，部分處置有機會用「協議」爭取視為手術，但不明確。</span>
+      </td>
+      <td class="diff-neutral">
+        <span class="tag tag-blue">新增</span> <b>有</b><br>
+        明確列出常見處置項目給予理賠。<br>
+        <span class="sub-text">包含：大腸息肉切除、雷射手術、結石震波等 (同一保單年度限 10 次)。</span>
+      </td>
+    </tr>
+
+    <tr>
+      <td><b>療養金<br>(出院/手術)</b></td>
+      <td colspan="2" class="diff-good">
+        <span class="tag tag-green">有</span><br>
+        ● <b>出院療養金</b>：日額 x 0.5。<br>
+        ● <b>手術療養金</b>：手術保險金 x 50%。
+      </td>
+      <td class="diff-bad">
+        <span class="tag tag-red">無</span><br>
+        已取消此兩項給付，改為增加特定處置與創傷縫合給付。
+      </td>
+    </tr>
+
+    <tr>
+      <td><b>意外創傷<br>縫合處置</b></td>
+      <td colspan="2" class="diff-bad">
+        <span class="tag tag-red">無</span>
+      </td>
+      <td class="diff-neutral">
+        <span class="tag tag-blue">新增</span> <b>有</b><br>
+        因意外傷害需縫合，依傷口大小給付保險金。
+      </td>
+    </tr>
+
+    <tr>
+      <td><b>無理賠<br>回饋機制</b></td>
+      <td class="diff-good">
+        <span class="tag tag-green">保費優惠</span><br>
+        3年無理賠，次年保費 50%。
+      </td>
+      <td class="diff-good">
+        <span class="tag tag-green">保額增值</span><br>
+        3年無理賠，保額增值 20%~50%。
+      </td>
+      <td class="diff-neutral">
+        <span class="tag tag-blue">僅 B93 有 (外溢)</span><br>
+        <b>B9/B91/B92</b>：無。<br>
+        <b>B93</b>：達指定運動標準，次年保費折減 2%~3%。
+      </td>
+    </tr>
+
+    <tr>
+      <td><b>牙齒手術<br>限制</b></td>
+      <td colspan="2">
+        <b>協議理賠</b><br>
+        未特別限制健保章節。
+      </td>
+      <td class="diff-warn">
+        <span class="tag tag-yellow">限制</span> <b>健保 3-3-4-3</b><br>
+        若不在附表，需符合健保牙醫手術章節。一般治療 (如根管、洗牙) 不賠。
+      </td>
+    </tr>
+
+    <tr>
+      <td><b>最高<br>續保年齡</b></td>
+      <td>
+        <b>70歲</b>
+      </td>
+      <td>
+        <b>75歲</b>
+      </td>
+      <td class="diff-good">
+        提高至 <b>80 歲</b>。
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+</body>
+</html>
