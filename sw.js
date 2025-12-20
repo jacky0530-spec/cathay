@@ -2,7 +2,7 @@ const CACHE_NAME = 'cathay-app-v3';
 const urlsToCache = [
   '/',
   'index.html',
-  'page1.html',
+  'client.html',
   'auth.js',
   'manifest.json',
   'icon-192.png',
