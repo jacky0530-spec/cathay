@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>業務員薪資試算器 Pro (UI優化版)</title>
+    <style>
+        :root {
+            --primary: #2c3e50;     /* 深色標題 */
+            --action-btn: #3498db;  /* 亮藍色按鈕 */
+            --action-hover: #2980b9;
+            --secondary: #ecf0f1;
+            --accent: #e74c3c;
+            --highlight: #27ae60;
+            --psa-color: #8e44ad;
+            --text: #333;
+        }
+        body {
+            font-family: "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f4f6f9;
+            color: var(--text);
+            padding: 20px;
+            max-width: 650px;
+            margin: 0 auto;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+        h2 {
+            margin-top: 0;
+            color: var(--primary);
+            text-align: center;
+            font-size: 1.6em;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 15px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            position: relative;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        select, input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+        select:focus, input:focus {
+            border-color: var(--action-btn);
+            outline: none;
+            background-color: #fbfdff;
+        }
+        
+        /* PSA Section Styles */
+        .psa-section {
+            background-color: #f3e5f5;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e1bee7;
+            margin-bottom: 15px;
+        }
+        .psa-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            color: var(--psa-color);
+            font-weight: bold;
+        }
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+        .checkbox-wrapper input {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--psa-color);
+        }
+
+        /* FYP Badge Style */
+        .fyp-badge {
+            display: inline-block;
+            background-color: #fff8e1;
+            color: #f39c12;
+            border: 1px solid #ffe082;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.9em;
+            margin-top: 8px;
+            font-weight: bold;
+        }
+
+        /* Button Style - Updated Color */
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background-color: var(--action-btn); /* Changed to Bright Blue */
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 25px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px rgba(52, 152, 219, 0.3);
+        }
+        .btn:hover {
+            background-color: var(--action-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(52, 152, 219, 0.4);
+        }
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        /* Result Section Styles */
+        .result-header {
+            background-color: var(--primary); /* Kept Dark */
+            color: white;
+            padding: 15px;
+            border-radius: 8px 8px 0 0;
+            text-align: center;
+            font-size: 1.2em;
+            letter-spacing: 1px;
+        }
+        .result-body {
+            background-color: white;
+            border: 1px solid #eee;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            padding: 20px;
+        }
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 1.1em;
+            padding-bottom: 8px;
+            border-bottom: 1px dashed #f0f0f0;
+        }
+        .result-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .psa-row {
+            color: var(--psa-color);
+            font-weight: bold;
+            background-color: #fcf4ff;
+            padding: 8px 10px;
+            border-radius: 5px;
+            border-bottom: none;
+            margin: 5px -5px 10px -5px;
+        }
+        .total-row {
+            border-top: 2px solid #eee;
+            padding-top: 15px;
+            margin-top: 10px;
+            font-weight: bold;
+            color: var(--highlight);
+            font-size: 1.5em;
+        }
+
+        /* Comparison Table */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 0.95em;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .comparison-table th {
+            background-color: #f1f3f5;
+            color: #495057;
+            padding: 12px;
+            text-align: center;
+            border-bottom: 2px solid #dee2e6;
+        }
+        .comparison-table td {
+            padding: 12px 8px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+            background-color: white;
+        }
+        .stage-badge {
+            background-color: #95a5a6;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+        }
+        .stage-next { background-color: #e67e22; }
+        .stage-next2 { background-color: #c0392b; }
+        .stage-psa { background-color: var(--psa-color); }
+        
+        .note {
+            font-size: 0.8em;
+            color: #999;
+            margin-top: 20px;
+            text-align: center;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>💰 業務員薪資試算器 Pro</h2>
+        
+        <div class="form-group">
+            <label for="position">選擇職級</label>
+            <select id="position" onchange="updateFYP()">
+                <option value="業務主任(三)">業務主任(三) / 壽險主任(三)</option>
+                <option value="業務主任(二)" selected>業務主任(二)</option>
+                <option value="業務主任(一)">業務主任(一)</option>
+                <option value="業務襄理(二)">業務襄理(二)</option>
+                <option value="業務襄理(一)">業務襄理(一)</option>
+                <option value="業務副理">業務副理</option>
+                <option value="業務經理(二)">業務經理(二)</option>
+                <option value="業務經理(一)">業務經理(一)</option>
+                <option value="行銷總監">行銷總監 (A)(B)</option>
+                <option value="資深行銷總監">資深行銷總監 (A)(B)</option>
+            </select>
+            <div id="fyp-display" class="fyp-badge">考核基準額 (FYP): 7P</div>
+        </div>
+
+        <div class="psa-section">
+            <div class="psa-header">
+                <label class="checkbox-wrapper">
+                    <input type="checkbox" id="psa-check" onchange="togglePSA()">
+                    我是 PSA 新人 (報升一年內)
+                </label>
+            </div>
+            <div id="psa-options" style="display:none; margin-top: 10px;">
+                <label for="psa-period" style="font-size: 0.9em; margin-bottom: 5px;">目前任職期間：</label>
+                <select id="psa-period">
+                    <option value="h1">第 1 ~ 7 工作月 (H1)</option>
+                    <option value="h2">第 8 ~ 13 工作月 (H2)</option>
+                </select>
+                <div style="font-size: 0.85em; color: #666; margin-top: 8px; line-height: 1.4;">
+                    ※ 將自動計算「新人績效獎金」(假設A&H達標)
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="fyc">本月業績 FYC (元)</label>
+            <input type="text" id="fyc" placeholder="輸入金額 (例如: 42000)" inputmode="numeric">
+        </div>
+
+        <button class="btn" onclick="calculate()">計算獎金與潛力 ➔</button>
+    </div>
+
+    <div id="result-section" class="card" style="display:none;">
+        <div class="result-header">📊 本月預估獎金</div>
+        <div class="result-body">
+            <div class="result-row">
+                <span style="color:#555">達成津貼</span>
+                <span id="res-achievement" style="font-weight:bold;">0</span>
+            </div>
+            <div class="result-row">
+                <span style="color:#555">業績津貼 (<span id="res-rate">0</span>%)</span>
+                <span id="res-performance" style="font-weight:bold;">0</span>
+            </div>
+            <div class="result-row psa-row" id="psa-row" style="display:none;">
+                <span>🎯 新人績效獎金</span>
+                <span id="res-psa">0</span>
+            </div>
+            <div class="result-row" id="extra-row" style="display:none; color: #e67e22;">
+                <span>🔥 高業績加給</span>
+                <span id="res-extra" style="font-weight:bold;">0</span>
+            </div>
+            <div class="result-row total-row">
+                <span>總獎金合計</span>
+                <span id="res-total">0</span>
+            </div>
+        </div>
+
+        <h3 style="margin-top:30px; margin-bottom: 15px; color: #555; font-size: 1.1em; text-align: center; border-left: 5px solid #e67e22; display: inline-block; padding-left: 10px;">🚀 下兩階段 投報率分析</h3>
+        <table class="comparison-table" id="next-stages-table" style="display:none;">
+            <thead>
+                <tr>
+                    <th>階段</th>
+                    <th>目標 FYC</th>
+                    <th>差距</th>
+                    <th>預估總獎金</th>
+                    <th>增幅</th>
+                </tr>
+            </thead>
+            <tbody id="stages-body">
+                </tbody>
+        </table>
+        <div id="no-next-stage" style="display:none; text-align: center; padding: 20px; color: #777;">
+            已達最高級距，恭喜！🎉
+        </div>
+
+        <p class="note">
+            ※ 資料來源：113/13版業務員支給暨管理辦法。<br>
+            ※ 新人績效獎金依據文件[PSA專案]章節計算，假設 A&H 商品指標已達成(H1需1.2C)。<br>
+            ※ 金額僅供試算參考，實際發放以公司系統結算為準。
+        </p>
+    </div>
+
+    <script>
+        // --- DATA SOURCES (From provided documents) ---
+        const fypMap = {
+            '資深行銷總監': '40P', '行銷總監': '35P', '業務經理(一)': '25P',
+            '業務經理(二)': '20P', '業務副理': '15P', '業務襄理(一)': '12.5P',
+            '業務襄理(二)': '10P', '業務主任(一)': '8P', '業務主任(二)': '7P',
+            '業務主任(三)': '5P'
+        };
+
+        const achievementData = {
+            '資深行銷總監': {10:2000, 11:6200, 12:12200, 14:18200, 15:22500, 16:23200, 17:24200, 18:24700, 19:25700, 20:27200, 21:28700, 22:28700, 24:29700, 27:30700, 30:32200},
+            '行銷總監': {10:6000, 11:6000, 12:11000, 14:17000, 15:20800, 16:21500, 17:22000, 18:22500, 19:23500, 20:25000, 21:26500, 22:26500, 24:27500, 27:28500, 30:30000},
+            '業務經理(一)': {7:900, 8:2400, 9:4400, 10:6400, 11:13900, 12:15400, 14:15400, 15:15900, 16:15900, 17:16400, 18:16900, 19:17400, 20:17900, 21:17900, 22:18400, 24:18400, 27:18400, 30:18400},
+            '業務經理(二)': {7:2000, 8:4500, 9:10200, 10:11000, 11:11000, 12:11800, 14:12600, 15:12600, 16:13400, 17:13400, 18:14200, 19:14200, 20:14200, 21:14200, 22:14200, 24:14200, 27:14200, 30:14200},
+            '業務副理': {6:2100, 7:7900, 8:8400, 9:8400, 10:8900, 11:8900, 12:8900, 14:8900, 15:8900, 16:10100, 17:10100, 18:10100, 19:10100, 20:10100, 21:10100, 22:10100, 24:10100, 27:10100, 30:10100},
+            '業務襄理(一)': {5:3900, 6:6600, 7:7100, 8:7100, 9:7700, 10:7700, 11:7700, 12:7900, 14:8200, 15:8200, 16:8800, 17:8800, 18:8800, 19:8800, 20:8800, 21:8800, 22:8800, 24:8800, 27:8800, 30:8800},
+            '業務襄理(二)': {5:4700, 6:5400, 7:6100, 8:6100, 9:6800, 10:6800, 11:6800, 12:6800, 14:7500, 15:7500, 16:7500, 17:7500, 18:7500, 19:7500, 20:7500, 21:7500, 22:7500, 24:7500, 27:7500, 30:7500},
+            '業務主任(一)': {4:1500, 4.5:2400, 5:2300, 6:2700, 7:3300, 8:3300, 9:4400, 10:4400, 11:4400, 12:5100, 14:5100, 15:5100, 16:3900, 17:3900, 18:3900, 19:5100, 20:5100, 21:5100, 22:5100, 24:3900, 27:3900, 30:5100},
+            '業務主任(二)': {3.5:500, 4:2400, 4.5:2000, 5:3100, 6:3700, 7:4400, 8:4400, 9:3300, 10:3900, 11:3900, 12:3900, 14:3900, 15:3900, 16:5100, 17:5100, 18:5100, 19:3900, 20:3900, 21:3900, 22:3900, 24:5100, 27:5100, 30:3900},
+            '業務主任(三)': {2.5:500, 3:1000, 3.5:1500, 4:2000, 4.5:2500, 5:3000}
+        };
+
+        const performanceData = {
+            '資深行銷總監': {4:7, 4.5:8, 5:12, 6:14, 7:16, 8:17.5, 9:19, 10:24, 11:25, 13:26, 15:27, 20:29, 25:30, 30:32},
+            '行銷總監': {4:7, 4.5:8, 5:12, 6:14, 7:16, 8:17.5, 9:19, 10:24, 11:25, 13:26, 15:27, 20:29, 25:30, 30:32},
+            '業務經理(一)': {4:7, 4.5:8, 5:16, 6:18.5, 7:22, 8:23, 9:24, 10:24, 11:25, 13:26, 15:27, 20:28, 25:24, 30:26},
+            '業務經理(二)': {4:7, 4.5:8, 5:12, 6:21, 7:22, 8:23, 9:24, 10:24, 11:25, 13:26, 15:26, 20:26, 25:28, 30:24},
+            '業務副理': {4:7, 4.5:13.5, 5:12, 6:14, 7:22, 8:22, 9:23, 10:23, 11:24, 13:24, 15:24, 20:24, 25:26, 30:28},
+            '業務襄理(一)': {4:12.5, 4.5:13, 5:20, 6:21, 7:21, 8:22, 9:22, 10:22, 11:23, 13:23, 15:23, 20:23, 25:23, 30:23},
+            '業務襄理(二)': {3.5:5, 4:14, 4.5:14.5, 5:20, 6:21, 7:21, 8:22, 9:22, 10:22, 11:22, 13:22, 15:22, 20:22, 25:22, 30:22},
+            '業務主任(一)': {3:3.5, 3.5:4.5, 4:16, 4.5:16, 5:18, 6:19, 7:19, 8:19, 9:19},
+            '業務主任(二)': {3:8, 3.5:10, 4:14, 4.5:14, 5:16, 6:16, 7:16, 8:16, 9:16},
+            '業務主任(三)': {3:2, 3.5:3, 4:5, 4.5:5, 5:6}
+        };
+
+        // --- PSA LOGIC ---
+        function getPSABonus(fycC, period) {
+            if (period === 'h1') { // 1~7工
+                if (fycC >= 6.5) return 20000;
+                if (fycC >= 3.5) return 16000;
+                if (fycC >= 1.5) return 12000;
+            } else { // 8~13工
+                if (fycC >= 9.0) return 20000;
+                if (fycC >= 6.5) return 16000;
+                if (fycC >= 3.5) return 12000;
+                if (fycC >= 1.5) return 8000;
+            }
+            return 0;
+        }
+
+        function getPSAThresholds(period) {
+            if (period === 'h1') return [1.5, 3.5, 6.5];
+            return [1.5, 3.5, 6.5, 9.0];
+        }
+
+        // --- CORE FUNCTIONS ---
+
+        function togglePSA() {
+            const isChecked = document.getElementById('psa-check').checked;
+            document.getElementById('psa-options').style.display = isChecked ? 'block' : 'none';
+        }
+
+        function updateFYP() {
+            const pos = document.getElementById('position').value;
+            const badge = document.getElementById('fyp-display');
+            let fypVal = fypMap[pos] || '未知';
+            if (fypVal === '未知') {
+                for (let key in fypMap) {
+                    if (pos.includes(key)) { fypVal = fypMap[key]; break; }
+                }
+            }
+            badge.innerText = `考核基準額 (FYP): ${fypVal}`;
+        }
+
+        function getThresholdValue(table, position, fycC) {
+            const levels = table[position];
+            if (!levels) return 0;
+            const thresholds = Object.keys(levels).map(Number).sort((a, b) => a - b);
+            let val = 0;
+            for (let t of thresholds) {
+                if (fycC >= t) val = levels[t];
+                else break;
+            }
+            return val;
+        }
+
+        function calculateExtra(position, fycC) {
+            let baseC = 0;
+            if (position.includes('業務經理(二)')) baseC = 18;
+            else if (position.includes('業務經理(一)')) baseC = 22;
+            else if (position.includes('行銷總監')) baseC = 30; 
+            else return 0;
+
+            if (fycC > baseC) {
+                const diffC = fycC - baseC;
+                const count = Math.floor(diffC / 0.5);
+                return count * 300;
+            }
+            return 0;
+        }
+
+        // Main Calc Function
+        function calculateSingle(pos, fycInput, isPSA, psaPeriod) {
+            const fycC = fycInput / 10000;
+            
+            // Standard Bonus
+            const achievement = getThresholdValue(achievementData, pos, fycC);
+            const performanceRate = getThresholdValue(performanceData, pos, fycC);
+            const performance = Math.round(fycInput * (performanceRate / 100));
+            const extra = calculateExtra(pos, fycC);
+            
+            // PSA Bonus
+            let psaBonus = 0;
+            if (isPSA) {
+                psaBonus = getPSABonus(fycC, psaPeriod);
+            }
+
+            return {
+                total: achievement + performance + extra + psaBonus,
+                ach: achievement,
+                perf: performance,
+                rate: performanceRate,
+                extra: extra,
+                psa: psaBonus
+            };
+        }
+
+        function getFutureThresholds(pos, fycC, isPSA, psaPeriod) {
+            // 1. Standard Thresholds
+            const levels1 = achievementData[pos] || {};
+            const levels2 = performanceData[pos] || {};
+            let allT = new Set([...Object.keys(levels1), ...Object.keys(levels2)].map(Number));
+            
+            // 2. Add PSA Thresholds if applicable
+            if (isPSA) {
+                const psaT = getPSAThresholds(psaPeriod);
+                psaT.forEach(t => allT.add(t));
+            }
+
+            const sortedT = Array.from(allT).sort((a, b) => a - b);
+            
+            const future = [];
+            for (let t of sortedT) {
+                if (t > fycC + 0.01) { // 0.01 buffer for float issues
+                    future.push(t);
+                    if (future.length >= 2) break;
+                }
+            }
+            return future;
+        }
+
+        function calculate() {
+            try {
+                const pos = document.getElementById('position').value;
+                let rawInput = document.getElementById('fyc').value;
+                
+                // Clean input (remove commas and spaces)
+                rawInput = rawInput.replace(/,/g, '').trim();
+                
+                const fycInput = parseFloat(rawInput);
+                const isPSA = document.getElementById('psa-check').checked;
+                const psaPeriod = document.getElementById('psa-period').value;
+
+                if (isNaN(fycInput) || fycInput < 0) {
+                    alert("請輸入有效的業績金額 (純數字)");
+                    return;
+                }
+
+                const fycC = fycInput / 10000;
+
+                // 1. Current Calc
+                const cur = calculateSingle(pos, fycInput, isPSA, psaPeriod);
+
+                // UI Update
+                document.getElementById('res-achievement').innerText = cur.ach.toLocaleString();
+                document.getElementById('res-rate').innerText = cur.rate;
+                document.getElementById('res-performance').innerText = cur.perf.toLocaleString();
+                document.getElementById('res-total').innerText = cur.total.toLocaleString();
+                
+                // Extra Row
+                const extraRow = document.getElementById('extra-row');
+                if (cur.extra > 0) {
+                    extraRow.style.display = 'flex';
+                    document.getElementById('res-extra').innerText = cur.extra.toLocaleString();
+                } else {
+                    extraRow.style.display = 'none';
+                }
+
+                // PSA Row
+                const psaRow = document.getElementById('psa-row');
+                if (isPSA && cur.psa > 0) {
+                    psaRow.style.display = 'flex';
+                    document.getElementById('res-psa').innerText = cur.psa.toLocaleString();
+                } else if (isPSA) {
+                    psaRow.style.display = 'flex';
+                    document.getElementById('res-psa').innerText = "未達標 (0)";
+                } else {
+                    psaRow.style.display = 'none';
+                }
+
+                document.getElementById('result-section').style.display = 'block';
+                // Scroll to result on mobile
+                if(window.innerWidth < 768) {
+                    document.getElementById('result-section').scrollIntoView({behavior: 'smooth'});
+                }
+
+                // 2. Future Analysis
+                const targets = getFutureThresholds(pos, fycC, isPSA, psaPeriod);
+                const tableBody = document.getElementById('stages-body');
+                tableBody.innerHTML = '';
+                
+                if (targets.length > 0) {
+                    document.getElementById('next-stages-table').style.display = 'table';
+                    document.getElementById('no-next-stage').style.display = 'none';
+
+                    targets.forEach((tC, idx) => {
+                        const tAmt = tC * 10000;
+                        const futureRes = calculateSingle(pos, tAmt, isPSA, psaPeriod);
+                        const gap = tAmt - fycInput;
+                        const diff = futureRes.total - cur.total;
+                        
+                        let badgeClass = 'stage-next';
+                        if (idx === 1) badgeClass = 'stage-next2';
+                        // Highlight if PSA jump
+                        if (isPSA && futureRes.psa > cur.psa) badgeClass = 'stage-psa';
+                        
+                        // Handle infinite small diffs
+                        if (diff < 0) return; 
+
+                        const row = `
+                            <tr>
+                                <td><span class="stage-badge ${badgeClass}">${tC}C</span></td>
+                                <td>${tAmt.toLocaleString()}</td>
+                                <td style="color:#e74c3c; font-weight:bold;">+${gap.toLocaleString()}</td>
+                                <td>${futureRes.total.toLocaleString()}</td>
+                                <td style="color:#27ae60; font-weight:bold;">+${diff.toLocaleString()}</td>
+                            </tr>
+                        `;
+                        tableBody.insertAdjacentHTML('beforeend', row);
+                    });
+                } else {
+                    document.getElementById('next-stages-table').style.display = 'none';
+                    document.getElementById('no-next-stage').style.display = 'block';
+                }
+            } catch (e) {
+                console.error(e);
+                alert("計算發生錯誤，請檢查輸入數值是否正確");
+            }
+        }
+
+        // Init
+        updateFYP();
+    </script>
+</body>
+</html>

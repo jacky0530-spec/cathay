@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>高峰會專區</title>
+    <title>獎金與競賽專區</title>
     
     <link rel="manifest" href="manifest.json">
     <script type="module" src="auth.js"></script>
@@ -56,6 +56,7 @@
         .text-box p { margin: 0; font-size: 13px; color: #888; }
         .arrow { margin-left: auto; color: #ccc; font-weight: bold; }
 
+        /* 高峰辦法 (金色強調) */
         .highlight-gold {
             background: linear-gradient(135deg, #FFD700 0%, #FDB931 100%);
             color: #8a5a00;
@@ -66,13 +67,17 @@
         .highlight-gold .text-box p { color: #7a5e20; font-weight: 500; }
         .highlight-gold .arrow { color: rgba(0,0,0,0.3); }
 
+        /* 試算類按鈕 (藍色系) */
         .calc-style .icon-box { background: #e3f2fd; color: #1976d2; }
+        
+        /* 業務獎金按鈕 (紫色系) */
+        .bonus-style .icon-box { background: #f3e5f5; color: #8e24aa; }
 
     </style>
 </head>
 <body>
 
-    <h2>🏆 前進九州高峰會</h2>
+    <h2>💰 獎金與競賽專區</h2>
 
     <div class="grid-menu">
         
@@ -94,6 +99,15 @@
             <span class="arrow">➜</span>
         </a>
 
+        <a href="calc_business.html" class="event-btn bonus-style">
+            <div class="icon-box">💵</div>
+            <div class="text-box">
+                <h3>業務獎金試算</h3>
+                <p>輸入FYC • 預估各項津貼</p>
+            </div>
+            <span class="arrow">➜</span>
+        </a>
+
         <div style="margin-top:20px; text-align:center;">
             <img src="kyushu.jpg" 
                  style="width:100%; border-radius:12px; opacity:0.9; box-shadow:0 4px 10px rgba(0,0,0,0.1); object-fit: cover; min-height: 200px;"
@@ -108,12 +122,6 @@
         </div>
 
     </div>
-
-    <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js');
-        }
-    </script>
 
 </body>
 </html>
