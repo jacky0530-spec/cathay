@@ -1,4 +1,17 @@
-// --- 1. 引入 Firebase SDK ---
+// --- 1. 立即啟動白屏保護 (防偷看) ---
+const antiPeekStyle = document.createElement('style');
+antiPeekStyle.id = 'anti-peek-style';
+antiPeekStyle.innerHTML = "body { display: none !important; opacity: 0 !important; }";
+document.head.appendChild(antiPeekStyle);
+
+function showContent() {
+    const style = document.getElementById('anti-peek-style');
+    if (style) style.remove();
+    document.body.style.opacity = '1';
+    document.body.style.display = 'block';
+}
+
+// --- 2. 引入 Firebase SDK ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, set, update, onValue, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
@@ -14,25 +27,13 @@ const firebaseConfig = {
   measurementId: "G-2C57S9M2H5"
 };
 
+
 // 初始化 Firebase
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 // 設定：閒置 30 分鐘自動登出
 const AUTO_LOGOUT_MINUTES = 30; 
-
-// --- 立即啟動白屏保護 (防偷看) ---
-const antiPeekStyle = document.createElement('style');
-antiPeekStyle.id = 'anti-peek-style';
-antiPeekStyle.innerHTML = "body { display: none !important; opacity: 0 !important; }";
-document.head.appendChild(antiPeekStyle);
-
-function showContent() {
-    const style = document.getElementById('anti-peek-style');
-    if (style) style.remove();
-    document.body.style.opacity = '1';
-    document.body.style.display = 'block';
-}
 
 function generateUUID() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -61,7 +62,6 @@ function getUserLocation() {
                         const city = addr.city || addr.county || '';
                         const district = addr.suburb || addr.town || addr.district || '';
                         const road = addr.road || addr.street || addr.pedestrian || addr.residential || '';
-
                         let fullAddress = `${city} ${district} ${road}`.trim();
                         if (!road) fullAddress = `${city} ${district} (附近)`.trim();
                         resolve(fullAddress || "未知地點");
@@ -99,7 +99,7 @@ async function initAuth() {
     }
 }
 
-// --- 登入邏輯 ---
+// --- 登入邏輯 (🔥 已移除干擾提示) ---
 async function performLogin() {
     let isAuthorized = false;
     
@@ -123,7 +123,8 @@ async function performLogin() {
 
         if (snapshot.exists() && snapshot.val() === true) {
             
-            alert("驗證中，請允許定位權限...");
+            // 🔥 修改處：原本這裡有 alert，現在直接移除
+            // 程式會直接在背景開始定位，畫面會維持白色直到定位完成
 
             let userLocation = "讀取中...";
             try {
@@ -132,17 +133,18 @@ async function performLogin() {
                 userLocation = "定位錯誤";
             }
 
+            // 只有「失敗」的時候才跳出警告，成功的時候完全不說話
             if (userLocation === "使用者拒絕定位" || userLocation === "不支援定位" || userLocation === "定位無法使用") {
-                alert("⛔ 必須允許定位權限才能登入。");
+                alert("⛔ 必須允許定位權限才能登入。\n\n請檢查瀏覽器設定。");
                 location.reload();
                 return; 
             }
 
+            // 寫入 Firebase
             const userRef = ref(db, 'users/' + inputCode);
             const userSnapshot = await get(userRef);
             
             let finalKickCount = 0; 
-            let isKicking = 0;
             let history = []; 
 
             const now = new Date();
@@ -190,8 +192,10 @@ async function performLogin() {
             localStorage.setItem('currentUser', inputCode);
             localStorage.setItem('currentSession', newSessionID);
             
-            alert(`驗證成功！\n登入位置：${userLocation}`);
-            showContent();
+            // 🔥 修改處：這裡的 alert 也可以移除，讓登入更順暢
+            // 移除: alert(`驗證成功！\n登入位置：${userLocation}`);
+            
+            showContent(); // 打開畫面
             isAuthorized = true;
             monitorSession(inputCode, newSessionID);
             setupAutoLogout();
@@ -269,25 +273,11 @@ document.addEventListener("DOMContentLoaded", function() {
     </style>
 
     <div class="bottom-nav">
-        <a href="index.html" class="nav-item ${page === 'index.html' ? 'active' : ''}">
-            <span>🏠</span><div>首頁</div>
-        </a>
-
-        <a href="client.html" class="nav-item ${page === 'client.html' ? 'active' : ''}">
-            <span>👥</span><div>客戶</div>
-        </a>
-
-        <a href="calc.html" class="nav-item ${page === 'calc.html' ? 'active' : ''}">
-            <span>🧮</span><div>試算</div>
-        </a>
-
-        <a href="products.html" class="nav-item ${page === 'products.html' ? 'active' : ''}">
-            <span>🏥</span><div>商品</div>
-        </a>
-
-        <a href="event.html" class="nav-item ${page === 'event.html' ? 'active' : ''}">
-            <span>💰</span><div>獎金</div>
-        </a>
+        <a href="index.html" class="nav-item ${page === 'index.html' ? 'active' : ''}"><span>🏠</span><div>首頁</div></a>
+        <a href="client.html" class="nav-item ${page === 'client.html' ? 'active' : ''}"><span>👥</span><div>客戶</div></a>
+        <a href="calc.html" class="nav-item ${page === 'calc.html' ? 'active' : ''}"><span>🧮</span><div>試算</div></a>
+        <a href="products.html" class="nav-item ${page === 'products.html' ? 'active' : ''}"><span>🏥</span><div>商品</div></a>
+        <a href="event.html" class="nav-item ${page === 'event.html' ? 'active' : ''}"><span>💰</span><div>獎金</div></a>
     </div>
     `;
     
