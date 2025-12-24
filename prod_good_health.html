@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>國泰人壽 豪/好康愛 全方位保障試算</title>
+<script type="module" src="auth.js"></script>
+    <style>
+        :root {
+            --cathay-green: #008844;
+            --male-color: #1976d2;
+            --female-color: #c2185b;
+            --bg-gray: #f4f6f8;
+            --card-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", Arial, sans-serif;
+            background-color: var(--bg-gray);
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            background-color: var(--cathay-green);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+        .header h1 { margin: 0; font-size: 1.8em; }
+        .header p { margin: 8px 0 0; opacity: 0.9; }
+
+        /* Controls Grid */
+        .controls {
+            padding: 25px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            background: #fff;
+            border-bottom: 1px solid #eee;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        label { font-weight: bold; font-size: 0.95em; color: #444; }
+        
+        /* Gender Toggle */
+        .gender-toggle {
+            display: flex;
+            background: #eee;
+            border-radius: 8px;
+            padding: 4px;
+        }
+        .gender-btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1em;
+            transition: 0.3s;
+        }
+        .gender-btn.active-male { background-color: var(--male-color); color: white; }
+        .gender-btn.active-female { background-color: var(--female-color); color: white; }
+
+        select, input {
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            width: 100%;
+            box-sizing: border-box;
+            background: #fdfdfd;
+        }
+
+        /* Premium Highlight */
+        .premium-display {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            color: #1b5e20;
+            margin-top: 10px;
+        }
+        .premium-val { font-size: 2em; font-weight: 800; margin: 0 5px; }
+
+        /* Extra Benefits Section (New) */
+        .benefit-section {
+            padding: 25px;
+            background: #fff;
+        }
+        .section-title {
+            text-align: center;
+            color: var(--cathay-green);
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            display: inline-block;
+        }
+        .center-title { text-align: center; }
+
+        .benefit-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .benefit-card {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .benefit-card:hover { transform: translateY(-3px); border-color: var(--cathay-green); }
+        
+        .b-icon { font-size: 2em; margin-bottom: 10px; display: block; }
+        .b-title { font-weight: bold; color: #555; margin-bottom: 5px; font-size: 1.1em; }
+        .b-value { font-size: 1.4em; font-weight: bold; color: #333; margin: 5px 0; }
+        .b-desc { font-size: 0.85em; color: #777; line-height: 1.4; }
+
+        /* Cancer Ranking */
+        .rank-list {
+            border: 1px solid #eee;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .rank-header {
+            display: flex;
+            background: #f5f5f5;
+            padding: 12px;
+            font-weight: bold;
+            color: #666;
+        }
+        .rank-row {
+            display: flex;
+            padding: 15px 12px;
+            border-bottom: 1px solid #f9f9f9;
+            align-items: center;
+        }
+        .is-specific {
+            background-color: #fff8e1; /* Light Gold */
+            border-left: 4px solid #ffc107;
+        }
+        .is-specific .col-name { color: #e65100; font-weight: bold; }
+        .is-specific .col-payout { color: #d32f2f; font-weight: 800; font-size: 1.1em; }
+
+        .col-rank { width: 50px; text-align: center; font-weight: bold; color: #aaa; }
+        .col-name { flex: 1; }
+        .col-payout { width: 150px; text-align: right; font-weight: bold; }
+
+        .note {
+            font-size: 0.8em;
+            color: #666;
+            padding: 20px 25px;
+            background: #fafafa;
+            border-top: 1px solid #eee;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>豪/好康愛 全方位保障試算</h1>
+        <p>整合 癌症排行、特定手術、骨折保障 與 滿期保費退還</p>
+    </div>
+
+    <div class="controls">
+        <div class="control-group">
+            <label>1. 選擇商品 (性別)</label>
+            <div class="gender-toggle">
+                <button class="gender-btn active-male" id="btnMale" onclick="setGender('male')">男性 (豪康愛)</button>
+                <button class="gender-btn" id="btnFemale" onclick="setGender('female')">女性 (好康愛)</button>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label>2. 繳費年期</label>
+            <select id="term" onchange="updateAgeOptions(); render();">
+                <option value="20">20年期</option>
+                <option value="10">10年期</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label>3. 投保年齡</label>
+            <select id="age" onchange="render()">
+                </select>
+        </div>
+
+        <div class="control-group">
+            <label>4. 投保保額 (萬元)</label>
+            <input type="number" id="coverage" value="100" step="10" min="50" max="200" oninput="render()">
+        </div>
+
+        <div class="premium-display">
+            年繳保費：<span class="premium-val" id="premiumLabel">0</span> 元
+            <div style="font-size:0.8em; margin-top:5px; opacity:0.8;">(未含自動轉帳/健康促進折扣)</div>
+        </div>
+    </div>
+
+    <div class="benefit-section">
+        <div class="center-title">
+            <span class="section-title">✨ 額外加值保障</span>
+        </div>
+        
+        <div class="benefit-grid">
+            <div class="benefit-card">
+                <span class="b-icon">🩺</span>
+                <div class="b-title">特定手術保險金</div>
+                <div class="b-value" id="valSurgery">0 萬</div>
+                <div class="b-desc" id="descSurgery">針對特定部位手術定額給付</div>
+            </div>
+
+            <div class="benefit-card">
+                <span class="b-icon">🦴</span>
+                <div class="b-title">骨折保險金</div>
+                <div class="b-value" id="valFracture">最高 0 萬</div>
+                <div class="b-desc">依骨折程度給付<br>(最高保額 8%)</div>
+            </div>
+
+            <div class="benefit-card" style="border-color: #90caf9; background: #e3f2fd;">
+                <span class="b-icon">🛡️</span>
+                <div class="b-title">身故/滿期保險金</div>
+                <div class="b-value" id="valDeath" style="color:#1565c0;">約 0 萬</div>
+                <div class="b-desc">保費有去有回<br>(總繳保費 1.06倍)</div>
+            </div>
+        </div>
+
+        <div class="center-title">
+            <span class="section-title">📊 常見癌症排行理賠</span>
+        </div>
+        
+        <div class="rank-list">
+            <div class="rank-header">
+                <div class="col-rank">排行</div>
+                <div class="col-name">癌症名稱</div>
+                <div class="col-payout">預估理賠金</div>
+            </div>
+            <div id="rankContainer">
+                </div>
+        </div>
+    </div>
+
+    <div class="note">
+        <p><strong>注意事項：</strong></p>
+        <ul>
+            <li><strong>特定手術 (2%保額)：</strong> 
+                <span id="noteSurgery"></span>
+            </li>
+            <li><strong>骨折保障 (最高8%保額)：</strong> 係指完全骨折狀況，若為不完全骨折或骨裂則依條款比例計算。</li>
+            <li><strong>身故/滿期 (總繳1.06倍)：</strong> 需扣除已領取之各項保險金總額。本試算金額以「年繳保費 × 年期 × 1.06」估算。</li>
+            <li><strong>癌症排行：</strong> 資料來源為衛生福利部 111年癌症登記報告。</li>
+            <li><strong>特定癌症 (1.5倍)：</strong> 男性針對攝護腺/結腸直腸/生殖器官；女性針對乳癌/婦科器官提供 50% 額外加給。</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+    // --- 1. Rate Data (MFA / FMB) ---
+    const rates = {
+        male: { // MFA
+            10: { 18:412, 19:421, 20:431, 21:441, 22:451, 23:462, 24:473, 25:484, 26:495, 27:507, 28:520, 29:533, 30:545, 31:555, 32:566, 33:577, 34:589, 35:599, 36:611, 37:623, 38:635, 39:649, 40:660, 41:672, 42:685, 43:700, 44:715, 45:726, 46:739, 47:753, 48:769, 49:787, 50:800, 51:812, 52:825, 53:841, 54:859, 55:867, 56:878, 57:891, 58:908, 59:931, 60:943 },
+            20: { 18:214, 19:219, 20:224, 21:230, 22:235, 23:241, 24:247, 25:253, 26:259, 27:265, 28:273, 29:280, 30:287, 31:293, 32:299, 33:306, 34:314, 35:320, 36:328, 37:336, 38:344, 39:353, 40:361, 41:370, 42:379, 43:389, 44:400, 45:409, 46:419, 47:431, 48:444, 49:459, 50:471 }
+        },
+        female: { // FMB
+            10: { 18:418, 19:421, 20:424, 21:429, 22:434, 23:440, 24:446, 25:453, 26:461, 27:469, 28:478, 29:486, 30:494, 31:504, 32:513, 33:523, 34:532, 35:541, 36:550, 37:559, 38:568, 39:576, 40:585, 41:593, 42:602, 43:611, 44:620, 45:629, 46:638, 47:648, 48:658, 49:669, 50:680, 51:690, 52:700, 53:711, 54:722, 55:732, 56:744, 57:756, 58:769, 59:784, 60:800 },
+            20: { 18:222, 19:224, 20:226, 21:228, 22:230, 23:233, 24:236, 25:240, 26:245, 27:249, 28:253, 29:258, 30:264, 31:270, 32:276, 33:282, 34:288, 35:295, 36:302, 37:309, 38:316, 39:322, 40:327, 41:333, 42:339, 43:347, 44:354, 45:361, 46:368, 47:376, 48:385, 49:395, 50:405 }
+        }
+    };
+
+    // --- 2. Cancer Data ---
+    const maleCancers = [
+        { rank: 1, name: "氣管、支氣管和肺癌", isSpecific: false },
+        { rank: 2, name: "肝和肝內膽管癌", isSpecific: false },
+        { rank: 3, name: "結腸、直腸和肛門癌", isSpecific: true }, 
+        { rank: 4, name: "口腔癌", isSpecific: false },
+        { rank: 5, name: "食道癌", isSpecific: false },
+        { rank: 6, name: "攝護腺癌", isSpecific: true }, 
+        { rank: 7, name: "胰臟癌", isSpecific: false },
+        { rank: 8, name: "胃癌", isSpecific: false },
+        { rank: 9, name: "非何杰金氏淋巴瘤", isSpecific: false },
+        { rank: 10, name: "膀胱癌", isSpecific: false }
+    ];
+
+    const femaleCancers = [
+        { rank: 1, name: "氣管、支氣管和肺癌", isSpecific: false },
+        { rank: 2, name: "女性乳癌", isSpecific: true }, 
+        { rank: 3, name: "結腸、直腸和肛門癌", isSpecific: false },
+        { rank: 4, name: "肝和肝內膽管癌", isSpecific: false },
+        { rank: 5, name: "胰臟癌", isSpecific: false },
+        { rank: 6, name: "胃癌", isSpecific: false },
+        { rank: 7, name: "卵巢癌", isSpecific: true }, 
+        { rank: 8, name: "非何杰金氏淋巴瘤", isSpecific: false },
+        { rank: 9, name: "子宮頸及未明示子宮癌", isSpecific: true }, 
+        { rank: 10, name: "子宮體癌", isSpecific: true }
+    ];
+
+    let currentGender = 'male';
+
+    function setGender(gender) {
+        currentGender = gender;
+        document.getElementById('btnMale').className = gender === 'male' ? 'gender-btn active-male' : 'gender-btn';
+        document.getElementById('btnFemale').className = gender === 'female' ? 'gender-btn active-female' : 'gender-btn';
+        render();
+    }
+
+    function updateAgeOptions() {
+        const term = parseInt(document.getElementById('term').value);
+        const ageSelect = document.getElementById('age');
+        const currentAge = parseInt(ageSelect.value) || 30;
+        
+        const minAge = 18;
+        const maxAge = term === 20 ? 50 : 60;
+
+        ageSelect.innerHTML = '';
+        for (let i = minAge; i <= maxAge; i++) {
+            let opt = document.createElement('option');
+            opt.value = i;
+            opt.text = i + " 歲";
+            if (i === currentAge) opt.selected = true;
+            ageSelect.appendChild(opt);
+        }
+        if (currentAge > maxAge) ageSelect.value = maxAge;
+    }
+
+    function render() {
+        // Inputs
+        const term = parseInt(document.getElementById('term').value);
+        const age = parseInt(document.getElementById('age').value);
+        const coverageWan = parseFloat(document.getElementById('coverage').value) || 0;
+        
+        // --- Premium Calc ---
+        let unitRate = 0;
+        try { unitRate = rates[currentGender][term][age]; } catch(e) { unitRate = 0; }
+        const annualPremium = Math.round(unitRate * coverageWan);
+        document.getElementById('premiumLabel').innerText = annualPremium.toLocaleString();
+
+        // --- Extra Benefits Calc ---
+        // 1. Surgery (2%)
+        const valSurgery = coverageWan * 0.02;
+        document.getElementById('valSurgery').innerText = valSurgery.toFixed(1) + " 萬";
+        
+        // Surgery Description Update
+        const descSurgery = document.getElementById('descSurgery');
+        const noteSurgery = document.getElementById('noteSurgery');
+        if (currentGender === 'male') {
+            descSurgery.innerText = "針對攝護腺相關特定手術";
+            noteSurgery.innerText = "男性針對攝護腺切除、刮除等 8 項特定手術。";
+        } else {
+            descSurgery.innerText = "針對尿失禁等婦科特定手術";
+            noteSurgery.innerText = "女性針對尿失禁、膀胱懸吊等 14 項特定手術。";
+        }
+
+        // 2. Fracture (Max 8%)
+        const valFracture = coverageWan * 0.08;
+        document.getElementById('valFracture').innerText = "最高 " + valFracture.toFixed(1) + " 萬";
+
+        // 3. Death/Maturity (Prem * Term * 1.06)
+        // Convert annualPremium to Wan for display consistency
+        const totalReturnVal = (annualPremium * term * 1.06) / 10000;
+        document.getElementById('valDeath').innerText = "約 " + totalReturnVal.toFixed(1) + " 萬";
+
+
+        // --- Cancer Ranking Render ---
+        const container = document.getElementById('rankContainer');
+        container.innerHTML = '';
+        let data = (currentGender === 'male') ? maleCancers : femaleCancers;
+
+        data.forEach(item => {
+            const multiplier = item.isSpecific ? 1.5 : 1.0;
+            const payout = coverageWan * multiplier;
+
+            const row = document.createElement('div');
+            row.className = `rank-row ${item.isSpecific ? 'is-specific' : ''}`;
+            
+            // Add specific label if specific
+            const nameHtml = item.isSpecific ? 
+                `${item.name} <span style="font-size:0.8em; color:#e65100;">(特定)</span>` : 
+                item.name;
+
+            row.innerHTML = `
+                <div class="col-rank">${item.rank}</div>
+                <div class="col-name">${nameHtml}</div>
+                <div class="col-payout">${payout.toLocaleString()} 萬</div>
+            `;
+            container.appendChild(row);
+        });
+    }
+
+    // Init
+    updateAgeOptions();
+    render();
+</script>
+
+</body>
+</html>

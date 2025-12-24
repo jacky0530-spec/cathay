@@ -6,7 +6,7 @@
     <title>精選商品</title>
     
     <link rel="manifest" href="manifest.json">
-   <script type="module" src="auth.js"></script>
+    <script type="module" src="auth.js"></script>
 
     <style>
         body {
@@ -28,16 +28,16 @@
             border-left: 4px solid #00A651; /* 綠色標記 */
             padding-left: 10px;
         }
-        .section-title:first-child { margin-top: 0; } /* 第一個標題不需要上方留白 */
+        .section-title:first-child { margin-top: 0; }
 
-        /* 格狀佈局 */
+        /* 格狀佈局 (兩欄) */
         .grid-menu {
             display: grid;
-            grid-template-columns: 1fr 1fr; /* 兩欄 */
+            grid-template-columns: 1fr 1fr; 
             gap: 12px;
         }
 
-        /* 一般按鈕樣式 */
+        /* 一般按鈕樣式 (小方塊) */
         .prod-btn {
             background: white;
             border-radius: 12px;
@@ -58,31 +58,43 @@
         .icon { font-size: 28px; margin-bottom: 8px; }
         .name { font-size: 15px; font-weight: bold; line-height: 1.3; }
 
-        /* 🔥 醒目強調按鈕 (滿溢康愛) */
-        .highlight-card {
+        /* 🔥 粉色醒目按鈕 (橫跨兩欄) */
+        .highlight-pink {
             grid-column: span 2; /* 橫跨兩欄 */
-            background: linear-gradient(135deg, #FF8008 0%, #FFC837 100%); /* 橘金漸層 */
-            /* 或者用粉色系： background: linear-gradient(135deg, #ec008c 0%, #fc6767 100%); */
-            color: white;
+            background: linear-gradient(135deg, #FFF0F5 0%, #FFE4E1 100%); /* 淺粉紅漸層 */
+            border: 1px solid #FFB6C1;
+            color: #C2185B; /* 深粉紅文字 */
             height: auto;
-            padding: 20px;
+            padding: 15px 20px;
+            display: flex;
             flex-direction: row; /* 橫向排列 */
+            align-items: center;
             justify-content: space-between; /* 左右撐開 */
-            box-shadow: 0 5px 15px rgba(255, 128, 8, 0.3);
-            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            text-decoration: none;
         }
-        .highlight-card .icon { 
-            font-size: 32px; margin-bottom: 0; margin-right: 15px; 
-            background: rgba(255,255,255,0.25);
-            width: 50px; height: 50px; border-radius: 50%;
+        
+        .highlight-pink .icon-circle { 
+            background: rgba(255,255,255,0.6);
+            color: #E91E63;
+            width: 45px; height: 45px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
+            margin-right: 15px;
+            font-size: 24px;
         }
-        .highlight-card .name { font-size: 18px; text-align: left; }
-        .highlight-card .sub-text { font-size: 12px; opacity: 0.9; font-weight: normal; margin-top: 2px;}
-        .highlight-arrow { font-size: 20px; font-weight: bold; }
+        .highlight-pink .name { font-size: 18px; text-align: left; margin-bottom: 0; color: #C2185B; }
+        .highlight-pink .sub-text { font-size: 12px; opacity: 0.8; font-weight: normal; margin-top: 2px; color: #D81B60; }
+        .highlight-pink .arrow { font-size: 20px; font-weight: bold; color: #E91E63; }
 
-        /* 投資型按鈕微調 (讓顏色稍微不同) */
-        .invest-btn .icon { filter: hue-rotate(45deg); } /* 讓圖示顏色變一下 */
+        /* 標籤 (熱銷/推薦) */
+        .badge {
+            background: #FF5252; color: white;
+            font-size: 10px; padding: 2px 8px; border-radius: 10px;
+            margin-left: 8px; vertical-align: middle;
+        }
+
+        /* 投資型按鈕微調 */
+        .invest-btn .icon { filter: hue-rotate(45deg); }
 
     </style>
 </head>
@@ -91,15 +103,35 @@
     <div class="section-title">🏥 醫療保障系列</div>
     <div class="grid-menu">
         
-        <a href="prod_overflow_love.html" class="prod-btn highlight-card">
+        <a href="prod_overflow_love.html" class="highlight-pink">
             <div style="display:flex; align-items:center;">
-                <div class="icon">💖</div>
+                <div class="icon-circle">💖</div>
                 <div>
-                    <div class="name">滿溢康愛</div>
+                    <div class="name">滿溢康愛 <span class="badge">熱銷</span></div>
                     <div class="sub-text">全方位醫療照護首選</div>
                 </div>
             </div>
-            <div class="highlight-arrow">➜</div>
+            <div class="arrow">➜</div>
+        </a>
+
+        <a href="豪好康愛.html" class="highlight-pink">
+            <div style="display:flex; align-items:center;">
+                <div class="icon-circle">💎</div>
+                <div>
+                    <div class="name">豪好康愛 <span class="badge" style="background:#2196F3">強檔</span></div>
+                    <div class="sub-text">專為男女分別設計防癌商品</div> </div>
+            </div>
+            <div class="arrow">➜</div>
+        </a>
+
+        <a href="防癌保障.html" class="highlight-pink">
+            <div style="display:flex; align-items:center;">
+                <div class="icon-circle">🛡️</div>
+                <div>
+                    <div class="name">防癌保障 <span class="badge" style="background:#9C27B0">推薦</span></div>
+                    <div class="sub-text">防癌保障最全面</div> </div>
+            </div>
+            <div class="arrow">➜</div>
         </a>
 
         <a href="prod_accident.html" class="prod-btn">
