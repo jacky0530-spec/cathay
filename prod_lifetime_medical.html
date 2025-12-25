@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>國泰好順心 (四主約自由配)</title>
+    <style>
+        body { font-family: "Microsoft JhengHei", Arial, sans-serif; background-color: #f0f2f5; color: #333; margin: 0; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        
+        h1 { text-align: center; color: #004d40; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #666; font-size: 0.9em; margin-bottom: 30px; }
+
+        /* Controls */
+        .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; background: #e0f2f1; padding: 25px; border-radius: 10px; margin-bottom: 25px; align-items: end; border: 1px solid #b2dfdb; }
+        .control-group label { display: block; font-weight: bold; margin-bottom: 6px; font-size: 0.95em; }
+        
+        /* Label Colors */
+        .lbl-agg { color: #d81b60; } /* AGG - Pink */
+        .lbl-zxa { color: #2e7d32; } /* ZXA - Green */
+        .lbl-zks { color: #1565c0; } /* ZKS - Blue */
+        .lbl-hta { color: #00897b; } /* HTA - Teal */
+
+        select, input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; box-sizing: border-box; transition: border 0.3s; }
+        select:focus, input:focus { border-color: #004d40; outline: none; }
+        
+        .btn-calc { background: linear-gradient(135deg, #00695c, #004d40); color: white; border: none; padding: 12px; font-size: 18px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 15px; grid-column: 1 / -1; box-shadow: 0 2px 5px rgba(0,0,0,0.15); transition: transform 0.2s; }
+        .btn-calc:hover { transform: translateY(-2px); }
+
+        /* Premium Box */
+        .premium-box { background: #263238; color: white; padding: 25px; border-radius: 10px; text-align: center; margin-bottom: 30px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .total-prem { font-size: 2.5em; color: #ffca28; font-weight: bold; line-height: 1.1; }
+        .prem-breakdown { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; font-size: 0.9em; color: #b0bec5; margin-top: 5px; }
+        .prem-item span { color: #fff; font-weight: bold; margin-left: 3px; }
+
+        /* Sections */
+        .section-card { border: 1px solid #eee; border-radius: 8px; margin-bottom: 25px; overflow: hidden; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.03); animation: fadeIn 0.5s ease; }
+        .sec-header { padding: 12px 15px; color: white; font-weight: bold; font-size: 1.1em; display: flex; justify-content: space-between; align-items: center; }
+        
+        .hd-agg { background: linear-gradient(to right, #d81b60, #ad1457); }
+        .hd-zxa { background: linear-gradient(to right, #2e7d32, #1b5e20); }
+        .hd-zks { background: linear-gradient(to right, #1565c0, #0d47a1); }
+        .hd-hta { background: linear-gradient(to right, #00897b, #00695c); }
+
+        /* Tables */
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #f0f0f0; font-size: 0.95em; }
+        th { background-color: #fafafa; color: #555; font-weight: 600; width: 35%; }
+        td.val-col { font-weight: bold; text-align: right; width: 25%; }
+        td.desc-col { color: #666; font-size: 0.9em; }
+
+        /* Specific text colors */
+        .val-agg { color: #c2185b; }
+        .val-zxa { color: #2e7d32; }
+        .val-zks { color: #1565c0; }
+        .val-hta { color: #00897b; }
+
+        /* Badge */
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.75em; color: white; margin-right: 5px; vertical-align: middle; }
+        
+        /* Scrollable Area */
+        .scroll-list { max-height: 250px; overflow-y: auto; background: #fafafa; border-top: 1px solid #eee; }
+        .scroll-list table tr:last-child td { border-bottom: none; }
+        .scroll-list th { position: sticky; top: 0; background: #eee; z-index: 1; }
+
+        .note { font-size: 0.85em; color: #78909c; padding: 10px 15px; background: #fcfcfc; border-top: 1px solid #f0f0f0; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>國泰好順心 (四主約自由配)</h1>
+    <div class="subtitle">真漾(AGG) + 真心(FV6) + 真康(L66) + 輕漾(HTA)</div>
+
+    <div class="controls">
+        <div class="control-group">
+            <label>性別</label>
+            <select id="gender"><option value="male">男</option><option value="female">女</option></select>
+        </div>
+        <div class="control-group">
+            <label>年齡 (0-60歲)</label>
+            <input type="number" id="age" value="30" min="0" max="60">
+        </div>
+        
+        <div class="control-group">
+            <label class="lbl-agg">真漾心安 (住院)</label>
+            <select id="amt-agg">
+                <option value="0">0 (不投保)</option>
+                <option value="500">500</option>
+                <option value="1000" selected>1,000</option>
+                <option value="1500">1,500</option>
+                <option value="2000">2,000</option>
+                <option value="3000">3,000</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label class="lbl-zxa">真心安 (住院+手術)</label>
+            <select id="amt-zxa">
+                <option value="0">0 (不投保)</option>
+                <option value="500">500</option>
+                <option value="1000">1,000</option>
+                <option value="1500">1,500</option>
+                <option value="2000">2,000</option>
+                <option value="3000">3,000</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label class="lbl-zks">真康順 (手術+處置)</label>
+            <select id="amt-zks">
+                <option value="0">0 (不投保)</option>
+                <option value="500">500</option>
+                <option value="1000">1,000</option>
+                <option value="1500">1,500</option>
+                <option value="2000">2,000</option>
+                <option value="3000">3,000</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label class="lbl-hta">輕漾心安 (純住院)</label>
+            <select id="amt-hta">
+                <option value="0" selected>0 (不投保)</option>
+                <option value="500">500</option>
+                <option value="1000">1,000</option>
+                <option value="1500">1,500</option>
+                <option value="2000">2,000</option>
+                <option value="3000">3,000</option>
+            </select>
+        </div>
+
+        <div class="control-group" style="grid-column: 1 / -1; text-align: center;">
+            <label style="display:inline-flex; align-items:center; cursor:pointer; color:#555;">
+                <input type="checkbox" id="discount" checked style="width:auto; margin-right:8px;"> 
+                套用轉帳+外溢折扣 (約2%)
+            </label>
+        </div>
+        <button class="btn-calc" onclick="calculate()">計算保費與保障內容</button>
+    </div>
+
+    <div id="result-area" style="display:none;">
+        
+        <div class="premium-box">
+            <div>年繳總保費試算 (20年期)</div>
+            <div class="total-prem" id="total-prem">$0</div>
+            <div class="prem-breakdown">
+                <div class="prem-item" id="pb-agg" style="display:none;">真漾: <span id="prem-agg-val">0</span></div>
+                <div class="prem-item" id="pb-zxa" style="display:none;">| 真心: <span id="prem-zxa-val">0</span></div>
+                <div class="prem-item" id="pb-zks" style="display:none;">| 真康: <span id="prem-zks-val">0</span></div>
+                <div class="prem-item" id="pb-hta" style="display:none;">| 輕漾: <span id="prem-hta-val">0</span></div>
+            </div>
+        </div>
+
+        <div class="section-card" id="sec-agg" style="display:none;">
+            <div class="sec-header hd-agg">
+                <span>真漾心安 (AGG)</span>
+                <span style="font-size:0.8em; opacity:0.9;">住院+加倍加護</span>
+            </div>
+            <table>
+                <tbody>
+                    <tr>
+                        <th>住院醫療保險金</th>
+                        <td class="desc-col">每日給付 (1倍)</td>
+                        <td class="val-col val-agg" id="agg-daily">0</td>
+                    </tr>
+                    <tr>
+                        <th>加護/燒燙傷病房</th>
+                        <td class="desc-col">額外給付2倍 (含日額共3倍)</td>
+                        <td class="val-col val-agg" id="agg-icu">0</td>
+                    </tr>
+                    <tr>
+                        <th>醫療總帳戶上限</th>
+                        <td class="desc-col">日額 2,500 倍</td>
+                        <td class="val-col val-agg" id="agg-limit">0</td>
+                    </tr>
+                     <tr>
+                        <th>身故/祝壽</th>
+                        <td class="desc-col">退還總保費 x 1.1</td>
+                        <td class="val-col val-agg">有</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section-card" id="sec-zxa" style="display:none;">
+            <div class="sec-header hd-zxa">
+                <span>真心安 (FV6)</span>
+                <span style="font-size:0.8em; opacity:0.9;">住院+定額手術</span>
+            </div>
+            <table>
+                <tbody>
+                    <tr>
+                        <th>住院日額</th>
+                        <td class="desc-col">每日 (1倍)</td>
+                        <td class="val-col val-zxa" id="zxa-daily">0</td>
+                    </tr>
+                    <tr>
+                        <th>加護/燒燙傷</th>
+                        <td class="desc-col">每日 (3倍)</td>
+                        <td class="val-col val-zxa" id="zxa-icu">0</td>
+                    </tr>
+                     <tr>
+                        <th>住院手術定額</th>
+                        <td class="desc-col">每次 (3倍)</td>
+                        <td class="val-col val-zxa" id="zxa-in-surg">0</td>
+                    </tr>
+                    <tr>
+                        <th>門診手術定額</th>
+                        <td class="desc-col">每次 (1倍)</td>
+                        <td class="val-col val-zxa" id="zxa-out-surg">0</td>
+                    </tr>
+                    <tr>
+                        <th>意外住院關懷</th>
+                        <td class="desc-col">每次 (3倍)</td>
+                        <td class="val-col val-zxa" id="zxa-acc">0</td>
+                    </tr>
+                    <tr>
+                        <th>身故/祝壽</th>
+                        <td class="desc-col">退還總保費 x 1.05</td>
+                        <td class="val-col val-zxa">有</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section-card" id="sec-zks" style="display:none;">
+            <div class="sec-header hd-zks">
+                <span>真康順 (L66)</span>
+                <span style="font-size:0.8em; opacity:0.9;">手術倍數+處置</span>
+            </div>
+            <table>
+                <tbody>
+                    <tr>
+                        <th>住院/門診手術</th>
+                        <td class="desc-col">3 ~ 80 倍</td>
+                        <td class="val-col val-zks" id="zks-sum-surg">0</td>
+                    </tr>
+                    <tr>
+                        <th>特定處置 (168項)</th>
+                        <td class="desc-col">0.5 ~ 40 倍</td>
+                        <td class="val-col val-zks" id="zks-sum-treat">0</td>
+                    </tr>
+                    <tr>
+                        <th>意外創傷縫合</th>
+                        <td class="desc-col">0.5 ~ 3 倍</td>
+                        <td class="val-col val-zks" id="zks-sum-stitch">0</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="scroll-list">
+                <table>
+                    <thead>
+                        <tr style="background:#f5f5f5;">
+                            <th style="width:50%">常見項目 (手術/處置)</th>
+                            <th style="width:20%">倍數</th>
+                            <th style="width:30%; text-align:right;">金額</th>
+                        </tr>
+                    </thead>
+                    <tbody id="list-zks-detail"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="section-card" id="sec-hta" style="display:none;">
+            <div class="sec-header hd-hta">
+                <span>輕漾心安 (HTA)</span>
+                <span style="font-size:0.8em; opacity:0.9;">純住院保障</span>
+            </div>
+            <table>
+                <tbody>
+                    <tr>
+                        <th>住院醫療保險金</th>
+                        <td class="desc-col">每日給付 (1倍)</td>
+                        <td class="val-col val-hta" id="hta-daily">0</td>
+                    </tr>
+                    <tr>
+                        <th>醫療總帳戶上限</th>
+                        <td class="desc-col">日額 1,500 倍</td>
+                        <td class="val-col val-hta" id="hta-limit">0</td>
+                    </tr>
+                    <tr>
+                        <th>身故/退還保費</th>
+                        <td class="desc-col">無身故退還 (消耗型)</td>
+                        <td class="val-col val-hta" style="color:#999;">無</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="note">※ 輕漾心安為純醫療保障，無身故保費退還機制，故費率較低。</div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // Rates (20 Year Term)
+    // AGG [Source: AGG費率表]
+    const ratesAGG = {
+        0: { m: 566, f: 557 }, 5: { m: 559, f: 541 }, 10: { m: 570, f: 555 }, 15: { m: 621, f: 618 }, 
+        20: { m: 697, f: 696 }, 25: { m: 759, f: 760 }, 30: { m: 787, f: 794 }, 35: { m: 852, f: 817 }, 
+        40: { m: 941, f: 881 }, 45: { m: 1043, f: 976 }, 50: { m: 1184, f: 1109 }, 55: { m: 1413, f: 1262 }, 60: { m: 1700, f: 1500 }
+    };
+    // ZXA [Source: FV6費率表]
+    const ratesZXA = {
+        0: { m: 980, f: 949 }, 5: { m: 962, f: 938 }, 10: { m: 977, f: 951 }, 15: { m: 1061, f: 1053 },
+        20: { m: 1188, f: 1179 }, 25: { m: 1295, f: 1281 }, 30: { m: 1344, f: 1334 }, 35: { m: 1450, f: 1371 },
+        40: { m: 1597, f: 1471 }, 45: { m: 1757, f: 1613 }, 50: { m: 1987, f: 1790 }, 55: { m: 2315, f: 2036 }, 60: { m: 2800, f: 2500 }
+    };
+    // ZKS [Source: L66費率表]
+    const ratesZKS = {
+        0: { m: 765, f: 784 }, 5: { m: 835, f: 837 }, 10: { m: 891, f: 911 }, 15: { m: 943, f: 978 },
+        20: { m: 1044, f: 1045 }, 25: { m: 1122, f: 1139 }, 30: { m: 1199, f: 1217 }, 35: { m: 1298, f: 1282 },
+        40: { m: 1407, f: 1353 }, 45: { m: 1654, f: 1462 }, 50: { m: 1819, f: 1767 }, 55: { m: 2204, f: 1930 }, 60: { m: 2600, f: 2300 }
+    };
+    // HTA [Source: HTA費率表]
+    const ratesHTA = {
+        0: { m: 461, f: 446 }, 5: { m: 452, f: 441 }, 10: { m: 459, f: 447 }, 15: { m: 499, f: 494 },
+        20: { m: 558, f: 553 }, 25: { m: 609, f: 601 }, 30: { m: 632, f: 626 }, 35: { m: 682, f: 643 },
+        40: { m: 750, f: 690 }, 45: { m: 825, f: 757 }, 50: { m: 933, f: 815 }, 55: { m: 1087, f: 858 }, 60: { m: 1187, f: 904 }
+    };
+
+    const zksItems = [
+        { name: "白內障手術 (囊內)", multi: 10, type: "手術" },
+        { name: "人工水晶體植入", multi: 3, type: "手術" },
+        { name: "腹腔鏡膽囊切除", multi: 30, type: "手術" },
+        { name: "腹腔鏡闌尾切除", multi: 20, type: "手術" },
+        { name: "腹腔鏡疝氣修補", multi: 10, type: "手術" },
+        { name: "剖腹產術", multi: 10, type: "手術" },
+        { name: "大腸鏡息肉切除", multi: 3, type: "處置" },
+        { name: "體外震波碎石", multi: 3, type: "處置" },
+        { name: "心導管支架置放", multi: 40, type: "處置" },
+        { name: "皮膚腫瘤切除(<2cm)", multi: 1.25, type: "處置" },
+        { name: "冷凍扁桃腺手術", multi: 3, type: "手術" }
+    ];
+
+    function getRate(age, genderKey, rateTable) {
+        age = parseInt(age);
+        if (rateTable[age]) return rateTable[age][genderKey];
+        const ages = Object.keys(rateTable).map(Number).sort((a, b) => a - b);
+        let lower = ages[0], upper = ages[ages.length - 1];
+        for (let i = 0; i < ages.length - 1; i++) {
+            if (age > ages[i] && age < ages[i+1]) { lower = ages[i]; upper = ages[i+1]; break; }
+        }
+        if (age < lower) return rateTable[lower][genderKey];
+        if (age > upper) return rateTable[upper][genderKey];
+        const ratio = (age - lower) / (upper - lower);
+        return Math.round(rateTable[lower][genderKey] + (rateTable[upper][genderKey] - rateTable[lower][genderKey]) * ratio);
+    }
+
+    function formatNum(n) { return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+
+    function calculate() {
+        const gender = document.getElementById('gender').value;
+        const genderKey = gender === 'male' ? 'm' : 'f';
+        const age = parseInt(document.getElementById('age').value);
+        
+        const amtAGG = parseInt(document.getElementById('amt-agg').value);
+        const amtZXA = parseInt(document.getElementById('amt-zxa').value);
+        const amtZKS = parseInt(document.getElementById('amt-zks').value);
+        const amtHTA = parseInt(document.getElementById('amt-hta').value);
+        const useDiscount = document.getElementById('discount').checked;
+
+        if (isNaN(age) || age < 0 || age > 60) { alert("請輸入 0-60 歲"); return; }
+
+        const rateAGG = getRate(age, genderKey, ratesAGG);
+        const rateZXA = getRate(age, genderKey, ratesZXA);
+        const rateZKS = getRate(age, genderKey, ratesZKS);
+        const rateHTA = getRate(age, genderKey, ratesHTA);
+        const discount = useDiscount ? 0.98 : 1.0;
+
+        const premAGG = Math.round(rateAGG * (amtAGG / 100) * discount);
+        const premZXA = Math.round(rateZXA * (amtZXA / 100) * discount);
+        const premZKS = Math.round(rateZKS * (amtZKS / 100) * discount);
+        const premHTA = Math.round(rateHTA * (amtHTA / 100) * discount);
+        
+        const total = premAGG + premZXA + premZKS + premHTA;
+
+        document.getElementById('total-prem').innerText = "$" + formatNum(total);
+        
+        // --- AGG Render ---
+        if (amtAGG > 0) {
+            document.getElementById('sec-agg').style.display = 'block';
+            document.getElementById('pb-agg').style.display = 'block';
+            document.getElementById('prem-agg-val').innerText = formatNum(premAGG);
+            document.getElementById('agg-daily').innerText = formatNum(amtAGG);
+            document.getElementById('agg-icu').innerText = formatNum(amtAGG * 3) + " (含日額)"; 
+            document.getElementById('agg-limit').innerText = formatNum(amtAGG * 2500 / 10000) + "萬";
+        } else {
+            document.getElementById('sec-agg').style.display = 'none';
+            document.getElementById('pb-agg').style.display = 'none';
+        }
+
+        // --- ZXA Render ---
+        if (amtZXA > 0) {
+            document.getElementById('sec-zxa').style.display = 'block';
+            document.getElementById('pb-zxa').style.display = 'block';
+            document.getElementById('prem-zxa-val').innerText = formatNum(premZXA);
+            document.getElementById('zxa-daily').innerText = formatNum(amtZXA);
+            document.getElementById('zxa-icu').innerText = formatNum(amtZXA * 3);
+            document.getElementById('zxa-in-surg').innerText = formatNum(amtZXA * 3);
+            document.getElementById('zxa-out-surg').innerText = formatNum(amtZXA * 1);
+            document.getElementById('zxa-acc').innerText = formatNum(amtZXA * 3);
+            document.getElementById('zxa-limit').innerText = formatNum(amtZXA * 3000 / 10000) + "萬";
+        } else {
+            document.getElementById('sec-zxa').style.display = 'none';
+            document.getElementById('pb-zxa').style.display = 'none';
+        }
+
+        // --- ZKS Render ---
+        if (amtZKS > 0) {
+            document.getElementById('sec-zks').style.display = 'block';
+            document.getElementById('pb-zks').style.display = 'block';
+            document.getElementById('prem-zks-val').innerText = formatNum(premZKS);
+            document.getElementById('zks-sum-surg').innerText = `$${formatNum(amtZKS * 3)} ~ $${formatNum(amtZKS * 80)}`;
+            document.getElementById('zks-sum-treat').innerText = `$${formatNum(amtZKS * 0.5)} ~ $${formatNum(amtZKS * 40)}`;
+            document.getElementById('zks-sum-stitch').innerText = `$${formatNum(amtZKS * 0.5)} ~ $${formatNum(amtZKS * 3)}`;
+            document.getElementById('zks-limit').innerText = formatNum(amtZKS * 1500 / 10000) + "萬";
+
+            const tbody = document.getElementById('list-zks-detail');
+            tbody.innerHTML = "";
+            zksItems.forEach(item => {
+                const val = Math.round(amtZKS * item.multi);
+                const badgeColor = item.type === "手術" ? "#1565c0" : "#00838f";
+                tbody.innerHTML += `<tr>
+                    <td><span class="badge" style="background:${badgeColor}">${item.type}</span>${item.name}</td>
+                    <td>${item.multi}</td>
+                    <td class="val-col" style="color:#1565c0">$${formatNum(val)}</td>
+                </tr>`;
+            });
+        } else {
+            document.getElementById('sec-zks').style.display = 'none';
+            document.getElementById('pb-zks').style.display = 'none';
+        }
+
+        // --- HTA Render (NEW) ---
+        if (amtHTA > 0) {
+            document.getElementById('sec-hta').style.display = 'block';
+            document.getElementById('pb-hta').style.display = 'block';
+            document.getElementById('prem-hta-val').innerText = formatNum(premHTA);
+            document.getElementById('hta-daily').innerText = formatNum(amtHTA);
+            document.getElementById('hta-limit').innerText = formatNum(amtHTA * 1500 / 10000) + "萬";
+        } else {
+            document.getElementById('sec-hta').style.display = 'none';
+            document.getElementById('pb-hta').style.display = 'none';
+        }
+
+        document.getElementById('result-area').style.display = 'block';
+    }
+</script>
+
+</body>
+</html>
