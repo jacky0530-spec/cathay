@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>九州高峰會業績排名 & A&H獎金明細</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        /* 九州/日本風格配色 */
+        :root {
+            --jp-indigo: #1a237e; /* 傳統藍 */
+            --jp-red: #b71c1c;    /* 日之丸紅 */
+            --jp-sakura: #fce4ec; /* 櫻花粉 */
+            --jp-gold: #ffd700;   /* 金色 */
+            --jp-bg: #fffbf0;     /* 和紙米色 */
+            --jp-text: #2c3e50;
+        }
+
+        body { 
+            font-family: "Microsoft JhengHei", "Heiti TC", "Noto Sans JP", sans-serif; 
+            margin: 20px; 
+            background-color: var(--jp-bg); 
+            color: var(--jp-text);
+            background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        
+        .container { 
+            max-width: 98%; 
+            margin: 0 auto; 
+            background: rgba(255, 255, 255, 0.95); 
+            padding: 25px; 
+            box-shadow: 0 8px 30px rgba(0,0,0,0.1); 
+            border-radius: 15px; 
+            border: 1px solid #e0e0e0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 裝飾性背景元素 (櫻花) */
+        .container::before {
+            content: "🌸";
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            font-size: 150px;
+            opacity: 0.1;
+            z-index: 0;
+            transform: rotate(20deg);
+        }
+        
+        .header-section { 
+            text-align: center; 
+            margin-bottom: 20px; 
+            position: relative;
+            z-index: 1;
+        }
+        
+        .controls { 
+            background: white; 
+            padding: 15px 30px; 
+            border-radius: 50px; 
+            border: 2px solid var(--jp-indigo); 
+            margin-bottom: 25px; 
+            display: inline-block; 
+            min-width: 300px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        
+        h1 { 
+            text-align: center; 
+            color: var(--jp-indigo); 
+            margin-top: 5px; 
+            margin-bottom: 15px; 
+            letter-spacing: 2px; 
+            font-size: 2em;
+            font-weight: 900;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+        }
+
+        /* 九州元素圖示 */
+        .kyushu-icon { font-size: 1.5em; vertical-align: middle; margin: 0 5px; }
+        
+        .btn-box { font-size: 16px; font-weight: bold; color: var(--jp-indigo); }
+        input[type="file"] { margin-left: 10px; }
+        
+        table { 
+            width: 100%; 
+            border-collapse: separate; 
+            border-spacing: 0; 
+            margin-top: 5px; 
+            font-size: 14px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            overflow: hidden; 
+            position: relative;
+            z-index: 1;
+        }
+        
+        th, td { 
+            border-bottom: 1px solid #ddd; 
+            border-right: 1px solid #ddd; 
+            padding: 12px 10px; 
+            text-align: right; 
+            white-space: nowrap; 
+            vertical-align: middle; 
+        }
+        
+        /* 表頭樣式 - 傳統藍 */
+        th { 
+            background-color: var(--jp-indigo); 
+            color: white; 
+            text-align: center; 
+            font-weight: bold; 
+            position: sticky; 
+            top: 0; 
+            z-index: 2; 
+            border-right: 1px solid #3949ab;
+        }
+        
+        td:last-child, th:last-child { border-right: none; }
+        
+        tr:nth-child(even) { background-color: #fafafa; }
+        tr:hover { background-color: #f0f4c3; transition: background 0.3s; }
+
+        /* 特殊欄位顏色 */
+        .col-total-excl { background-color: #e8eaf6; color: var(--jp-indigo); font-weight: bold; border-left: 2px solid var(--jp-indigo); }
+        .col-ah-fyp { font-weight: bold; color: #333; }
+        
+        /* 累計業績 (含加計) - 加深放大醒目 */
+        .col-total-incl { 
+            background-color: #fce4ec; /* 櫻花粉底 */
+            color: #880e4f; 
+            font-weight: 900; 
+            font-size: 1.3em; 
+            border-left: 2px solid #880e4f; 
+        }
+
+        .col-bonus { 
+            color: #d50000; 
+            font-weight: 900; 
+            font-size: 1.2em;
+            background-color: #ffebee;
+        }
+        .col-bonus-pending {
+            color: #e65100;
+            font-weight: bold;
+            font-size: 1.1em;
+            background-color: #fff3e0;
+        }
+
+        /* 創新獎 (單月達標) */
+        .cell-innovation-pass {
+            background-color: #f3e5f5 !important;
+            color: #4a148c;
+            font-weight: bold;
+            border: 2px solid #ce93d8;
+            position: relative;
+        }
+
+        /* 排名醒目 (Top 1350) - 類似御守的橘紅色 */
+        .cell-rank-top {
+            background-color: #ffccbc !important;
+            color: #bf360c;
+            font-weight: 900;
+            border: 2px solid #ff7043;
+            font-size: 1.1em;
+            text-align: center;
+        }
+        .rank-badge {
+            display: inline-block;
+            background: #d84315;
+            color: white;
+            font-size: 0.7em;
+            padding: 1px 5px;
+            border-radius: 10px;
+            margin-right: 4px;
+            vertical-align: middle;
+        }
+
+        .trophy-icon { display: inline-block; margin-left: 5px; font-size: 1.1em; }
+
+        /* 完全達標 - 金色/黃色背景 */
+        tr.row-winner { background-color: #fff9c4 !important; }
+        
+        .col-rank { text-align: center; font-weight: bold; color: #555; background-color: rgba(0,0,0,0.02); }
+        
+        /* 姓名欄位 */
+        .col-name { 
+            text-align: center; 
+            min-width: 90px; 
+            font-weight: 900; 
+            font-size: 1.2em; 
+            color: var(--jp-text);
+        }
+        
+        /* 狀態標籤 */
+        .status-pass { 
+            color: #2e7d32; 
+            font-weight: bold; 
+            border: 1px solid #2e7d32; 
+            padding: 2px 8px; 
+            border-radius: 12px; 
+            background: #e8f5e9; 
+            display: inline-block;
+        }
+        .status-fail { color: #c62828; font-weight: bold; font-size: 0.9em; } 
+        .status-diff { color: #d84315; font-size: 0.85em; display: block; margin-top: 2px; }
+        .status-none { color: #bdbdbd; font-size: 0.8em; }
+        
+        #statusMsg { font-weight: bold; display: block; margin-top: 5px; }
+        .debug-box { display: none; }
+        
+        /* 頁腳裝飾 */
+        .footer-deco {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 20px;
+            color: #ccc;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-section">
+        <div class="controls">
+            <div class="btn-box">
+                📂 上傳檔案：
+                <input type="file" id="fileInput" accept=".xlsx, .xls, .csv">
+            </div>
+            <div id="statusMsg" style="color: var(--jp-indigo);">請選擇「高峰會業績速報.xlsx」...</div>
+        </div>
+    </div>
+
+    <h1>
+        <span class="kyushu-icon">🌋</span> 九州高峰會 <span class="kyushu-icon">♨️</span> 業績排名 & A&H獎金明細
+    </h1>
+
+    <div id="debugLog" class="debug-box"></div>
+    <div id="output"></div>
+    
+    <div class="footer-deco">
+        🌊 🏯 🚄 🍜 🌸
+    </div>
+</div>
+
+<script>
+    const logBox = document.getElementById('debugLog');
+    const statusMsg = document.getElementById('statusMsg');
+
+    document.getElementById('fileInput').addEventListener('change', handleFile, false);
+
+    function handleFile(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        document.getElementById('output').innerHTML = '';
+        statusMsg.innerText = "⏳ 正在讀取數據...";
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                
+                // 強制讀取第一張工作表
+                const firstSheetName = workbook.SheetNames[0];
+                const ws = workbook.Sheets[firstSheetName];
+                const rows = XLSX.utils.sheet_to_json(ws, {header: 1});
+
+                if (!rows || rows.length < 2) {
+                    statusMsg.innerText = "❌ 第一張工作表沒有數據";
+                    statusMsg.style.color = "#d32f2f";
+                    return;
+                }
+
+                let colMap = {};
+                let totalCols = [];
+                let dataStartRow = 0;
+
+                // 掃描前 20 行找標題
+                for (let r = 0; r < Math.min(rows.length, 20); r++) {
+                    const row = rows[r];
+                    if (!Array.isArray(row)) continue;
+                    row.forEach((cell, idx) => {
+                        if (typeof cell !== 'string') return;
+                        const c = cell.trim();
+                        
+                        if (c === '序號') colMap['Rank'] = idx;
+                        else if (c.includes('代號')) colMap['ID'] = idx;
+                        else if (c.includes('姓名')) colMap['Name'] = idx;
+                        else if (c.includes('12工業績')) colMap['M12'] = idx;
+                        else if (c.includes('13工業績')) colMap['M13'] = idx;
+                        else if (c.includes('1工業績')) colMap['M1'] = idx;
+                        else if (c.includes('2工業績')) colMap['M2'] = idx;
+                        else if (c.includes('3工業績')) colMap['M3'] = idx;
+                        else if (c.includes('特定商品')) colMap['Specific'] = idx;
+                        else if (c.includes('13工責任額')) colMap['Quota'] = idx;
+                        else if (c.includes('證券扣除')) colMap['Deduct'] = idx;
+                        else if (c.includes('A&H') && c.includes('FYP')) colMap['AH'] = idx;
+                        else if (c.includes('累計業績') && c.includes('FYP')) {
+                            totalCols.push(idx);
+                        }
+                    });
+                }
+
+                if (totalCols.length > 0) {
+                    totalCols.sort((a, b) => a - b);
+                    colMap['Total_Excl'] = totalCols[0];
+                    colMap['Total_Incl'] = totalCols.length > 1 ? totalCols[totalCols.length - 1] : totalCols[0];
+                }
+
+                if (colMap['AH'] === undefined || colMap['Rank'] === undefined) {
+                    statusMsg.innerText = "❌ 找不到符合格式的資料 (需包含序號、A&H業績)";
+                    statusMsg.style.color = "#d32f2f";
+                    return;
+                }
+
+                for(let k=0; k<30; k++) {
+                    const testRow = rows[k];
+                    if(testRow && testRow[colMap['Rank']] && !isNaN(parseFloat(testRow[colMap['Rank']]))) {
+                        dataStartRow = k;
+                        break;
+                    }
+                }
+                if(dataStartRow === 0) dataStartRow = 5;
+
+                statusMsg.innerText = "✅ 計算完成！";
+                statusMsg.style.color = "#2e7d32";
+                renderTable(rows, dataStartRow, colMap);
+
+            } catch (err) {
+                console.error(err);
+                statusMsg.innerText = "❌ 程式錯誤: " + err.message;
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    function cleanNum(val) {
+        if (typeof val === 'number') return val;
+        if (!val) return 0;
+        let s = val.toString().replace(/,/g, '').trim();
+        if (s === '--' || s === '') return 0;
+        let num = parseFloat(s);
+        return isNaN(num) ? 0 : num;
+    }
+
+    function renderTable(rows, startIdx, colMap) {
+        const fmt = (n) => n.toLocaleString('zh-TW');
+        const getVal = (row, key) => colMap[key] !== undefined ? cleanNum(row[colMap[key]]) : 0;
+        const getRaw = (row, key) => colMap[key] !== undefined ? (row[colMap[key]] || '') : '';
+
+        // 移除「代號」欄位標題
+        let html = `<table>
+            <thead>
+                <tr>
+                    <th>排名</th>
+                    <th>姓名</th>
+                    <th>12工</th>
+                    <th>13工</th>
+                    <th>1工</th>
+                    <th>2工</th>
+                    <th>3工</th>
+                    <th style="background:#e8eaf6; color:#1a237e;">累計業績<br><small>(不含加計)</small></th>
+                    <th>A&H</th>
+                    <th>特定商品</th>
+                    <th style="background:#fce4ec; color:#880e4f; font-size:1.1em;">累計業績<br><small>(含加計)</small></th>
+                    <th style="background:#ffebee; color:#d50000;">A&H獎金</th>
+                    <th>狀態</th>
+                </tr>
+            </thead>
+            <tbody>`;
+
+        const P_UNIT = 10000;
+        const specialIds = ['EL13016', 'EL13015', 'EL130AE'];
+        
+        let count = 0;
+
+        for(let i = startIdx; i < rows.length; i++) {
+            const row = rows[i];
+            if (!row || row.length === 0) continue;
+
+            const rankRaw = getRaw(row, 'Rank');
+            const rank = parseFloat(rankRaw);
+            const idRaw = getRaw(row, 'ID');
+            const id = String(idRaw).trim();
+            const name = getRaw(row, 'Name');
+            
+            if (!rankRaw && !id) continue;
+
+            const m12 = getVal(row, 'M12');
+            const m13 = getVal(row, 'M13');
+            const m1 = getVal(row, 'M1');
+            const m2 = getVal(row, 'M2');
+            const m3 = getVal(row, 'M3');
+            
+            const ahFyp = getVal(row, 'AH');
+            const specific = getVal(row, 'Specific');
+            const totalExcl = getVal(row, 'Total_Excl');
+            const totalIncl = getVal(row, 'Total_Incl');
+            const quota = getVal(row, 'Quota');
+            const deduct = getVal(row, 'Deduct');
+
+            const adjTotal = totalExcl - deduct;
+            const target = (100 * P_UNIT) + quota;
+            const passTotal = adjTotal >= target;
+            
+            const passAh = ahFyp >= (24 * P_UNIT);
+            let potentialBonus = 0;
+            if (passAh) {
+                const excess = ahFyp - (24 * P_UNIT);
+                if (excess >= P_UNIT) {
+                    const pCount = Math.floor(excess / P_UNIT);
+                    let rate = 0;
+                    if (pCount >= 1 && pCount < 25) rate = 800;
+                    else if (pCount >= 25 && pCount < 100) rate = 1000;
+                    else if (pCount >= 100) rate = 1200;
+                    potentialBonus = pCount * rate;
+                }
+            }
+
+            const eligible = passTotal && passAh;
+            
+            let statusHtml = '<span class="status-none">-</span>';
+            let rowClass = '';
+            let bonusClass = 'col-bonus'; 
+            
+            if (eligible) {
+                statusHtml = '<span class="status-pass">達標</span>';
+                if (potentialBonus > 0) {
+                    rowClass = 'row-winner';
+                }
+            } else {
+                if (!passTotal) {
+                    const deficit = target - adjTotal;
+                    const deficitWan = (deficit / 10000).toFixed(1);
+                    statusHtml = `<span class="status-fail">未達標</span><br><span class="status-diff">(差 ${deficitWan} 萬)</span>`;
+                    if (potentialBonus > 0) {
+                        bonusClass = 'col-bonus-pending';
+                    }
+                } else if (!passAh) {
+                    statusHtml = '<span class="status-none">未達標</span>';
+                }
+            }
+            
+            const bonusHtml = potentialBonus > 0 ? `$${fmt(potentialBonus)}` : '0';
+
+            let innovationThreshold = 40 * 10000; 
+            if (specialIds.includes(id)) {
+                innovationThreshold = 25 * 10000;
+            }
+
+            function getMonthCell(val) {
+                if (val >= innovationThreshold) {
+                    return `<td class="cell-innovation-pass">${fmt(val)} <span class="trophy-icon">🏆</span></td>`;
+                } else {
+                    return `<td>${fmt(val)}</td>`;
+                }
+            }
+
+            let rankHtml = rankRaw;
+            let rankClass = "col-rank";
+            if (!isNaN(rank) && rank <= 1350) {
+                rankClass = "cell-rank-top";
+                rankHtml = `<span class="rank-badge">Top</span>${rankRaw}`;
+            }
+
+            count++;
+
+            // 移除 id 欄位顯示
+            html += `<tr class="${rowClass}">
+                <td class="${rankClass}">${rankHtml}</td>
+                <td class="col-name">${name}</td>
+                <td>${fmt(m12)}</td>
+                ${getMonthCell(m13)}
+                ${getMonthCell(m1)}
+                ${getMonthCell(m2)}
+                ${getMonthCell(m3)}
+                <td class="col-total-excl">${fmt(totalExcl)}</td>
+                <td class="col-ah-fyp">${fmt(ahFyp)}</td>
+                <td>${fmt(specific)}</td>
+                <td class="col-total-incl">${fmt(totalIncl)}</td>
+                <td class="${bonusClass}">${bonusHtml}</td>
+                <td>${statusHtml}</td>
+            </tr>`;
+        }
+
+        html += '</tbody></table>';
+        
+        if(count === 0) {
+            html = '<div style="padding:40px; text-align:center; color:#888;">⚠️ 沒有讀取到數據。</div>';
+        }
+
+        document.getElementById('output').innerHTML = html;
+    }
+</script>
+
+</body>
+</html>
