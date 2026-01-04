@@ -8,17 +8,30 @@
     <style>
         /* 九州/日本風格配色 */
         :root {
-            --jp-indigo: #1a237e; /* 傳統藍 */
-            --jp-red: #b71c1c;    /* 日之丸紅 */
-            --jp-sakura: #fce4ec; /* 櫻花粉 */
-            --jp-gold: #ffd700;   /* 金色 */
-            --jp-bg: #fffbf0;     /* 和紙米色 */
+            --jp-indigo: #1a237e;
+            --jp-red: #b71c1c;
+            --jp-sakura: #fce4ec;
+            --jp-gold: #ffd700;
+            --jp-bg: #fffbf0;
             --jp-text: #2c3e50;
+            
+            --col-excl-bg: #e8eaf6;
+            --col-excl-text: #1a237e;
+            
+            /* 青色系：累計業績 */
+            --col-incl-bg: #e0f7fa; 
+            --col-incl-text: #006064; 
+            --col-incl-border: #0097a7; 
+            
+            /* 紅色系：A&H 獎金 */
+            --col-bonus-bg: #ffebee; 
+            --col-bonus-text: #d50000; 
         }
 
         body { 
             font-family: "Microsoft JhengHei", "Heiti TC", "Noto Sans JP", sans-serif; 
-            margin: 20px; 
+            margin: 0; 
+            padding: 20px;
             background-color: var(--jp-bg); 
             color: var(--jp-text);
             background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
@@ -26,15 +39,17 @@
         }
         
         .container { 
-            max-width: 98%; 
-            margin: 0 auto; 
+            width: 100%; 
+            max-width: 1280px; 
+            margin: 0 auto;
             background: rgba(255, 255, 255, 0.95); 
-            padding: 25px; 
+            padding: 20px; 
             box-shadow: 0 8px 30px rgba(0,0,0,0.1); 
             border-radius: 15px; 
             border: 1px solid #e0e0e0;
             position: relative;
             overflow: hidden;
+            box-sizing: border-box;
         }
 
         .container::before {
@@ -82,23 +97,24 @@
         .btn-box { font-size: 16px; font-weight: bold; color: var(--jp-indigo); }
         input[type="file"] { margin-left: 10px; }
         
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
         table { 
             width: 100%; 
             border-collapse: separate; 
             border-spacing: 0; 
-            margin-top: 5px; 
             font-size: 14px; 
-            border: 1px solid #ddd; 
-            border-radius: 8px; 
-            overflow: hidden; 
-            position: relative;
-            z-index: 1;
+            background-color: white;
         }
         
         th, td { 
             border-bottom: 1px solid #ddd; 
             border-right: 1px solid #ddd; 
-            padding: 12px 10px; 
+            padding: 6px 4px; 
             text-align: right; 
             white-space: nowrap; 
             vertical-align: middle; 
@@ -120,27 +136,29 @@
         tr:nth-child(even) { background-color: #fafafa; }
         tr:hover { background-color: #f0f4c3; transition: background 0.3s; }
 
-        .col-total-excl { background-color: #e8eaf6; color: var(--jp-indigo); font-weight: bold; border-left: 2px solid var(--jp-indigo); }
+        .col-total-excl { background-color: var(--col-excl-bg); color: var(--col-excl-text); font-weight: bold; border-left: 2px solid var(--col-excl-text); }
         .col-ah-fyp { font-weight: bold; color: #333; }
         
+        /* 累計業績 (含加計) */
         .col-total-incl { 
-            background-color: #fce4ec; 
-            color: #880e4f; 
-            font-weight: 900; 
-            font-size: 1.3em; 
-            border-left: 2px solid #880e4f; 
-        }
-
-        .col-bonus { 
-            color: #d50000; 
+            background-color: var(--col-incl-bg); 
+            color: var(--col-incl-text); 
             font-weight: 900; 
             font-size: 1.2em;
-            background-color: #ffebee;
+            border-left: 2px solid var(--col-incl-border); 
+        }
+
+        /* 獎金 */
+        .col-bonus { 
+            color: var(--col-bonus-text); 
+            font-weight: 900; 
+            font-size: 1.1em;
+            background-color: var(--col-bonus-bg);
         }
         .col-bonus-pending {
             color: #e65100;
             font-weight: bold;
-            font-size: 1.1em;
+            font-size: 1em;
             background-color: #fff3e0;
         }
 
@@ -152,13 +170,13 @@
             position: relative;
         }
 
-        /* 排名醒目 (Top 1350) - 再次加大 */
+        /* 排名醒目 (Top 1350) */
         .cell-rank-top {
             background-color: #ffccbc !important;
             color: #bf360c;
             font-weight: 900;
             border: 2px solid #ff7043;
-            font-size: 1.8em; /* 加大 */
+            font-size: 1.8em; 
             text-align: center;
             vertical-align: middle;
         }
@@ -166,7 +184,7 @@
             display: inline-block;
             background: #d84315;
             color: white;
-            font-size: 0.5em; /* 相對字體調整 */
+            font-size: 0.5em;
             padding: 2px 6px;
             border-radius: 10px;
             margin-right: 5px;
@@ -179,24 +197,22 @@
 
         tr.row-winner { background-color: #fff9c4 !important; }
         
-        /* 一般排名 - 也要加大 */
         .col-rank { 
             text-align: center; 
             font-weight: bold; 
             color: #555; 
             background-color: rgba(0,0,0,0.02); 
-            font-size: 1.5em; /* 加大 */
+            font-size: 1.5em; 
         }
         
-        /* 姓名欄位 - 再次加大並強化 */
         .col-name { 
             text-align: center; 
-            min-width: 120px; 
+            min-width: 100px; 
             font-weight: 900; 
-            font-size: 1.8em; /* 加大至 1.8em */
+            font-size: 1.8em; 
             color: #1a237e; 
-            text-shadow: 1px 1px 0px rgba(0,0,0,0.1); /* 增加陰影立體感 */
-            letter-spacing: 1px; /* 增加字距 */
+            text-shadow: 1px 1px 0px rgba(0,0,0,0.05);
+            letter-spacing: 1px;
         }
         
         .status-pass { 
@@ -221,6 +237,9 @@
             font-size: 20px;
             color: #ccc;
         }
+        
+        /* 小標題字體 */
+        th small { opacity: 0.8; font-weight: normal; display: block; margin-top: 2px;}
     </style>
 </head>
 <body>
@@ -241,7 +260,10 @@
     </h1>
 
     <div id="debugLog" class="debug-box"></div>
-    <div id="output"></div>
+    
+    <div class="table-wrapper">
+        <div id="output"></div>
+    </div>
     
     <div class="footer-deco">
         🌊 🏯 🚄 🍜 🌸
@@ -350,26 +372,38 @@
         return isNaN(num) ? 0 : num;
     }
 
+    // 格式化為「萬」單位，最大2位小數 (用於業績)
+    function fmtWan(n) {
+        if (n === 0 || isNaN(n)) return '0';
+        return (n / 10000).toLocaleString('zh-TW', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+    }
+
+    // 格式化為原始整數 (用於A&H獎金)
+    function fmtRaw(n) {
+        if (n === 0 || isNaN(n)) return '0';
+        return n.toLocaleString('zh-TW');
+    }
+
     function renderTable(rows, startIdx, colMap) {
-        const fmt = (n) => n.toLocaleString('zh-TW');
         const getVal = (row, key) => colMap[key] !== undefined ? cleanNum(row[colMap[key]]) : 0;
         const getRaw = (row, key) => colMap[key] !== undefined ? (row[colMap[key]] || '') : '';
 
+        // 表頭：A&H獎金移除了(萬)
         let html = `<table>
             <thead>
                 <tr>
                     <th>排名</th>
                     <th>姓名</th>
-                    <th>12工</th>
-                    <th>13工</th>
-                    <th>1工</th>
-                    <th>2工</th>
-                    <th>3工</th>
-                    <th style="background:#e8eaf6; color:#1a237e;">累計業績<br><small>(不含加計)</small></th>
-                    <th>A&H</th>
-                    <th>特定商品</th>
-                    <th style="background:#fce4ec; color:#880e4f; font-size:1.1em;">累計業績<br><small>(含加計)</small></th>
-                    <th style="background:#ffebee; color:#d50000;">A&H獎金</th>
+                    <th>12工<small>(萬)</small></th>
+                    <th>13工<small>(萬)</small></th>
+                    <th>1工<small>(萬)</small></th>
+                    <th>2工<small>(萬)</small></th>
+                    <th>3工<small>(萬)</small></th>
+                    <th style="background:var(--col-excl-bg); color:var(--col-excl-text);">累計業績<small>(不含加計/萬)</small></th>
+                    <th>A&H<small>(萬)</small></th>
+                    <th>特定<small>(萬)</small></th>
+                    <th style="background:var(--col-incl-bg); color:var(--col-incl-text); font-size:1.1em;">累計業績<small>(含加計/萬)</small></th>
+                    <th style="background:var(--col-bonus-bg); color:var(--col-bonus-text);">A&H獎金</th>
                     <th>狀態</th>
                 </tr>
             </thead>
@@ -437,8 +471,10 @@
             } else {
                 if (!passTotal) {
                     const deficit = target - adjTotal;
-                    const deficitWan = (deficit / 10000).toFixed(1);
+                    // 差額維持 (萬)
+                    const deficitWan = (deficit / 10000).toLocaleString('zh-TW', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
                     statusHtml = `<span class="status-fail">未達標</span><br><span class="status-diff">(差 ${deficitWan} 萬)</span>`;
+                    
                     if (potentialBonus > 0) {
                         bonusClass = 'col-bonus-pending';
                     }
@@ -447,7 +483,8 @@
                 }
             }
             
-            const bonusHtml = potentialBonus > 0 ? `$${fmt(potentialBonus)}` : '0';
+            // 獎金顯示：使用原始整數
+            const bonusHtml = potentialBonus > 0 ? `$${fmtRaw(potentialBonus)}` : '0';
 
             let innovationThreshold = 40 * 10000; 
             if (specialIds.includes(id)) {
@@ -456,9 +493,10 @@
 
             function getMonthCell(val) {
                 if (val >= innovationThreshold) {
-                    return `<td class="cell-innovation-pass">${fmt(val)} <span class="trophy-icon">🏆</span></td>`;
+                    // 單月業績：使用 (萬)
+                    return `<td class="cell-innovation-pass">${fmtWan(val)} <span class="trophy-icon">🏆</span></td>`;
                 } else {
-                    return `<td>${fmt(val)}</td>`;
+                    return `<td>${fmtWan(val)}</td>`;
                 }
             }
 
@@ -471,18 +509,19 @@
 
             count++;
 
+            // 業績數值欄位：使用 fmtWan (萬)
             html += `<tr class="${rowClass}">
                 <td class="${rankClass}">${rankHtml}</td>
                 <td class="col-name">${name}</td>
-                <td>${fmt(m12)}</td>
+                <td>${fmtWan(m12)}</td>
                 ${getMonthCell(m13)}
                 ${getMonthCell(m1)}
                 ${getMonthCell(m2)}
                 ${getMonthCell(m3)}
-                <td class="col-total-excl">${fmt(totalExcl)}</td>
-                <td class="col-ah-fyp">${fmt(ahFyp)}</td>
-                <td>${fmt(specific)}</td>
-                <td class="col-total-incl">${fmt(totalIncl)}</td>
+                <td class="col-total-excl">${fmtWan(totalExcl)}</td>
+                <td class="col-ah-fyp">${fmtWan(ahFyp)}</td>
+                <td>${fmtWan(specific)}</td>
+                <td class="col-total-incl">${fmtWan(totalIncl)}</td>
                 <td class="${bonusClass}">${bonusHtml}</td>
                 <td>${statusHtml}</td>
             </tr>`;
