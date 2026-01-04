@@ -6,7 +6,7 @@
     <title>九州高峰會業績排名 & A&H獎金明細</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        /* 九州/日本風格配色 */
+        /* --- 基礎配色 --- */
         :root {
             --jp-indigo: #1a237e;
             --jp-red: #b71c1c;
@@ -15,23 +15,24 @@
             --jp-bg: #fffbf0;
             --jp-text: #2c3e50;
             
+            /* 戰報看板配色 */
+            --db-header-bg: #0d2e53;
+            --db-highlight: #d32f2f;
+            
+            /* 表格配色 */
             --col-excl-bg: #e8eaf6;
             --col-excl-text: #1a237e;
-            
-            /* 青色系：累計業績 */
-            --col-incl-bg: #e0f7fa; 
-            --col-incl-text: #006064; 
-            --col-incl-border: #0097a7; 
-            
-            /* 紅色系：A&H 獎金 */
-            --col-bonus-bg: #ffebee; 
-            --col-bonus-text: #d50000; 
+            --col-incl-bg: #e0f7fa;
+            --col-incl-text: #006064;
+            --col-incl-border: #0097a7;
+            --col-bonus-bg: #ffebee;
+            --col-bonus-text: #d50000;
         }
 
         body { 
             font-family: "Microsoft JhengHei", "Heiti TC", "Noto Sans JP", sans-serif; 
             margin: 0; 
-            padding: 20px;
+            padding: 10px;
             background-color: var(--jp-bg); 
             color: var(--jp-text);
             background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
@@ -43,7 +44,7 @@
             max-width: 1280px; 
             margin: 0 auto;
             background: rgba(255, 255, 255, 0.95); 
-            padding: 20px; 
+            padding: 15px;
             box-shadow: 0 8px 30px rgba(0,0,0,0.1); 
             border-radius: 15px; 
             border: 1px solid #e0e0e0;
@@ -62,45 +63,206 @@
             z-index: 0;
             transform: rotate(20deg);
         }
-        
-        .header-section { 
-            text-align: center; 
-            margin-bottom: 20px; 
-            position: relative;
-            z-index: 1;
-        }
-        
-        .controls { 
-            background: white; 
-            padding: 15px 30px; 
-            border-radius: 50px; 
-            border: 2px solid var(--jp-indigo); 
-            margin-bottom: 25px; 
-            display: inline-block; 
-            min-width: 300px;
+
+        /* --- 頂部上傳區 --- */
+        .top-upload-section {
+            background: white;
+            padding: 10px;
+            border-radius: 50px;
+            border: 2px solid var(--jp-indigo);
+            margin-bottom: 15px;
+            text-align: center;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            position: relative;
+            z-index: 5;
         }
-        
+
+        .btn-box { font-size: 15px; font-weight: bold; color: var(--jp-indigo); }
+        input[type="file"] { margin-left: 10px; font-size: 13px; }
+        #statusMsg { font-weight: bold; display: inline-block; margin-left: 10px; color: #555; font-size: 0.9em; }
+
         h1 { 
             text-align: center; 
             color: var(--jp-indigo); 
-            margin-top: 5px; 
+            margin-top: 0; 
             margin-bottom: 15px; 
-            letter-spacing: 2px; 
-            font-size: 2em;
+            letter-spacing: 1px; 
+            font-size: 1.8em;
             font-weight: 900;
             text-shadow: 2px 2px 0px rgba(0,0,0,0.1);
         }
 
-        .kyushu-icon { font-size: 1.5em; vertical-align: middle; margin: 0 5px; }
+        .kyushu-icon { font-size: 1.4em; vertical-align: middle; margin: 0 5px; }
+
+        /* --- 戰報看板 (排版修正) --- */
+        .dashboard-section {
+            display: flex;
+            flex-direction: row;
+            align-items: stretch; /* 讓標題高度自動拉伸 */
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: linear-gradient(135deg, #fff9c4 0%, #fff 100%);
+            border: 2px solid #fbc02d;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 2;
+            /* 【修正】禁止換行，確保日曆在右邊 */
+            flex-wrap: nowrap; 
+        }
+
+        /* 直式標題 */
+        .dash-title {
+            writing-mode: vertical-rl;
+            text-orientation: upright;
+            font-size: 1.8em;
+            font-weight: 900;
+            color: white;
+            background: var(--db-header-bg);
+            padding: 10px 15px;
+            border-radius: 8px;
+            letter-spacing: 5px;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0; /* 不壓縮 */
+        }
+
+        /* 戰報表格容器 */
+        .dash-table-container {
+            flex: 1; /* 自動填滿中間空間 */
+            max-width: 600px;
+            min-width: 300px;
+        }
+
+        .dash-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 1.1em;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #0d2e53;
+            height: 100%; /* 撐開高度 */
+        }
+
+        .dash-table th {
+            background-color: var(--db-header-bg);
+            color: white;
+            padding: 8px;
+            font-size: 1em;
+        }
+
+        .dash-table td {
+            padding: 6px 10px;
+            text-align: center;
+            border-bottom: 1px solid #ccc;
+            font-weight: bold;
+        }
+
+        .dash-table tr:last-child td { border-bottom: none; }
         
-        .btn-box { font-size: 16px; font-weight: bold; color: var(--jp-indigo); }
-        input[type="file"] { margin-left: 10px; }
+        .dash-input {
+            width: 80px;
+            padding: 4px;
+            font-size: 1.1em;
+            font-weight: bold;
+            text-align: center;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            color: #333;
+        }
         
+        .val-highlight { color: var(--db-highlight); font-size: 1.2em; font-weight: 900; }
+        .row-rank-name { text-align: left !important; color: #000; font-weight: 800; font-size: 1em; }
+        .rank-label { font-size: 0.9em; color: #555; }
+
+        /* --- 倒數日曆 (再放大 + 靠右) --- */
+        .countdown-container {
+            flex-shrink: 0; /* 不被壓縮 */
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin-left: 10px;
+        }
+
+        .countdown-label {
+            font-size: 1.5em; /* 標題加大 */
+            font-weight: 900;
+            color: #000;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 0 white;
+        }
+
+        .calendar-icon {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #ccc;
+            width: 140px; /* 【修正】寬度加大 */
+            position: relative;
+            padding-bottom: 15px;
+            animation: pulse-glow 2.5s infinite ease-in-out; /* 呼吸燈 */
+        }
+
+        @keyframes pulse-glow {
+            0% { transform: scale(1); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+            50% { transform: scale(1.05); box-shadow: 0 0 20px rgba(211, 47, 47, 0.5); border-color: #d32f2f; }
+            100% { transform: scale(1); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        }
+
+        .calendar-top {
+            background: #d32f2f;
+            height: 25px;
+            border-radius: 12px 12px 0 0;
+            position: relative;
+        }
+        
+        .calendar-top::before, .calendar-top::after {
+            content: "";
+            position: absolute;
+            top: -8px;
+            width: 10px;
+            height: 22px;
+            background: #555;
+            border-radius: 5px;
+            border: 1px solid #333;
+        }
+        .calendar-top::before { left: 25px; }
+        .calendar-top::after { right: 25px; }
+
+        .calendar-input {
+            width: 80%;
+            border: none;
+            font-size: 4em; /* 【修正】數字特大 */
+            font-weight: 900;
+            color: #d32f2f;
+            text-align: center;
+            margin-top: 5px;
+            outline: none;
+            background: transparent;
+            line-height: 1.2;
+        }
+
+        /* 手機版適應 (螢幕太小才換行) */
+        @media (max-width: 850px) {
+            .dashboard-section { flex-wrap: wrap; }
+            .dash-title { writing-mode: horizontal-tb; width: 100%; min-height: auto; font-size: 1.4em; letter-spacing: 1px; padding: 10px; }
+            .dash-table-container { min-width: 100%; order: 2; }
+            .countdown-container { width: 100%; order: 1; margin-bottom: 10px; }
+        }
+
+        /* --- 主表格 --- */
         .table-wrapper {
             overflow-x: auto;
             border-radius: 8px;
             border: 1px solid #ddd;
+            margin-top: 0; 
         }
 
         table { 
@@ -132,14 +294,13 @@
         }
         
         td:last-child, th:last-child { border-right: none; }
-        
         tr:nth-child(even) { background-color: #fafafa; }
         tr:hover { background-color: #f0f4c3; transition: background 0.3s; }
 
+        /* 特殊欄位 */
         .col-total-excl { background-color: var(--col-excl-bg); color: var(--col-excl-text); font-weight: bold; border-left: 2px solid var(--col-excl-text); }
         .col-ah-fyp { font-weight: bold; color: #333; }
         
-        /* 累計業績 (含加計) */
         .col-total-incl { 
             background-color: var(--col-incl-bg); 
             color: var(--col-incl-text); 
@@ -148,116 +309,90 @@
             border-left: 2px solid var(--col-incl-border); 
         }
 
-        /* 獎金 */
         .col-bonus { 
             color: var(--col-bonus-text); 
             font-weight: 900; 
             font-size: 1.1em;
             background-color: var(--col-bonus-bg);
         }
-        .col-bonus-pending {
-            color: #e65100;
-            font-weight: bold;
-            font-size: 1em;
-            background-color: #fff3e0;
-        }
+        .col-bonus-pending { color: #e65100; font-weight: bold; font-size: 1em; background-color: #fff3e0; }
 
-        .cell-innovation-pass {
-            background-color: #f3e5f5 !important;
-            color: #4a148c;
-            font-weight: bold;
-            border: 2px solid #ce93d8;
-            position: relative;
-        }
+        .cell-innovation-pass { background-color: #f3e5f5 !important; color: #4a148c; font-weight: bold; border: 2px solid #ce93d8; position: relative; }
 
-        /* 排名醒目 (Top 1350) */
-        .cell-rank-top {
-            background-color: #ffccbc !important;
-            color: #bf360c;
-            font-weight: 900;
-            border: 2px solid #ff7043;
-            font-size: 1.8em; 
-            text-align: center;
-            vertical-align: middle;
-        }
-        .rank-badge {
-            display: inline-block;
-            background: #d84315;
-            color: white;
-            font-size: 0.5em;
-            padding: 2px 6px;
-            border-radius: 10px;
-            margin-right: 5px;
-            vertical-align: middle;
-            position: relative;
-            top: -2px;
-        }
-
+        /* 排名與姓名 - 大字體 */
+        .cell-rank-top { background-color: #ffccbc !important; color: #bf360c; font-weight: 900; border: 2px solid #ff7043; font-size: 1.8em; text-align: center; vertical-align: middle; }
+        .rank-badge { display: inline-block; background: #d84315; color: white; font-size: 0.5em; padding: 2px 6px; border-radius: 10px; margin-right: 5px; vertical-align: middle; position: relative; top: -2px; }
         .trophy-icon { display: inline-block; margin-left: 5px; font-size: 1.1em; }
-
         tr.row-winner { background-color: #fff9c4 !important; }
+        .col-rank { text-align: center; font-weight: bold; color: #555; background-color: rgba(0,0,0,0.02); font-size: 1.5em; }
+        .col-name { text-align: center; min-width: 100px; font-weight: 900; font-size: 1.8em; color: #1a237e; text-shadow: 1px 1px 0px rgba(0,0,0,0.05); letter-spacing: 1px; }
         
-        .col-rank { 
-            text-align: center; 
-            font-weight: bold; 
-            color: #555; 
-            background-color: rgba(0,0,0,0.02); 
-            font-size: 1.5em; 
-        }
-        
-        .col-name { 
-            text-align: center; 
-            min-width: 100px; 
-            font-weight: 900; 
-            font-size: 1.8em; 
-            color: #1a237e; 
-            text-shadow: 1px 1px 0px rgba(0,0,0,0.05);
-            letter-spacing: 1px;
-        }
-        
-        .status-pass { 
-            color: #2e7d32; 
-            font-weight: bold; 
-            border: 1px solid #2e7d32; 
-            padding: 2px 8px; 
-            border-radius: 12px; 
-            background: #e8f5e9; 
-            display: inline-block;
-        }
+        .status-pass { color: #2e7d32; font-weight: bold; border: 1px solid #2e7d32; padding: 2px 8px; border-radius: 12px; background: #e8f5e9; display: inline-block; }
         .status-fail { color: #c62828; font-weight: bold; font-size: 0.9em; } 
         .status-diff { color: #d84315; font-size: 0.85em; display: block; margin-top: 2px; }
         .status-none { color: #bdbdbd; font-size: 0.8em; }
         
-        #statusMsg { font-weight: bold; display: block; margin-top: 5px; }
+        .cutoff-pass-icon { color: #2e7d32; font-size: 0.8em; margin-left: 4px; vertical-align: top; }
+
         .debug-box { display: none; }
-        
-        .footer-deco {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 20px;
-            color: #ccc;
-        }
-        
-        /* 小標題字體 */
+        .footer-deco { text-align: center; margin-top: 20px; font-size: 20px; color: #ccc; }
         th small { opacity: 0.8; font-weight: normal; display: block; margin-top: 2px;}
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header-section">
-        <div class="controls">
-            <div class="btn-box">
-                📂 上傳檔案：
-                <input type="file" id="fileInput" accept=".xlsx, .xls, .csv">
-            </div>
-            <div id="statusMsg" style="color: var(--jp-indigo);">請選擇「高峰會業績速報.xlsx」...</div>
-        </div>
+    
+    <div class="top-upload-section">
+        <span class="btn-box">📂 選擇業績檔案：</span>
+        <input type="file" id="fileInput" accept=".xlsx, .xls, .csv">
+        <div id="statusMsg" style="color: #0d2e53;">(請上傳檔案)</div>
     </div>
 
     <h1>
         <span class="kyushu-icon">🌋</span> 九州高峰會 <span class="kyushu-icon">♨️</span> 業績排名 & A&H獎金明細
     </h1>
+
+    <div class="dashboard-section">
+        <div class="dash-title">名次戰報</div>
+        
+        <div class="dash-table-container">
+            <table class="dash-table">
+                <thead>
+                    <tr>
+                        <th>名次</th>
+                        <th>累計加計FYP (萬)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="row-rank-name">第20名 <span class="rank-label">(首席團)</span></td>
+                        <td><input type="number" id="input_rank20" class="dash-input" value="766.1" step="0.1"></td>
+                    </tr>
+                    <tr>
+                        <td class="row-rank-name">第90名 <span class="rank-label">(名次獎)</span></td>
+                        <td><input type="number" id="input_rank90" class="dash-input" value="391.1" step="0.1"></td>
+                    </tr>
+                    <tr>
+                        <td class="row-rank-name" style="color:#d32f2f;">第1350名 <span class="rank-label">(去九州)</span></td>
+                        <td><input type="number" id="input_rank1350" class="dash-input val-highlight" value="119.1" step="0.1"></td>
+                    </tr>
+                    <tr>
+                        <td class="row-rank-name">第2000名 <span class="rank-label">(1萬元)</span></td>
+                        <td><input type="number" id="input_rank2000" class="dash-input" value="92.6" step="0.1"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="countdown-container">
+            <div class="countdown-label">競賽倒數</div>
+            <div class="calendar-icon">
+                <div class="calendar-top"></div>
+                <input type="number" id="input_countdown" class="calendar-input" value="81">
+            </div>
+        </div>
+    </div>
 
     <div id="debugLog" class="debug-box"></div>
     
@@ -273,6 +408,17 @@
 <script>
     const logBox = document.getElementById('debugLog');
     const statusMsg = document.getElementById('statusMsg');
+    
+    const inputs = document.querySelectorAll('.dash-input');
+    inputs.forEach(input => {
+        input.addEventListener('change', () => {
+            if (lastProcessedData) {
+                renderTable(lastProcessedData.rows, lastProcessedData.startIdx, lastProcessedData.colMap);
+            }
+        });
+    });
+
+    let lastProcessedData = null;
 
     document.getElementById('fileInput').addEventListener('change', handleFile, false);
 
@@ -283,7 +429,8 @@
         this.value = '';
 
         document.getElementById('output').innerHTML = '';
-        statusMsg.innerText = "⏳ 正在讀取數據...";
+        statusMsg.innerText = "⏳ 讀取中...";
+        statusMsg.style.color = "#1565c0";
         
         const reader = new FileReader();
         reader.onload = function(e) {
@@ -351,6 +498,8 @@
                 }
                 if(dataStartRow === 0) dataStartRow = 5;
 
+                lastProcessedData = { rows, startIdx: dataStartRow, colMap };
+
                 statusMsg.innerText = "✅ 計算完成！";
                 statusMsg.style.color = "#2e7d32";
                 renderTable(rows, dataStartRow, colMap);
@@ -358,6 +507,7 @@
             } catch (err) {
                 console.error(err);
                 statusMsg.innerText = "❌ 程式錯誤: " + err.message;
+                statusMsg.style.color = "#d32f2f";
             }
         };
         reader.readAsArrayBuffer(file);
@@ -372,13 +522,11 @@
         return isNaN(num) ? 0 : num;
     }
 
-    // 格式化為「萬」單位，最大2位小數 (用於業績)
     function fmtWan(n) {
         if (n === 0 || isNaN(n)) return '0';
         return (n / 10000).toLocaleString('zh-TW', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
     }
 
-    // 格式化為原始整數 (用於A&H獎金)
     function fmtRaw(n) {
         if (n === 0 || isNaN(n)) return '0';
         return n.toLocaleString('zh-TW');
@@ -388,7 +536,8 @@
         const getVal = (row, key) => colMap[key] !== undefined ? cleanNum(row[colMap[key]]) : 0;
         const getRaw = (row, key) => colMap[key] !== undefined ? (row[colMap[key]] || '') : '';
 
-        // 表頭：A&H獎金移除了(萬)
+        const cutoff1350 = parseFloat(document.getElementById('input_rank1350').value) || 119.1;
+
         let html = `<table>
             <thead>
                 <tr>
@@ -471,10 +620,8 @@
             } else {
                 if (!passTotal) {
                     const deficit = target - adjTotal;
-                    // 差額維持 (萬)
                     const deficitWan = (deficit / 10000).toLocaleString('zh-TW', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
                     statusHtml = `<span class="status-fail">未達標</span><br><span class="status-diff">(差 ${deficitWan} 萬)</span>`;
-                    
                     if (potentialBonus > 0) {
                         bonusClass = 'col-bonus-pending';
                     }
@@ -483,8 +630,13 @@
                 }
             }
             
-            // 獎金顯示：使用原始整數
             const bonusHtml = potentialBonus > 0 ? `$${fmtRaw(potentialBonus)}` : '0';
+
+            const totalInclWan = totalIncl / 10000;
+            let aboveCutoffHtml = '';
+            if (totalInclWan >= cutoff1350) {
+                aboveCutoffHtml = '<span class="cutoff-pass-icon" title="高於戰報門檻">✅</span>';
+            }
 
             let innovationThreshold = 40 * 10000; 
             if (specialIds.includes(id)) {
@@ -493,7 +645,6 @@
 
             function getMonthCell(val) {
                 if (val >= innovationThreshold) {
-                    // 單月業績：使用 (萬)
                     return `<td class="cell-innovation-pass">${fmtWan(val)} <span class="trophy-icon">🏆</span></td>`;
                 } else {
                     return `<td>${fmtWan(val)}</td>`;
@@ -509,7 +660,6 @@
 
             count++;
 
-            // 業績數值欄位：使用 fmtWan (萬)
             html += `<tr class="${rowClass}">
                 <td class="${rankClass}">${rankHtml}</td>
                 <td class="col-name">${name}</td>
@@ -521,7 +671,7 @@
                 <td class="col-total-excl">${fmtWan(totalExcl)}</td>
                 <td class="col-ah-fyp">${fmtWan(ahFyp)}</td>
                 <td>${fmtWan(specific)}</td>
-                <td class="col-total-incl">${fmtWan(totalIncl)}</td>
+                <td class="col-total-incl">${fmtWan(totalIncl)}${aboveCutoffHtml}</td>
                 <td class="${bonusClass}">${bonusHtml}</td>
                 <td>${statusHtml}</td>
             </tr>`;
