@@ -6,9 +6,9 @@
     <title>九州高峰會業績排名 & A&H獎金明細</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        /* --- 九州/日本風格配色 --- */
+        /* 九州/日本風格配色 */
         :root {
-            --jp-indigo: #1a237e; /* 傳統藍 (紺色) */
+            --jp-indigo: #1a237e; /* 傳統藍 */
             --jp-red: #b71c1c;    /* 日之丸紅 */
             --jp-sakura: #fce4ec; /* 櫻花粉 */
             --jp-gold: #ffd700;   /* 金色 */
@@ -21,7 +21,6 @@
             margin: 20px; 
             background-color: var(--jp-bg); 
             color: var(--jp-text);
-            /* 背景紋理 */
             background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
             background-size: 20px 20px;
         }
@@ -38,7 +37,6 @@
             overflow: hidden;
         }
 
-        /* 裝飾性背景元素 (櫻花飄落) */
         .container::before {
             content: "🌸";
             position: absolute;
@@ -79,13 +77,11 @@
             text-shadow: 2px 2px 0px rgba(0,0,0,0.1);
         }
 
-        /* 九州元素圖示 */
         .kyushu-icon { font-size: 1.5em; vertical-align: middle; margin: 0 5px; }
         
         .btn-box { font-size: 16px; font-weight: bold; color: var(--jp-indigo); }
         input[type="file"] { margin-left: 10px; }
         
-        /* --- 表格樣式 --- */
         table { 
             width: 100%; 
             border-collapse: separate; 
@@ -108,7 +104,6 @@
             vertical-align: middle; 
         }
         
-        /* 表頭樣式 - 傳統藍 */
         th { 
             background-color: var(--jp-indigo); 
             color: white; 
@@ -125,34 +120,23 @@
         tr:nth-child(even) { background-color: #fafafa; }
         tr:hover { background-color: #f0f4c3; transition: background 0.3s; }
 
-        /* --- 特殊欄位顏色 --- */
-        /* 累計業績 (不含加計) */
-        .col-total-excl { 
-            background-color: #e8eaf6; 
-            color: var(--jp-indigo); 
-            font-weight: bold; 
-            border-left: 2px solid var(--jp-indigo); 
-        }
-        
+        .col-total-excl { background-color: #e8eaf6; color: var(--jp-indigo); font-weight: bold; border-left: 2px solid var(--jp-indigo); }
         .col-ah-fyp { font-weight: bold; color: #333; }
         
-        /* 累計業績 (含加計) - 加深放大醒目 */
         .col-total-incl { 
-            background-color: #fce4ec; /* 櫻花粉底 */
+            background-color: #fce4ec; 
             color: #880e4f; 
             font-weight: 900; 
             font-size: 1.3em; 
             border-left: 2px solid #880e4f; 
         }
 
-        /* A&H 獎金 (達標 - 紅色) */
         .col-bonus { 
             color: #d50000; 
             font-weight: 900; 
             font-size: 1.2em;
             background-color: #ffebee;
         }
-        /* A&H 獎金 (未達標但有金額 - 橘色) */
         .col-bonus-pending {
             color: #e65100;
             font-weight: bold;
@@ -160,7 +144,6 @@
             background-color: #fff3e0;
         }
 
-        /* 創新獎 (單月達標 - 紫色) */
         .cell-innovation-pass {
             background-color: #f3e5f5 !important;
             color: #4a148c;
@@ -169,43 +152,53 @@
             position: relative;
         }
 
-        /* 排名醒目 (Top 1350 - 橘紅) */
+        /* 排名醒目 (Top 1350) - 再次加大 */
         .cell-rank-top {
             background-color: #ffccbc !important;
             color: #bf360c;
             font-weight: 900;
             border: 2px solid #ff7043;
-            font-size: 1.1em;
+            font-size: 1.8em; /* 加大 */
             text-align: center;
+            vertical-align: middle;
         }
         .rank-badge {
             display: inline-block;
             background: #d84315;
             color: white;
-            font-size: 0.7em;
-            padding: 1px 5px;
+            font-size: 0.5em; /* 相對字體調整 */
+            padding: 2px 6px;
             border-radius: 10px;
-            margin-right: 4px;
+            margin-right: 5px;
             vertical-align: middle;
+            position: relative;
+            top: -2px;
         }
 
         .trophy-icon { display: inline-block; margin-left: 5px; font-size: 1.1em; }
 
-        /* 完全達標行 (A&H + 總業績) - 金色背景 */
         tr.row-winner { background-color: #fff9c4 !important; }
         
-        .col-rank { text-align: center; font-weight: bold; color: #555; background-color: rgba(0,0,0,0.02); }
-        
-        /* 姓名欄位優化：置中、加深、放大 */
-        .col-name { 
+        /* 一般排名 - 也要加大 */
+        .col-rank { 
             text-align: center; 
-            min-width: 90px; 
-            font-weight: 900; 
-            font-size: 1.2em; 
-            color: var(--jp-text);
+            font-weight: bold; 
+            color: #555; 
+            background-color: rgba(0,0,0,0.02); 
+            font-size: 1.5em; /* 加大 */
         }
         
-        /* 狀態標籤 */
+        /* 姓名欄位 - 再次加大並強化 */
+        .col-name { 
+            text-align: center; 
+            min-width: 120px; 
+            font-weight: 900; 
+            font-size: 1.8em; /* 加大至 1.8em */
+            color: #1a237e; 
+            text-shadow: 1px 1px 0px rgba(0,0,0,0.1); /* 增加陰影立體感 */
+            letter-spacing: 1px; /* 增加字距 */
+        }
+        
         .status-pass { 
             color: #2e7d32; 
             font-weight: bold; 
@@ -216,14 +209,12 @@
             display: inline-block;
         }
         .status-fail { color: #c62828; font-weight: bold; font-size: 0.9em; } 
-        /* 差額顯示 */
         .status-diff { color: #d84315; font-size: 0.85em; display: block; margin-top: 2px; }
         .status-none { color: #bdbdbd; font-size: 0.8em; }
         
         #statusMsg { font-weight: bold; display: block; margin-top: 5px; }
         .debug-box { display: none; }
         
-        /* 頁腳裝飾 */
         .footer-deco {
             text-align: center;
             margin-top: 20px;
@@ -267,7 +258,6 @@
         const file = e.target.files[0];
         if (!file) return;
 
-        // 【關鍵修正】清空 value，確保重複選擇同一檔案時能再次觸發
         this.value = '';
 
         document.getElementById('output').innerHTML = '';
@@ -279,7 +269,6 @@
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, {type: 'array'});
                 
-                // 強制讀取第一張工作表
                 const firstSheetName = workbook.SheetNames[0];
                 const ws = workbook.Sheets[firstSheetName];
                 const rows = XLSX.utils.sheet_to_json(ws, {header: 1});
@@ -294,7 +283,6 @@
                 let totalCols = [];
                 let dataStartRow = 0;
 
-                // 掃描前 20 行找標題
                 for (let r = 0; r < Math.min(rows.length, 20); r++) {
                     const row = rows[r];
                     if (!Array.isArray(row)) continue;
@@ -320,21 +308,18 @@
                     });
                 }
 
-                // 判斷累計業績欄位 (第一個通常是不含，最後一個是含加計)
                 if (totalCols.length > 0) {
                     totalCols.sort((a, b) => a - b);
                     colMap['Total_Excl'] = totalCols[0];
                     colMap['Total_Incl'] = totalCols.length > 1 ? totalCols[totalCols.length - 1] : totalCols[0];
                 }
 
-                // 基本欄位檢查
                 if (colMap['AH'] === undefined || colMap['Rank'] === undefined) {
                     statusMsg.innerText = "❌ 找不到符合格式的資料 (需包含序號、A&H業績)";
                     statusMsg.style.color = "#d32f2f";
                     return;
                 }
 
-                // 尋找數據起始行 (找序號是數字的那一行)
                 for(let k=0; k<30; k++) {
                     const testRow = rows[k];
                     if(testRow && testRow[colMap['Rank']] && !isNaN(parseFloat(testRow[colMap['Rank']]))) {
@@ -370,7 +355,6 @@
         const getVal = (row, key) => colMap[key] !== undefined ? cleanNum(row[colMap[key]]) : 0;
         const getRaw = (row, key) => colMap[key] !== undefined ? (row[colMap[key]] || '') : '';
 
-        // 建立表格 HTML，移除「代號」標題
         let html = `<table>
             <thead>
                 <tr>
@@ -403,13 +387,11 @@
             const rankRaw = getRaw(row, 'Rank');
             const rank = parseFloat(rankRaw);
             const idRaw = getRaw(row, 'ID');
-            const id = String(idRaw).trim(); // 仍需讀取 ID 做判斷
+            const id = String(idRaw).trim();
             const name = getRaw(row, 'Name');
             
-            // 無排名且無ID視為無效行
             if (!rankRaw && !id) continue;
 
-            // 讀取業績數據
             const m12 = getVal(row, 'M12');
             const m13 = getVal(row, 'M13');
             const m1 = getVal(row, 'M1');
@@ -423,14 +405,10 @@
             const quota = getVal(row, 'Quota');
             const deduct = getVal(row, 'Deduct');
 
-            // --- 邏輯判斷區 ---
-            
-            // 1. 總業績門檻判斷
             const adjTotal = totalExcl - deduct;
             const target = (100 * P_UNIT) + quota;
             const passTotal = adjTotal >= target;
             
-            // 2. A&H 獎金計算 (獨立於總業績)
             const passAh = ahFyp >= (24 * P_UNIT);
             let potentialBonus = 0;
             if (passAh) {
@@ -445,42 +423,32 @@
                 }
             }
 
-            // 3. 綜合資格判定
             const eligible = passTotal && passAh;
             
-            // 4. 狀態欄位顯示邏輯
             let statusHtml = '<span class="status-none">-</span>';
             let rowClass = '';
-            let bonusClass = 'col-bonus'; // 預設紅色
+            let bonusClass = 'col-bonus'; 
             
             if (eligible) {
-                // 完全達標
                 statusHtml = '<span class="status-pass">達標</span>';
                 if (potentialBonus > 0) {
-                    rowClass = 'row-winner'; // 整列亮燈
+                    rowClass = 'row-winner';
                 }
             } else {
-                // 未達標
                 if (!passTotal) {
-                    // 總業績沒過 -> 顯示差額
                     const deficit = target - adjTotal;
-                    // 換算成萬元，取小數點一位
                     const deficitWan = (deficit / 10000).toFixed(1);
                     statusHtml = `<span class="status-fail">未達標</span><br><span class="status-diff">(差 ${deficitWan} 萬)</span>`;
-                    
-                    // 如果這時候有 A&H 獎金，顯示為暫定(橘色)
                     if (potentialBonus > 0) {
                         bonusClass = 'col-bonus-pending';
                     }
                 } else if (!passAh) {
-                    // 總業績過了但 A&H 沒過
                     statusHtml = '<span class="status-none">未達標</span>';
                 }
             }
             
             const bonusHtml = potentialBonus > 0 ? `$${fmt(potentialBonus)}` : '0';
 
-            // 5. 創新獎判斷 (單月)
             let innovationThreshold = 40 * 10000; 
             if (specialIds.includes(id)) {
                 innovationThreshold = 25 * 10000;
@@ -494,7 +462,6 @@
                 }
             }
 
-            // 6. 排名醒目判斷
             let rankHtml = rankRaw;
             let rankClass = "col-rank";
             if (!isNaN(rank) && rank <= 1350) {
@@ -504,7 +471,6 @@
 
             count++;
 
-            // 組合 HTML (移除 ID 欄位)
             html += `<tr class="${rowClass}">
                 <td class="${rankClass}">${rankHtml}</td>
                 <td class="col-name">${name}</td>

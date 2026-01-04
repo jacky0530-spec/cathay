@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 投資戰情室 V9.2 (深度投顧版)</title>
+    <style>
+        :root { --bg:#0f172a; --card:#1e293b; --text:#f8fafc; --sub:#94a3b8; --green:#10b981; --red:#ef4444; --blue:#3b82f6; --purple:#8b5cf6; --border:#334155; }
+        body { font-family:'Segoe UI',Roboto,sans-serif; background:var(--bg); color:var(--text); margin:0; padding:20px; display:flex; flex-direction:column; align-items:center; }
+        
+        .header-panel { width:100%; max-width:1200px; display:flex; gap:15px; flex-wrap:wrap; margin-bottom:20px; }
+        .summary-card { flex:1; min-width:250px; background:linear-gradient(145deg,#1e293b,#0f172a); padding:20px; border-radius:12px; border:1px solid var(--border); }
+        .summary-val { font-size:2rem; font-weight:bold; font-family:monospace; }
+        
+        .controls { width:100%; max-width:1200px; background:var(--card); padding:15px; border-radius:12px; display:flex; gap:15px; align-items:center; flex-wrap:wrap; border:1px solid var(--border); margin-bottom:20px; }
+        input { background:#020617; border:1px solid var(--border); color:#fff; padding:8px; border-radius:6px; width: 250px; }
+        button { background:var(--blue); color:white; border:none; padding:10px 15px; border-radius:6px; cursor:pointer; font-weight:bold; }
+        button:disabled { background:var(--sub); cursor:not-allowed; opacity: 0.7; }
+        button.calc-btn { background:var(--purple); box-shadow: 0 0 10px rgba(139, 92, 246, 0.4); }
+        
+        .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(380px,1fr)); gap:20px; width:100%; max-width:1200px; }
+        .stock-card { background:var(--card); border-radius:12px; padding:20px; border:1px solid var(--border); position:relative; }
+        
+        .card-header { display:flex; justify-content:space-between; margin-bottom:10px; }
+        .symbol { font-size:1.8rem; font-weight:900; }
+        .current-price { font-size:1.8rem; font-weight:bold; font-family:monospace; color:#fbbf24; text-align:right; }
+        
+        .strategy-badge { font-size:0.75rem; padding:4px 8px; border-radius:4px; display:inline-block; margin-top:5px; font-weight:bold; }
+        .strat-trend { background:rgba(59, 130, 246, 0.2); color:#93c5fd; border:1px solid rgba(59, 130, 246, 0.4); } 
+        .strat-swing { background:rgba(168, 85, 247, 0.2); color:#d8b4fe; border:1px solid rgba(168, 85, 247, 0.4); } 
+        .strat-value { background:rgba(245, 158, 11, 0.2); color:#fcd34d; border:1px solid rgba(245, 158, 11, 0.4); } 
+
+        .target-section { display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px; }
+        .target-box { padding:10px; border-radius:8px; text-align:center; position:relative; }
+        .target-label { font-size:0.75rem; opacity:0.8; margin-bottom:4px; }
+        .target-price { font-size:1.2rem; font-weight:bold; font-family:monospace; }
+        .box-buy { background:rgba(16,185,129,0.1); border:1px solid var(--green); color:var(--green); }
+        .box-sell { background:rgba(239,68,68,0.1); border:1px solid var(--red); color:var(--red); }
+        
+        /* ✨ 深度戰術指導區塊 */
+        .advice-container { margin:15px 0; border-radius:8px; overflow:hidden; border:1px solid var(--border); }
+        .advice-header { padding:8px 12px; font-size:0.85rem; font-weight:bold; display:flex; align-items:center; gap:5px; }
+        .advice-content { padding:12px; font-size:0.9rem; line-height:1.6; background:rgba(255,255,255,0.02); color:#e2e8f0; }
+        .advice-content ul { margin:0; padding-left:20px; }
+        .advice-content li { margin-bottom:4px; }
+        
+        /* 狀態顏色 */
+        .status-bull { background:rgba(16,185,129,0.2); color:#6ee7b7; border-bottom:1px solid var(--green); }
+        .status-bear { background:rgba(239,68,68,0.2); color:#fca5a5; border-bottom:1px solid var(--red); }
+        .status-wait { background:rgba(59,130,246,0.2); color:#93c5fd; border-bottom:1px solid var(--blue); }
+
+        .tv-analysis-container { height: 260px; width: 100%; margin: 10px 0; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); background:#131722; }
+        .data-row { display:flex; justify-content:space-between; margin-bottom:5px; font-size:0.9rem; }
+        .pl-block { background:rgba(0,0,0,0.2); padding:10px; margin-top:15px; display:grid; grid-template-columns:1fr 1fr; text-align:center; border-radius:8px; }
+        .up { color:var(--green); } .down { color:var(--red); }
+        .del-btn { position:absolute; top:10px; right:10px; background:none; color:#475569; font-size:1.2rem; padding:0; cursor:pointer; }
+        .modal-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:none; justify-content:center; align-items:center; z-index:100; }
+        .modal { background:var(--card); padding:25px; border-radius:12px; width:300px; border:1px solid var(--border); }
+        .progress-bar { width: 100%; height: 4px; background: #334155; position: fixed; top: 0; left: 0; }
+        .progress-fill { height: 100%; background: var(--purple); width: 0%; transition: width 0.5s; }
+    </style>
+</head>
+<body>
+
+    <div class="progress-bar"><div class="progress-fill" id="progressBar"></div></div>
+
+    <div class="header-panel">
+        <div class="summary-card">
+            <div style="color:var(--sub)">總資產 (預估台幣)</div>
+            <div class="summary-val" style="color:#fbbf24" id="total-equity-twd">NT$ 0</div>
+            <div style="font-size:0.8rem; color:var(--sub)">含庫存美金: <span id="total-equity-usd" style="color:#818cf8">$0.00</span></div>
+        </div>
+        <div class="summary-card">
+            <div style="color:var(--sub)">總未實現損益</div>
+            <div class="summary-val" id="total-unrealized">NT$ 0</div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <div style="display:flex; flex-direction:column; gap:4px; flex:2;">
+            <label style="font-size:0.75rem; color:var(--sub)">Twelve Data API Key</label>
+            <input type="text" id="apiKey" placeholder="請貼上 Twelve Data Key">
+        </div>
+        <div style="display:flex; flex-direction:column; gap:4px;">
+            <label style="font-size:0.75rem; color:var(--sub)">USD/TWD</label>
+            <input type="number" id="exchangeRate" value="32.5" step="0.1" style="width:70px;" onchange="updateAll()">
+        </div>
+        <button onclick="startDeepAnalysis()" class="calc-btn" id="calcBtn">🧠 深度戰術分析</button>
+        <button onclick="openAddModal()" style="background:var(--green)">+ 新增</button>
+        <button onclick="resetDb()" style="background:transparent; border:1px solid var(--border); color:var(--sub)">重置</button>
+    </div>
+
+    <div id="status-msg" style="color:var(--sub); margin-bottom:10px; font-size:0.9rem;"></div>
+    <div class="grid" id="portfolio-grid"></div>
+    <div class="modal-overlay" id="addModal"><div class="modal"><h3>新增股票</h3><input type="text" id="new-symbol" placeholder="代號 (如 ARKW)" style="width:100%; margin-bottom:20px; box-sizing:border-box;"><div style="text-align:right;"><button onclick="confirmAdd()">新增</button> <button onclick="document.getElementById('addModal').style.display='none'" style="background:transparent; border:1px solid var(--border)">取消</button></div></div></div>
+
+    <script>
+        const INITIAL_PORTFOLIO = [
+            { symbol: 'VOO', name: '標普500', shares: 0, cost: 0 },
+            { symbol: 'NVDA', name: 'NVIDIA', shares: 215, cost: 7929.17 },
+            { symbol: 'TSLA', name: 'Tesla', shares: 9, cost: 2728 },
+            { symbol: 'AMD', name: 'AMD', shares: 10, cost: 2209.51 },
+            { symbol: 'ARKW', name: 'ARK Next Gen', shares: 22, cost: 3535.06 }
+        ];
+
+        let portfolio = [];
+        let prices = {};
+
+        window.onload = function() {
+            const k = localStorage.getItem('twelvedata_key');
+            if(k) document.getElementById('apiKey').value = k;
+            loadDb(); render(); 
+        };
+
+        function loadDb() {
+            const d = localStorage.getItem('ai_port_v9_2');
+            portfolio = d ? JSON.parse(d) : JSON.parse(JSON.stringify(INITIAL_PORTFOLIO));
+        }
+        function saveDb() { localStorage.setItem('ai_port_v9_2', JSON.stringify(portfolio)); updateAll(); }
+        function resetDb() { if(confirm("確定重置？")) { localStorage.removeItem('ai_port_v9_2'); location.reload(); } }
+
+        // --- 核心：分析流程 ---
+        async function startDeepAnalysis() {
+            const key = document.getElementById('apiKey').value.trim();
+            if(!key) { alert("請輸入 Twelve Data API Key"); return; }
+            localStorage.setItem('twelvedata_key', key);
+
+            const btn = document.getElementById('calcBtn');
+            const status = document.getElementById('status-msg');
+            btn.disabled = true;
+            
+            for(let i=0; i<portfolio.length; i++) {
+                const s = portfolio[i];
+                const pct = ((i) / portfolio.length) * 100;
+                document.getElementById('progressBar').style.width = pct + '%';
+                btn.innerText = `⏳ 分析中 (${i+1}/${portfolio.length})`;
+                status.innerText = `正在研判 ${s.symbol} 的技術面形態...`;
+                
+                updateAdviceUI(s.symbol, { status: "loading", html: "AI 正在讀取 K 線進行運算..." });
+
+                try {
+                    const res = await fetch(`https://api.twelvedata.com/time_series?symbol=${s.symbol}&interval=1day&outputsize=70&apikey=${key}`);
+                    const data = await res.json();
+                    
+                    if(data.values) {
+                        const candles = data.values.reverse().map(c => parseFloat(c.close));
+                        const currentPrice = candles[candles.length - 1];
+                        prices[s.symbol] = currentPrice;
+                        document.getElementById(`price-${s.symbol}`).innerText = `$${currentPrice.toLocaleString()}`;
+                        updateCardPl(s);
+
+                        // 策略計算
+                        const strategy = determineStrategy(s.symbol);
+                        const result = generateDetailedAdvice(strategy, candles, s.symbol);
+                        
+                        updateTargetUI(s.symbol, `$${result.buy.toFixed(2)}`, `$${result.sell.toFixed(2)}`);
+                        updateAdviceUI(s.symbol, result);
+                        updateStrategyBadge(s.symbol, strategy);
+                    } else if (data.code === 429) {
+                        status.innerText = "⚠️ API 限制中，請稍候...";
+                        updateAdviceUI(s.symbol, { status: "wait", html: "API 速率限制，請 1 分鐘後再試。" });
+                    }
+
+                } catch(e) { console.error(e); }
+                
+                if (i < portfolio.length - 1) await new Promise(r => setTimeout(r, 8500));
+            }
+
+            document.getElementById('progressBar').style.width = '100%';
+            btn.innerText = "🧠 深度戰術分析";
+            btn.disabled = false;
+            status.innerText = "✅ 分析完成。請參考下方操作建議。";
+            updateAll();
+        }
+
+        function determineStrategy(symbol) {
+            if (['VOO', 'SPY', 'IVV', 'VTI'].includes(symbol)) return 'VALUE';
+            if (['NVDA', 'TSM', 'SMH', 'AVGO', '2330.TW'].includes(symbol)) return 'TREND';
+            return 'SWING';
+        }
+
+        // 🧠 AI 大腦：生成「詳細明確」的操作建議 (HTML 格式)
+        function generateDetailedAdvice(strategy, closes, symbol) {
+            const current = closes[closes.length-1];
+            let buy = 0, sell = 0;
+            let status = "wait"; // bull, bear, wait
+            let title = "觀望中";
+            let html = "";
+
+            if (strategy === 'VALUE') { // 存股 (季線 MA60)
+                const ma60 = getSMA(closes, 60);
+                buy = ma60; sell = ma60 * 1.15;
+                const dist = (current - ma60) / ma60 * 100; // 乖離率
+
+                if (current <= ma60 * 1.02) {
+                    status = "bull"; title = "🔔 價值浮現 (買點)";
+                    html = `
+                        <ul>
+                            <li><strong>盤勢：</strong>股價回測季線支撐 ($${ma60.toFixed(0)})，長線安全邊際高。</li>
+                            <li><strong>操作：</strong>建議啟動分批佈局，第一筆資金可投入 30%。</li>
+                            <li><strong>目標：</strong>長期持有，忽略短線波動。</li>
+                        </ul>`;
+                } else if (dist > 10) {
+                    status = "wait"; title = "⚠️ 乖離過大 (暫停)";
+                    html = `
+                        <ul>
+                            <li><strong>盤勢：</strong>目前正乖離達 ${dist.toFixed(1)}%，追高風險增加。</li>
+                            <li><strong>操作：</strong>停止單筆加碼，維持定期定額即可。</li>
+                            <li><strong>提醒：</strong>等待回調至季線附近再加大部位。</li>
+                        </ul>`;
+                } else {
+                    status = "wait"; title = "🛡️ 持有續抱";
+                    html = `<ul><li><strong>盤勢：</strong>股價位於合理區間，多頭架構未變。</li><li><strong>操作：</strong>續抱即可，無須頻繁進出。</li></ul>`;
+                }
+            } 
+            else if (strategy === 'TREND') { // 趨勢 (月線 MA20)
+                const ma20 = getSMA(closes, 20);
+                buy = ma20; sell = ma20 * 1.25;
+
+                if (current > ma20 * 1.01) {
+                    status = "bull"; title = "🚀 多頭強勢 (續抱)";
+                    html = `
+                        <ul>
+                            <li><strong>盤勢：</strong>股價穩站月線 ($${ma20.toFixed(0)}) 之上，攻擊動能強勁。</li>
+                            <li><strong>操作：</strong>讓獲利奔跑 (Let profit run)，不預設高點。</li>
+                            <li><strong>防守：</strong>若收盤跌破 $${ma20.toFixed(0)} 則減碼 30%。</li>
+                        </ul>`;
+                } else if (current <= ma20 * 1.01 && current >= ma20 * 0.97) {
+                    status = "bull"; title = "⚖️ 關鍵攻防 (佈局)";
+                    html = `
+                        <ul>
+                            <li><strong>盤勢：</strong>回測月線支撐，主力正在進行防守。</li>
+                            <li><strong>操作：</strong>若今日收盤沒破月線，可嘗試加碼 20% 倉位。</li>
+                            <li><strong>風險：</strong>設前波低點為停損。</li>
+                        </ul>`;
+                } else {
+                    status = "bear"; title = "🛑 趨勢轉弱 (減碼)";
+                    html = `
+                        <ul>
+                            <li><strong>盤勢：</strong>實質跌破月線，短期頭部形成。</li>
+                            <li><strong>操作：</strong>建議回收部分資金，等待重新站回月線再進場。</li>
+                        </ul>`;
+                }
+            } 
+            else { // SWING (波段 - 布林)
+                const ma20 = getSMA(closes, 20);
+                const stdDev = getStdDev(closes, 20, ma20);
+                const lower = ma20 - (2*stdDev);
+                const upper = ma20 + (2*stdDev);
+                buy = lower; sell = upper;
+                
+                const pctB = (current - lower) / (upper - lower); // 0=下緣, 1=上緣
+
+                if (pctB <= 0.15) {
+                    status = "bull"; title = "⚡ 超跌反彈 (搶進)";
+                    html = `
+                        <ul>
+                            <li><strong>盤勢：</strong>觸及布林下緣 ($${lower.toFixed(0)})，短線乖離過大，隨時反彈。</li>
+                            <li><strong>操作：</strong>激進者可搶短多，目標看回中軌 ($${ma20.toFixed(0)})。</li>
+                            <li><strong>配置：</strong>建議投入 20% 閒置資金做短打。</li>
+                        </ul>`;
+                } else if (pctB >= 0.85) {
+                    status = "bear"; title = "🔥 短線過熱 (獲利)";
+                    html = `
+                        <ul>
+                            <li><strong>盤勢：</strong>衝出布林上緣 ($${upper.toFixed(0)})，追價意願將降低。</li>
+                            <li><strong>操作：</strong>建議獲利了結 1/3 ~ 1/2 部位，落袋為安。</li>
+                        </ul>`;
+                } else {
+                    status = "wait"; title = "🌊 區間震盪 (觀望)";
+                    html = `<ul><li><strong>盤勢：</strong>位於布林通道中間，方向不明確。</li><li><strong>操作：</strong>多看少做，等待價格碰觸上下緣再出手。</li></ul>`;
+                }
+            }
+            
+            return { buy, sell, status, title, html };
+        }
+
+        function getSMA(d, p) { if(d.length<p) return d[d.length-1]; return d.slice(-p).reduce((a,b)=>a+b)/p; }
+        function getStdDev(d, p, m) { if(d.length<p) return 0; const s=d.slice(-p).map(v=>Math.pow(v-m,2)); return Math.sqrt(s.reduce((a,b)=>a+b)/p); }
+
+        function updateAdviceUI(symbol, res) {
+            const el = document.getElementById(`advice-${symbol}`);
+            if(!el) return;
+            
+            let headerClass = "status-wait";
+            if(res.status === 'bull') headerClass = "status-bull";
+            if(res.status === 'bear') headerClass = "status-bear";
+            
+            const title = res.title || "分析中...";
+            const content = res.html || "等待運算...";
+
+            el.innerHTML = `
+                <div class="advice-header ${headerClass}">
+                    <span>${title}</span>
+                </div>
+                <div class="advice-content">${content}</div>
+            `;
+        }
+        
+        // --- 渲染 UI ---
+        function updateTargetUI(symbol, buy, sell) {
+            const b = document.getElementById(`buy-target-${symbol}`);
+            const s = document.getElementById(`sell-target-${symbol}`);
+            if(b) b.innerText = buy;
+            if(s) s.innerText = sell;
+        }
+        function updateStrategyBadge(symbol, type) {
+            const el = document.getElementById(`strat-badge-${symbol}`);
+            if(!el) return;
+            el.style.display = 'inline-block';
+            if(type === 'VALUE') { el.className = 'strategy-badge strat-value'; el.innerText = '🛡️ 價值存股'; }
+            else if(type === 'TREND') { el.className = 'strategy-badge strat-trend'; el.innerText = '🚀 強勢趨勢'; }
+            else { el.className = 'strategy-badge strat-swing'; el.innerText = '🎢 波段震盪'; }
+        }
+        function render() {
+            const grid = document.getElementById('portfolio-grid');
+            grid.innerHTML = '';
+            portfolio.forEach((s, idx) => {
+                let tvSymbol = s.symbol.includes('.TW') ? 'TWSE:'+s.symbol.replace('.TW','') : s.symbol;
+                const div = document.createElement('div');
+                div.className = 'stock-card';
+                div.innerHTML = `
+                    <button class="del-btn" onclick="delStock(${idx})">✕</button>
+                    <div class="card-header">
+                        <div><div class="symbol">${s.symbol}</div><div style="font-size:0.9rem; color:var(--sub)">${s.name}</div><div id="strat-badge-${s.symbol}" class="strategy-badge" style="display:none"></div></div>
+                        <div><div class="current-price" id="price-${s.symbol}">---</div></div>
+                    </div>
+                    <div class="target-section">
+                        <div class="target-box box-buy"><div class="target-label">建議買入</div><div class="target-price" id="buy-target-${s.symbol}">---</div></div>
+                        <div class="target-box box-sell"><div class="target-label">建議賣出</div><div class="target-price" id="sell-target-${s.symbol}">---</div></div>
+                    </div>
+                    
+                    <div id="advice-${s.symbol}" class="advice-container">
+                        <div class="advice-header status-wait">等待運算...</div>
+                    </div>
+
+                    <div class="tv-analysis-container" id="tv-widget-${idx}"></div>
+                    <div class="data-row" style="margin-top:10px;"><span style="color:var(--sub)">庫存 / 均價</span><span style="font-weight:bold; font-family:monospace;">${s.shares} 股 @ $${(s.shares>0?s.cost/s.shares:0).toFixed(1)}</span></div>
+                    <div class="pl-block">
+                        <div><div style="font-size:0.8rem; color:var(--sub)">損益</div><div class="pl-val" id="pl-val-${s.symbol}">---</div></div>
+                        <div><div style="font-size:0.8rem; color:var(--sub)">報酬</div><div class="pl-pct" id="pl-pct-${s.symbol}">---</div></div>
+                    </div>`;
+                grid.appendChild(div);
+                injectTvWidget(`tv-widget-${idx}`, tvSymbol);
+            });
+        }
+
+        // 基本功能 (同上版)
+        function updateCardPl(s) { const p = prices[s.symbol]||0; if(s.shares<=0 || p===0) return; const pf = (s.shares*p)-s.cost; const pct = (pf/s.cost)*100; const eV = document.getElementById(`pl-val-${s.symbol}`); const eP = document.getElementById(`pl-pct-${s.symbol}`); if(eV && eP) { eV.innerText=(pf>=0?'+':'')+Math.round(pf).toLocaleString(); eP.innerText=(pct>=0?'+':'')+pct.toFixed(2)+'%'; eV.className=pf>=0?'up':'down'; eP.className=pct>=0?'up':'down'; } }
+        function injectTvWidget(id, sym) { const c = document.getElementById(id); if(!c) return; c.innerHTML=''; const s = document.createElement('script'); s.src = 'https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js'; s.async = true; s.innerHTML = JSON.stringify({ "interval": "1D", "width": "100%", "height": "100%", "symbol": sym, "showIntervalTabs": true, "displayMode": "single", "locale": "zh_TW", "colorTheme": "dark", "isTransparent": true }); c.appendChild(s); }
+        function updateAll() { const rate = parseFloat(document.getElementById('exchangeRate').value)||32.5; let usd=0, un=0; portfolio.forEach(s => { const p=prices[s.symbol]||0; if(s.shares>0&&p>0) { usd+=s.shares*p; un+=(s.shares*p)-s.cost; }}); document.getElementById('total-equity-twd').innerText = `NT$ ${Math.round(usd*rate).toLocaleString()}`; document.getElementById('total-equity-usd').innerText = `$${usd.toLocaleString(undefined,{maximumFractionDigits:2})}`; const uTwd = un*rate; document.getElementById('total-unrealized').innerText = (uTwd>=0?'+':'') + `NT$ ${Math.round(uTwd).toLocaleString()}`; document.getElementById('total-unrealized').className = `summary-val ${uTwd>=0?'up':'down'}`; }
+        function openAddModal() { document.getElementById('addModal').style.display='flex'; }
+        function confirmAdd() { const sym = document.getElementById('new-symbol').value.toUpperCase().trim(); if(sym) { portfolio.push({ symbol:sym, name:sym, shares:0, cost:0 }); saveDb(); render(); document.getElementById('addModal').style.display='none'; } }
+        function delStock(i) { if(confirm("刪除?")) { portfolio.splice(i,1); saveDb(); render(); } }
+    </script>
+</body>
+</html>
