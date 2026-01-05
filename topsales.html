@@ -110,18 +110,16 @@
             z-index: 2;
         }
 
-        /* 內容區：表格 + 日曆 */
         .dash-content {
             display: flex;
             flex-direction: row;
-            flex-wrap: nowrap; /* 不換行 */
+            flex-wrap: nowrap;
             justify-content: center;
             align-items: center;
             gap: 30px;
             width: 100%;
         }
 
-        /* 戰報表格容器 */
         .dash-table-container {
             flex: 1;
             max-width: 600px;
@@ -142,7 +140,7 @@
             background-color: var(--db-header-bg);
             color: white;
             padding: 8px;
-            font-size: 1.1em; /* 字體稍微加大 */
+            font-size: 1.1em;
             text-align: center;
             letter-spacing: 1px;
         }
@@ -179,7 +177,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            transform: scale(1.3); /* 放大 */
+            transform: scale(1.3);
             margin: 0 20px;
         }
 
@@ -285,9 +283,25 @@
         tr:nth-child(even) { background-color: #fafafa; }
         tr:hover { background-color: #f0f4c3; transition: background 0.3s; }
 
-        /* 特殊欄位 */
-        .col-total-excl { background-color: var(--col-excl-bg); color: var(--col-excl-text); font-weight: bold; border-left: 2px solid var(--col-excl-text); }
-        .col-ah-fyp { font-weight: bold; color: #333; }
+        /* 【新增】通用高亮欄位：加粗 + 純黑 */
+        .col-data-highlight {
+            font-weight: 900; 
+            color: #000;
+        }
+
+        /* 特殊欄位 - 累計不含 */
+        .col-total-excl { 
+            background-color: var(--col-excl-bg); 
+            color: #1a237e; /* 維持深藍，但加粗 */
+            font-weight: 900; 
+            border-left: 2px solid var(--col-excl-text); 
+        }
+        
+        /* 特殊欄位 - A&H */
+        .col-ah-fyp { 
+            font-weight: 900; 
+            color: #000; /* 純黑 */
+        }
         
         .col-total-incl { 
             background-color: var(--col-incl-bg); 
@@ -305,7 +319,14 @@
         }
         .col-bonus-pending { color: #e65100; font-weight: bold; font-size: 1em; background-color: #fff3e0; }
 
-        .cell-innovation-pass { background-color: #f3e5f5 !important; color: #4a148c; font-weight: bold; border: 2px solid #ce93d8; position: relative; }
+        /* 創新獎：維持紫色，但確保有 Bold */
+        .cell-innovation-pass { 
+            background-color: #f3e5f5 !important; 
+            color: #4a148c; 
+            font-weight: 900; /* 加粗 */
+            border: 2px solid #ce93d8; 
+            position: relative; 
+        }
 
         /* 排名與姓名 */
         .cell-rank-top { background-color: #ffccbc !important; color: #bf360c; font-weight: 900; border: 2px solid #ff7043; font-size: 1.8em; text-align: center; vertical-align: middle; }
@@ -318,8 +339,6 @@
         .status-pass { color: #2e7d32; font-weight: bold; border: 1px solid #2e7d32; padding: 2px 8px; border-radius: 12px; background: #e8f5e9; display: inline-block; }
         .status-fail { color: #c62828; font-weight: bold; font-size: 0.9em; } 
         .status-diff { color: #d84315; font-size: 0.85em; display: block; margin-top: 2px; }
-        
-        /* 康愛差額樣式 */
         .status-diff-ka { color: #0277bd; font-size: 0.85em; display: block; margin-top: 1px; font-weight: bold; }
         .status-none { color: #bdbdbd; font-size: 0.8em; }
         
@@ -676,7 +695,7 @@
                 if (val >= innovationThreshold) {
                     return `<td class="cell-innovation-pass">${fmtWan(val)} <span class="trophy-icon">🏆</span></td>`;
                 } else {
-                    return `<td>${fmtWan(val)}</td>`;
+                    return `<td class="col-data-highlight">${fmtWan(val)}</td>`;
                 }
             }
 
@@ -692,14 +711,14 @@
             html += `<tr class="${rowClass}">
                 <td class="${rankClass}">${rankHtml}</td>
                 <td class="col-name">${name}</td>
-                <td>${fmtWan(m12)}</td>
+                <td class="col-data-highlight">${fmtWan(m12)}</td>
                 ${getMonthCell(m13)}
                 ${getMonthCell(m1)}
                 ${getMonthCell(m2)}
                 ${getMonthCell(m3)}
                 <td class="col-total-excl">${fmtWan(totalExcl)}</td>
                 <td class="col-ah-fyp">${fmtWan(ahFyp)}</td>
-                <td>${fmtWan(specific)}</td>
+                <td class="col-data-highlight">${fmtWan(specific)}</td>
                 <td class="col-total-incl">${fmtWan(totalIncl)}${aboveCutoffHtml}</td>
                 <td class="${bonusClass}">${bonusHtml}</td>
                 <td>${statusHtml}</td>
