@@ -94,12 +94,11 @@
 
         .kyushu-icon { font-size: 1.4em; vertical-align: middle; margin: 0 5px; }
 
-        /* --- 戰報看板 (排版修正) --- */
+        /* --- 戰報看板 --- */
         .dashboard-section {
             display: flex;
-            flex-direction: row;
-            align-items: stretch; /* 讓標題高度自動拉伸 */
-            justify-content: center;
+            flex-direction: column;
+            align-items: center;
             gap: 15px;
             margin-bottom: 20px;
             padding: 15px;
@@ -109,34 +108,24 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             position: relative;
             z-index: 2;
-            /* 【修正】禁止換行，確保日曆在右邊 */
-            flex-wrap: nowrap; 
         }
 
-        /* 直式標題 */
-        .dash-title {
-            writing-mode: vertical-rl;
-            text-orientation: upright;
-            font-size: 1.8em;
-            font-weight: 900;
-            color: white;
-            background: var(--db-header-bg);
-            padding: 10px 15px;
-            border-radius: 8px;
-            letter-spacing: 5px;
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
-            text-align: center;
+        /* 內容區：表格 + 日曆 */
+        .dash-content {
             display: flex;
-            align-items: center;
+            flex-direction: row;
+            flex-wrap: nowrap; /* 不換行 */
             justify-content: center;
-            flex-shrink: 0; /* 不壓縮 */
+            align-items: center;
+            gap: 30px;
+            width: 100%;
         }
 
         /* 戰報表格容器 */
         .dash-table-container {
-            flex: 1; /* 自動填滿中間空間 */
+            flex: 1;
             max-width: 600px;
-            min-width: 300px;
+            min-width: 280px;
         }
 
         .dash-table {
@@ -147,14 +136,15 @@
             border-radius: 8px;
             overflow: hidden;
             border: 2px solid #0d2e53;
-            height: 100%; /* 撐開高度 */
         }
 
         .dash-table th {
             background-color: var(--db-header-bg);
             color: white;
             padding: 8px;
-            font-size: 1em;
+            font-size: 1.1em; /* 字體稍微加大 */
+            text-align: center;
+            letter-spacing: 1px;
         }
 
         .dash-table td {
@@ -181,22 +171,23 @@
         .row-rank-name { text-align: left !important; color: #000; font-weight: 800; font-size: 1em; }
         .rank-label { font-size: 0.9em; color: #555; }
 
-        /* --- 倒數日曆 (再放大 + 靠右) --- */
+        /* 倒數日曆 */
         .countdown-container {
-            flex-shrink: 0; /* 不被壓縮 */
+            flex: 0 0 auto;
             text-align: center;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            margin-left: 10px;
+            transform: scale(1.3); /* 放大 */
+            margin: 0 20px;
         }
 
         .countdown-label {
-            font-size: 1.5em; /* 標題加大 */
+            font-size: 1.3em;
             font-weight: 900;
             color: #000;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             text-shadow: 1px 1px 0 white;
         }
 
@@ -204,21 +195,21 @@
             background: white;
             border-radius: 12px;
             border: 1px solid #ccc;
-            width: 140px; /* 【修正】寬度加大 */
+            width: 110px; 
             position: relative;
-            padding-bottom: 15px;
-            animation: pulse-glow 2.5s infinite ease-in-out; /* 呼吸燈 */
+            padding-bottom: 8px;
+            animation: pulse-glow 2s infinite ease-in-out;
         }
 
         @keyframes pulse-glow {
             0% { transform: scale(1); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
-            50% { transform: scale(1.05); box-shadow: 0 0 20px rgba(211, 47, 47, 0.5); border-color: #d32f2f; }
+            50% { transform: scale(1.05); box-shadow: 0 0 15px rgba(211, 47, 47, 0.6); border-color: #d32f2f; }
             100% { transform: scale(1); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
         }
 
         .calendar-top {
             background: #d32f2f;
-            height: 25px;
+            height: 22px;
             border-radius: 12px 12px 0 0;
             position: relative;
         }
@@ -226,35 +217,32 @@
         .calendar-top::before, .calendar-top::after {
             content: "";
             position: absolute;
-            top: -8px;
-            width: 10px;
-            height: 22px;
+            top: -6px;
+            width: 7px;
+            height: 18px;
             background: #555;
-            border-radius: 5px;
+            border-radius: 3px;
             border: 1px solid #333;
         }
-        .calendar-top::before { left: 25px; }
-        .calendar-top::after { right: 25px; }
+        .calendar-top::before { left: 20px; }
+        .calendar-top::after { right: 20px; }
 
         .calendar-input {
             width: 80%;
             border: none;
-            font-size: 4em; /* 【修正】數字特大 */
+            font-size: 3.2em;
             font-weight: 900;
             color: #d32f2f;
             text-align: center;
-            margin-top: 5px;
+            margin-top: 8px;
             outline: none;
             background: transparent;
-            line-height: 1.2;
         }
 
-        /* 手機版適應 (螢幕太小才換行) */
         @media (max-width: 850px) {
-            .dashboard-section { flex-wrap: wrap; }
-            .dash-title { writing-mode: horizontal-tb; width: 100%; min-height: auto; font-size: 1.4em; letter-spacing: 1px; padding: 10px; }
+            .dash-content { flex-wrap: wrap; }
             .dash-table-container { min-width: 100%; order: 2; }
-            .countdown-container { width: 100%; order: 1; margin-bottom: 10px; }
+            .countdown-container { width: 100%; order: 1; margin-bottom: 20px; transform: scale(1.1); }
         }
 
         /* --- 主表格 --- */
@@ -319,7 +307,7 @@
 
         .cell-innovation-pass { background-color: #f3e5f5 !important; color: #4a148c; font-weight: bold; border: 2px solid #ce93d8; position: relative; }
 
-        /* 排名與姓名 - 大字體 */
+        /* 排名與姓名 */
         .cell-rank-top { background-color: #ffccbc !important; color: #bf360c; font-weight: 900; border: 2px solid #ff7043; font-size: 1.8em; text-align: center; vertical-align: middle; }
         .rank-badge { display: inline-block; background: #d84315; color: white; font-size: 0.5em; padding: 2px 6px; border-radius: 10px; margin-right: 5px; vertical-align: middle; position: relative; top: -2px; }
         .trophy-icon { display: inline-block; margin-left: 5px; font-size: 1.1em; }
@@ -330,6 +318,9 @@
         .status-pass { color: #2e7d32; font-weight: bold; border: 1px solid #2e7d32; padding: 2px 8px; border-radius: 12px; background: #e8f5e9; display: inline-block; }
         .status-fail { color: #c62828; font-weight: bold; font-size: 0.9em; } 
         .status-diff { color: #d84315; font-size: 0.85em; display: block; margin-top: 2px; }
+        
+        /* 康愛差額樣式 */
+        .status-diff-ka { color: #0277bd; font-size: 0.85em; display: block; margin-top: 1px; font-weight: bold; }
         .status-none { color: #bdbdbd; font-size: 0.8em; }
         
         .cutoff-pass-icon { color: #2e7d32; font-size: 0.8em; margin-left: 4px; vertical-align: top; }
@@ -354,42 +345,42 @@
     </h1>
 
     <div class="dashboard-section">
-        <div class="dash-title">名次戰報</div>
-        
-        <div class="dash-table-container">
-            <table class="dash-table">
-                <thead>
-                    <tr>
-                        <th>名次</th>
-                        <th>累計加計FYP (萬)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="row-rank-name">第20名 <span class="rank-label">(首席團)</span></td>
-                        <td><input type="number" id="input_rank20" class="dash-input" value="766.1" step="0.1"></td>
-                    </tr>
-                    <tr>
-                        <td class="row-rank-name">第90名 <span class="rank-label">(名次獎)</span></td>
-                        <td><input type="number" id="input_rank90" class="dash-input" value="391.1" step="0.1"></td>
-                    </tr>
-                    <tr>
-                        <td class="row-rank-name" style="color:#d32f2f;">第1350名 <span class="rank-label">(去九州)</span></td>
-                        <td><input type="number" id="input_rank1350" class="dash-input val-highlight" value="119.1" step="0.1"></td>
-                    </tr>
-                    <tr>
-                        <td class="row-rank-name">第2000名 <span class="rank-label">(1萬元)</span></td>
-                        <td><input type="number" id="input_rank2000" class="dash-input" value="92.6" step="0.1"></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+        <div class="dash-content">
+            <div class="dash-table-container">
+                <table class="dash-table">
+                    <thead>
+                        <tr>
+                            <th style="text-align:center;">名次戰報</th>
+                            <th style="text-align:center;">累計加計FYP (萬)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="row-rank-name">第20名 <span class="rank-label">(首席團)</span></td>
+                            <td><input type="number" id="input_rank20" class="dash-input" value="766.1" step="0.1"></td>
+                        </tr>
+                        <tr>
+                            <td class="row-rank-name">第90名 <span class="rank-label">(名次獎)</span></td>
+                            <td><input type="number" id="input_rank90" class="dash-input" value="391.1" step="0.1"></td>
+                        </tr>
+                        <tr>
+                            <td class="row-rank-name" style="color:#d32f2f;">第1350名 <span class="rank-label">(去九州)</span></td>
+                            <td><input type="number" id="input_rank1350" class="dash-input val-highlight" value="119.1" step="0.1"></td>
+                        </tr>
+                        <tr>
+                            <td class="row-rank-name">第2000名 <span class="rank-label">(1萬元)</span></td>
+                            <td><input type="number" id="input_rank2000" class="dash-input" value="92.6" step="0.1"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
-        <div class="countdown-container">
-            <div class="countdown-label">競賽倒數</div>
-            <div class="calendar-icon">
-                <div class="calendar-top"></div>
-                <input type="number" id="input_countdown" class="calendar-input" value="81">
+            <div class="countdown-container">
+                <div class="countdown-label">競賽倒數</div>
+                <div class="calendar-icon">
+                    <div class="calendar-top"></div>
+                    <input type="number" id="input_countdown" class="calendar-input" value="81">
+                </div>
             </div>
         </div>
     </div>
@@ -409,14 +400,44 @@
     const logBox = document.getElementById('debugLog');
     const statusMsg = document.getElementById('statusMsg');
     
-    const inputs = document.querySelectorAll('.dash-input');
-    inputs.forEach(input => {
-        input.addEventListener('change', () => {
-            if (lastProcessedData) {
-                renderTable(lastProcessedData.rows, lastProcessedData.startIdx, lastProcessedData.colMap);
+    // --- 本地儲存 (Local Storage) 功能 ---
+    function saveDashboardData() {
+        const data = {
+            rank20: document.getElementById('input_rank20').value,
+            rank90: document.getElementById('input_rank90').value,
+            rank1350: document.getElementById('input_rank1350').value,
+            rank2000: document.getElementById('input_rank2000').value,
+            countdown: document.getElementById('input_countdown').value
+        };
+        localStorage.setItem('kyushu_dashboard_data', JSON.stringify(data));
+        
+        if (lastProcessedData) {
+            renderTable(lastProcessedData.rows, lastProcessedData.startIdx, lastProcessedData.colMap);
+        }
+    }
+
+    function loadDashboardData() {
+        const saved = localStorage.getItem('kyushu_dashboard_data');
+        if (saved) {
+            try {
+                const data = JSON.parse(saved);
+                if(data.rank20) document.getElementById('input_rank20').value = data.rank20;
+                if(data.rank90) document.getElementById('input_rank90').value = data.rank90;
+                if(data.rank1350) document.getElementById('input_rank1350').value = data.rank1350;
+                if(data.rank2000) document.getElementById('input_rank2000').value = data.rank2000;
+                if(data.countdown) document.getElementById('input_countdown').value = data.countdown;
+            } catch (e) {
+                console.error("讀取存檔失敗", e);
             }
-        });
+        }
+    }
+
+    const dashInputs = document.querySelectorAll('.dash-input, .calendar-input');
+    dashInputs.forEach(input => {
+        input.addEventListener('input', saveDashboardData);
     });
+
+    window.addEventListener('DOMContentLoaded', loadDashboardData);
 
     let lastProcessedData = null;
 
@@ -621,7 +642,15 @@
                 if (!passTotal) {
                     const deficit = target - adjTotal;
                     const deficitWan = (deficit / 10000).toLocaleString('zh-TW', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
-                    statusHtml = `<span class="status-fail">未達標</span><br><span class="status-diff">(差 ${deficitWan} 萬)</span>`;
+                    
+                    // 康愛差額
+                    const kangAiDeficit = deficit / 1.43;
+                    const kangAiWan = (kangAiDeficit / 10000).toLocaleString('zh-TW', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+
+                    statusHtml = `<span class="status-fail">未達標</span>
+                                  <span class="status-diff">(差 ${deficitWan} 萬)</span>
+                                  <span class="status-diff-ka">(康愛差 ${kangAiWan} 萬)</span>`;
+                    
                     if (potentialBonus > 0) {
                         bonusClass = 'col-bonus-pending';
                     }
