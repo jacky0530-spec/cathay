@@ -2,148 +2,129 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>2026 信用卡權益明細彙整 - 搜尋增強版</title>
+    <title>2026 信用卡權益詳細搜尋系統</title>
     <style>
-        body { font-family: "PingFang TC", sans-serif; line-height: 1.6; color: #333; max-width: 1000px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; }
+        body { font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; line-height: 1.6; color: #333; max-width: 1000px; margin: 0 auto; padding: 20px; background-color: #f0f2f5; }
         
-        /* 搜尋框樣式 */
-        .search-container { position: sticky; top: 0; background: #f9f9f9; padding: 10px 0; z-index: 100; border-bottom: 2px solid #eee; margin-bottom: 20px; }
-        #searchBar { width: 100%; padding: 12px; font-size: 1.1rem; border: 2px solid #ccc; border-radius: 8px; outline: none; box-sizing: border-box; }
-        #searchBar:focus { border-color: #007bff; }
-        .highlight { background-color: yellow; font-weight: bold; color: black; }
+        .search-container { position: sticky; top: 0; background: #f0f2f5; padding: 15px 0; z-index: 1000; border-bottom: 2px solid #ddd; }
+        #searchBar { width: 100%; padding: 16px; font-size: 1.2rem; border: 3px solid #007bff; border-radius: 12px; outline: none; box-sizing: border-box; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        
+        /* 搜尋醒目顯示 */
+        .search-match { background-color: #ffff00 !important; color: #ff0000 !important; font-weight: 900 !important; padding: 2px 4px; border-radius: 4px; }
 
-        .card-section { background: white; border-radius: 12px; padding: 25px; margin-bottom: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-top: 6px solid #ccc; }
-        h2 { margin-top: 0; display: flex; align-items: center; }
+        .card-section { background: white; border-radius: 20px; padding: 30px; margin-bottom: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border-top: 10px solid #ccc; }
         .cube { border-top-color: #00953a; }
         .ts { border-top-color: #e60012; }
         .esun { border-top-color: #00818e; }
         .ubot { border-top-color: #00a191; }
-        h3 { color: #555; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-top: 20px; }
-        ul { padding-left: 20px; }
-        li { margin-bottom: 8px; }
-        .promo-highlight { font-weight: bold; color: #d32f2f; }
-        .info-box { background: #f0f4f8; padding: 15px; border-radius: 8px; font-size: 0.9rem; margin-top: 15px; }
+        .ctbc { border-top-color: #004a95; }
+
+        .scheme-badge { font-weight: 900; font-size: 1rem; margin-right: 12px; padding: 6px 14px; border-radius: 8px; color: white; display: inline-block; margin-bottom: 10px; }
+        .tag-cube { background: #00953a; }
+        .tag-ts { background: #e60012; }
+        .tag-esun { background: #00818e; }
+        .tag-ubot { background: #00a191; }
+        .tag-ctbc { background: #004a95; }
+
+        .store-list { font-size: 1rem; color: #444; line-height: 2.2; margin-top: 5px; border-left: 3px solid #eee; padding-left: 15px; }
+        .info-panel { background: #fffde7; padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #fbc02d; font-size: 0.95rem; }
+        .rate-highlight { color: #d32f2f; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <h1 style="text-align:center;">💳 2026 信用卡優惠項目與明細彙整</h1>
+    <h1 style="text-align:center;">🚀 2026 信用卡特店權益精準搜尋</h1>
 
     <div class="search-container">
-        <input type="text" id="searchBar" placeholder="🔍 輸入店家名稱搜尋（例如：麥當勞、酷澎、新光三越...）" onkeyup="liveSearch()">
+        <input type="text" id="searchBar" placeholder="🔍 輸入店家名稱搜尋 (例：酷澎、Lululemon、星巴克、壽司郎...)" oninput="liveSearch()">
     </div>
 
-    <div id="contentArea">
+    <div id="mainContent">
         <div class="card-section cube">
             <h2>國泰世華 CUBE 卡</h2>
-            <div class="info-box">
-                <strong>核心機制：</strong> 一般消費 0.3% 回饋無上限。指定方案享 <span class="promo-highlight">2% ~ 10%</span> 回饋。每日限切換一次方案。
-            </div>
-            <h3>七大方案詳細明細：</h3>
+            <div class="info-panel"><strong>核心機制：</strong>每日限切換一次方案。指定通路最高 3.3% ~ 10%。</div>
             <ul>
-                <li><strong>樂饗購 (3.3%)</strong>： 遠東SOGO(含大巨蛋)、新光三越、遠東百貨、微風廣場、台北101、夢時代、誠品生活、京站、三井OUTLET、LaLaport；Uber Eats、foodpanda；全台實體餐廳、咖啡廳、速食店(麥當勞/肯德基/星巴克等)；屈臣氏、康是美、寶雅、唐吉訶德。</li>
-                <li><strong>玩數位 (3.3%)</strong>： 蝦皮購物、momo購物網、Coupang酷澎、PChome、淘寶、Amazon；Apple媒體服務、Netflix、Disney+、Spotify、Youtube Premium；博客來。</li>
-                <li><strong>趣旅行 (3.0%)</strong>： 高鐵、台鐵、Uber、yoxi、台灣大車隊；航空公司；Agoda、Booking.com、Hotels.com、Klook、KKday；海外實體消費。</li>
-                <li><strong>集精選 (2.0%)</strong>： 7-11、全家、家樂福、全聯、IKEA、中油直營。</li>
-                <li><strong>瘋大港 (4.0%)</strong>： 高雄捷運、輕軌、漢神百貨、漢神巨蛋、高雄指定餐飲與飯店。</li>
-                <li><strong>慶生月 (10.0%)</strong>： 壽星生日當月於錢櫃、好樂迪、星聚點及指定百貨餐廳加碼。</li>
-                <li><strong>童樂匯 (3.0%)</strong>： 丁丁藥局、佑全、躍獅、玩具反斗城、樂高專賣店、麗嬰房。</li>
+                <li><span class="scheme-badge tag-cube">樂饗購 3.3%</span><div class="store-list">遠東SOGO（含大巨蛋）、新光三越、遠東百貨、微風廣場、台北101、夢時代、誠品生活、京站、三井OUTLET、LaLaport、Uber Eats、foodpanda、全台實體餐廳、咖啡廳、速食店（含麥當勞、肯德基、星巴克等）、屈臣氏、康是美、寶雅、唐吉訶德。</div></li>
+                <li><span class="scheme-badge tag-cube">玩數位 3.3%</span><div class="store-list">蝦皮購物、momo購物網、Coupang酷澎、PChome、淘寶、Amazon、Apple媒體服務、Netflix、Disney+、Spotify、Youtube Premium、博客來。</div></li>
+                <li><span class="scheme-badge tag-cube">趣旅行 3.0%</span><div class="store-list">高鐵、台鐵、Uber、yoxi、台灣大車隊、航空公司、Agoda、Booking.com、Hotels.com、Klook、KKday、海外實體消費。</div></li>
+                <li><span class="scheme-badge tag-cube">慶生月 10.0%</span><div class="store-list">錢櫃、好樂迪、星聚點、指定百貨餐廳。</div></li>
+                <li><span class="scheme-badge tag-cube">集精選 2.0%</span><div class="store-list">7-11、全家、家樂福、全聯、IKEA、中油直營。</div></li>
             </ul>
         </div>
 
         <div class="card-section ts">
             <h2>台新 Richart (太陽/玫瑰卡)</h2>
-            <div class="info-box">
-                <strong>核心機制：</strong> 設定台新帳戶自動扣繳（身分升級），指定方案最高享 <span class="promo-highlight">3.8%</span> 台新Point；未設定則為 1.3%。
-            </div>
-            <h3>七大方案詳細明細：</h3>
+            <div class="info-panel"><strong>身分升級：</strong>設定台新帳戶自扣享 3.8%。</div>
             <ul>
-                <li><strong>Pay著刷 (3.8%)</strong>： 台新Pay(新光三越/7-11/IKEA等)、台灣Pay(麥當勞/大樹藥局等)。*LINE Pay 僅享 2.3%。</li>
-                <li><strong>天天刷 (3.3%)</strong>： 7-11、全家(限台新Pay)；家樂福、大買家、唐吉訶德、LOPIA；中油、全國加油、高鐵、台鐵、Uber；寶雅、屈臣氏、康是美、大樹藥局、丁丁藥局、佑全保健藥妝。</li>
-                <li><strong>大筆刷 (3.3%)</strong>： 新光三越、遠東百貨、SOGO、101、微風、漢神百貨、巨城、三井OUTLET、華泰名品城、誠品；IKEA、特力屋、HOLA、宜得利；UNIQLO、GU、ZARA、NET。</li>
-                <li><strong>好饗刷 (3.3%)</strong>： 全台餐飲實體(不含餐券)、Uber Eats、foodpanda、錢櫃、好樂迪、指定飯店(晶華/老爺等)。</li>
-                <li><strong>數趣刷 (3.3%)</strong>： 蝦皮、momo、Coupang酷澎、PChome、淘寶、Amazon、博客來；Netflix、Disney+、Steam、ChatGPT、Canva。</li>
-                <li><strong>玩旅刷 (3.3%)</strong>： 海外實體/線上交易；航空公司；Klook、KKday、Agoda、Booking.com、雄獅、易遊網。</li>
-                <li><strong>假日刷 (2.0%)</strong>： 週末及國定假日，不限通路（含保費與LINE Pay）均享 2%。</li>
+                <li><span class="scheme-badge tag-ts">Pay著刷 3.8%</span><div class="store-list">台新Pay（新光三越、7-11、全家、Richart Mart、康是美、IKEA、NET）、台灣Pay（神腦、燦坤、全國電子、麥當勞、美廉社、大樹藥局、杏一醫療）、台新Pay+（海外 GS25、emart24、DAISO）。</div></li>
+                <li><span class="scheme-badge tag-ts">天天刷 3.3%</span><div class="store-list">7-11及全家(限台新Pay)、家樂福、大買家、唐吉軻德、LOPIA、臺鐵、高鐵、台灣大車隊、LINEGO、Yoxi、Uber、台灣Bolt、中油直營、全國加油、全國特急電、EVOASIS、EVALUE、USPACE、Autopass(車麻吉)、寶雅、康是美、屈臣氏、杏一醫療、大樹藥局、丁丁藥局、佑全保健藥妝、健康人生藥局。</div></li>
+                <li><span class="scheme-badge tag-ts">大筆刷 3.3%</span><div class="store-list">新光三越(含skm pay)、遠東百貨、遠東SOGO、漢神巨蛋、漢神百貨、微風、台北101、遠東巨城、廣三SOGO、南紡購物中心、誠品生活(含誠品線上)、京站、三創生活、夢時代、統一時代(含DREAM PLAZA)、中友百貨、Mitsui Shopping Park LaLaport(南港/台中)、MITSUI OUTLET PARK (林口、台中港、台南)、華泰名品城、SKM Park Outlets、IKEA、特力屋、HOLA、宜得利、瑪黑家居、UNIQLO、GU、ZARA、NET、lululemon。</div></li>
+                <li><span class="scheme-badge tag-ts">好饗刷 3.3%</span><div class="store-list">全臺餐飲(不含餐券)、王品瘋Pay、Uber Eats、Foodpanda、拓元售票、KKTIX、年代售票、寬宏售票、OPENTIX、FunNow、晶華、雲朗、萬豪、煙波、老爺、福華、漢來、君悅、高雄洲際、臺中勤美洲際、礁溪寒沐、錢櫃、好樂迪、ONCOR、sing!go、享溫馨。</div></li>
+                <li><span class="scheme-badge tag-ts">數趣刷 3.3%</span><div class="store-list">蝦皮、momo、酷澎(Coupang)、PChome、淘寶、Amazon、東森、博客來、Richart Mart、PayEasy、iHerb、SHEIN、Farfetch、Olive Young、知識衛星、Amazing Talker、Tutor ABC、Hahow、PressPlay、MyCard、遊戲橘子、Steam、PlayStation、Nintendo、Netfilx、Disney+、ChatGPT、Notion、Canva、Perplexity、Claude。</div></li>
+                <li><span class="scheme-badge tag-ts">玩旅刷 3.3%</span><div class="store-list">海外消費(含實體及線上)、Uber、Grab、SUICA、ICOCA、PASMO、WOWPASS、AIRSIM、中華航空、長榮航空、星宇航空、台灣虎航、國泰航空、華信航空、立榮航空、樂桃航空、阿聯酋航空、亞洲航空、酷航、捷星航空、新加坡航空、日本航空、越捷航空、Klook、KKday、Agoda、Booking.com、Trip.com、Airbnb、Hotels.com、Expedia、雄獅、易遊網、東南、可樂、長汎、五福、喜鴻、易飛、燦星、加利利、鳳凰、山富、行健。</div></li>
             </ul>
         </div>
 
         <div class="card-section esun">
             <h2>玉山 Unicard</h2>
-            <div class="info-box">
-                <strong>核心機制：</strong> 回饋 e點（1點=1元）。百大特店依方案提供不同回饋率。
-            </div>
-            <h3>方案與店家明細：</h3>
             <ul>
-                <li><strong>UP選 (4.5%)</strong>： 需訂閱並設定玉山 e 帳戶自動扣繳。百大特店加碼 3.5%（上限 2,000點/月）。</li>
-                <li><strong>任意選 (3.5%)</strong>： 每月自選 8 家特店。加碼 2.5%（上限 500點/月）。</li>
-                <li><strong>百大特店範圍</strong>：
-                    <ul>
-                        <li>行動支付：LINE Pay、街口、全支付、玉山Wallet電子支付。</li>
-                        <li>電商：momo購物網、蝦皮購物、淘寶網、Coupang酷澎。</li>
-                        <li>百貨：101、新光三越、遠東百貨、SOGO、微風、三井OUTLET、華泰名品城、誠品生活。</li>
-                        <li>生活/餐飲：家樂福、屈臣氏、康是美、大樹藥局、UNIQLO、Uber Eats、foodpanda、王品瘋Pay、瓦城、漢來美食。</li>
-                        <li>交通/旅遊：中油直營、台鐵、高鐵、55688、Uber；各大航空、Agoda、Klook、日韓泰等15國實體消費。</li>
-                    </ul>
-                </li>
+                <li><span class="scheme-badge tag-esun">UP選 4.5% / 任意選 3.5%</span><div class="store-list">LINE Pay、街口支付、悠遊付、全支付、全盈+PAY、icash Pay、iPASS MONEY、玉山 Wallet 電子支付、momo 購物網、蝦皮購物、淘寶網、Coupang 酷澎、新光三越、遠東百貨集團、微風百貨、台北 101、統一時代、華泰名品城、三井 OUTLET、LaLaport、京站、誠品生活、美麗華、秀泰生活、家樂福、屈臣氏、康是美、大樹藥局、丁丁藥妝、特力屋、HOLA、UNIQLO、NET、宜得利、Uber Eats、foodpanda、王品瘋 Pay、饗賓餐飲、瓦城料理、漢來美食、乾杯燒肉、鼎王餐飲、爭鮮餐飲、EZTABLE、中油直營、55688、yoxi、Uber、台鐵、高鐵、航空購票、Agoda、Booking.com、Trip.com、Klook、KKday、Apple 直營店、小米台灣、全國電子、燦坤。</div></li>
             </ul>
         </div>
 
         <div class="card-section ubot">
             <h2>聯邦 賴點卡</h2>
-            <div class="info-box">
-                <strong>核心機制：</strong> 國內 1% 無上限。指定通路偶數日 LINE Pay 滿額享 <span class="promo-highlight">10%</span> (含新戶加碼)。
+            <div class="info-panel">
+                <strong>詳細優惠方式：</strong><br>
+                1. <strong>基本回饋</strong>：國內一般消費 <span class="rate-highlight">1%</span> 無上限。<br>
+                2. <strong>偶數日加碼 (+5%)</strong>：每月「偶數日」使用 LINE Pay，單筆滿 100 元享加碼 5% (上限 150 點)。<br>
+                3. <strong>新戶加碼 (+4%)</strong>：新戶核卡後 6 個月內，LINE Pay 一般消費加碼 4% (上限 300 點)。<br>
+                <strong>※ 合計最高回饋率：<span class="rate-highlight">10%</span></strong>
             </div>
-            <h3>詳細明細與規則：</h3>
             <ul>
-                <li><strong>回饋結構</strong>： 基本 1% + 偶數日加碼 5% (上限150點) + 新戶加碼 4% (前6個月，上限300點)。</li>
-                <li><strong>優惠方式</strong>： 每月偶數日以 LINE Pay 支付，單筆需滿 100 元。</li>
-                <li><strong>指定通路店家</strong>：
-                    <ul>
-                        <li>美食/速食：王品集團、漢來美食、饗賓、海底撈、麥當勞、肯德基、摩斯、漢堡王、壽司郎、爭鮮、八方雲集。</li>
-                        <li>飲品：星巴克、路易莎、cama、50嵐、得正、可不可。</li>
-                        <li>美妝藥局：屈臣氏、寶雅、唐吉訶德、大樹藥局、丁丁藥局、佑全、躍獅。</li>
-                        <li>生活/運動：IKEA、Hola、小北百貨；NIKE、Adidas、New Balance、迪卡儂、摩曼頓。</li>
-                        <li>寵物：汪喵星球、東森寵物、魚中魚、寵物公園。</li>
-                    </ul>
+                <li><span class="scheme-badge tag-ubot">LINE Pay 指定通路清單</span>
+                    <div class="store-list">王品集團、三商集團、輕井澤集團、漢來美食集團、饗賓餐旅集團、海底撈、築間、春水堂、壽司郎、爭鮮、八方雲集、麥當勞、肯德基、摩斯漢堡、漢堡王、星巴克、路易莎、cama、50嵐、得正、麻古茶坊、可不可熟成紅茶、屈臣氏、寶雅、唐吉訶德、大樹藥局、杏一醫療、丁丁藥局、佑全、躍獅、IKEA、Hola、小北百貨、汪喵星球、東森寵物、咕咕G、魚中魚、寵物公園、NIKE、Adidas、New Balance、迪卡儂、鞋全家福、摩曼頓。</div>
+                </li>
+            </ul>
+        </div>
+
+        <div class="card-section ctbc">
+            <h2>中信 uniopen 聯名卡</h2>
+            <div class="info-panel">
+                <strong>詳細優惠方式：</strong><br>
+                1. <strong>基礎回饋 (3%)</strong>：一般消費 1% + 統一集團加碼 2% (上限 500 點)。<br>
+                2. <strong>踩點任務 (最高 4%)</strong>：跨品牌消費 2家(+1%)、3家(+2%)、4家(+3%)、<strong>5家以上(+4%)</strong>。<br>
+                3. <strong>icash Pay 加碼 (4%)</strong>：綁定 icash Pay 於指定通路加碼 4% (上限 150 點)。<br>
+                <strong>※ 疊加最高回饋率：<span class="rate-highlight">11%</span></strong>
+            </div>
+            <ul>
+                <li><span class="scheme-badge tag-ctbc">統一集團適用品牌</span>
+                    <div class="store-list">7-ELEVEN、家樂福(量販/超市/官網/App)、Mister Donut、21世紀風味館、COLD STONE、聖娜多堡、Semeur聖娜、星巴克、康是美、博客來、黑貓宅急便、大成、悠旅生活(星巴克)、統一精工加油站、統一時代百貨、夢時代、BEING sport、BEING spa、BEING fit、統一佳佳、聖德科斯、伊甸芳療、愛金卡(icash)。</div>
                 </li>
             </ul>
         </div>
     </div>
 
     <script>
+        const originalContent = document.getElementById("mainContent").innerHTML;
+
         function liveSearch() {
-            const input = document.getElementById("searchBar").value.toLowerCase();
-            const contentArea = document.getElementById("contentArea");
-            const sections = document.getElementsByClassName("card-section");
+            const input = document.getElementById("searchBar").value.trim();
+            const contentArea = document.getElementById("mainContent");
 
-            // 移除舊的高亮
-            removeHighlights(contentArea);
-
-            if (input === "") return;
-
-            for (let section of sections) {
-                const text = section.innerText.toLowerCase();
-                if (text.includes(input)) {
-                    applyHighlight(section, input);
-                }
+            if (input === "" || input.length < 1) {
+                contentArea.innerHTML = originalContent;
+                return;
             }
-        }
 
-        function applyHighlight(element, searchTerm) {
-            const innerHTML = element.innerHTML;
-            const re = new RegExp(`(${searchTerm})`, "gi");
-            element.innerHTML = innerHTML.replace(re, '<span class="highlight">$1</span>');
-        }
-
-        function removeHighlights(element) {
-            const highlights = element.querySelectorAll(".highlight");
-            highlights.forEach(span => {
-                const textNode = document.createTextNode(span.innerText);
-                span.parentNode.replaceChild(textNode, span);
-            });
-            // 正規化文字節點避免破碎
-            element.normalize();
+            let newHTML = originalContent;
+            try {
+                const re = new RegExp(`(?![^<]*>)${input.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')}`, "gi");
+                newHTML = newHTML.replace(re, match => `<span class="search-match">${match}</span>`);
+                contentArea.innerHTML = newHTML;
+            } catch (e) {
+                console.error("搜尋錯誤", e);
+            }
         }
     </script>
 </body>
