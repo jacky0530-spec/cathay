@@ -283,50 +283,17 @@
         tr:nth-child(even) { background-color: #fafafa; }
         tr:hover { background-color: #f0f4c3; transition: background 0.3s; }
 
-        /* 【新增】通用高亮欄位：加粗 + 純黑 */
-        .col-data-highlight {
-            font-weight: 900; 
-            color: #000;
-        }
+        /* 通用高亮欄位 */
+        .col-data-highlight { font-weight: 900; color: #000; }
 
-        /* 特殊欄位 - 累計不含 */
-        .col-total-excl { 
-            background-color: var(--col-excl-bg); 
-            color: #1a237e; /* 維持深藍，但加粗 */
-            font-weight: 900; 
-            border-left: 2px solid var(--col-excl-text); 
-        }
-        
-        /* 特殊欄位 - A&H */
-        .col-ah-fyp { 
-            font-weight: 900; 
-            color: #000; /* 純黑 */
-        }
-        
-        .col-total-incl { 
-            background-color: var(--col-incl-bg); 
-            color: var(--col-incl-text); 
-            font-weight: 900; 
-            font-size: 1.2em;
-            border-left: 2px solid var(--col-incl-border); 
-        }
-
-        .col-bonus { 
-            color: var(--col-bonus-text); 
-            font-weight: 900; 
-            font-size: 1.1em;
-            background-color: var(--col-bonus-bg);
-        }
+        /* 特殊欄位 */
+        .col-total-excl { background-color: var(--col-excl-bg); color: #1a237e; font-weight: 900; border-left: 2px solid var(--col-excl-text); }
+        .col-ah-fyp { font-weight: 900; color: #000; }
+        .col-total-incl { background-color: var(--col-incl-bg); color: var(--col-incl-text); font-weight: 900; font-size: 1.2em; border-left: 2px solid var(--col-incl-border); }
+        .col-bonus { color: var(--col-bonus-text); font-weight: 900; font-size: 1.1em; background-color: var(--col-bonus-bg); }
         .col-bonus-pending { color: #e65100; font-weight: bold; font-size: 1em; background-color: #fff3e0; }
 
-        /* 創新獎：維持紫色，但確保有 Bold */
-        .cell-innovation-pass { 
-            background-color: #f3e5f5 !important; 
-            color: #4a148c; 
-            font-weight: 900; /* 加粗 */
-            border: 2px solid #ce93d8; 
-            position: relative; 
-        }
+        .cell-innovation-pass { background-color: #f3e5f5 !important; color: #4a148c; font-weight: 900; border: 2px solid #ce93d8; position: relative; }
 
         /* 排名與姓名 */
         .cell-rank-top { background-color: #ffccbc !important; color: #bf360c; font-weight: 900; border: 2px solid #ff7043; font-size: 1.8em; text-align: center; vertical-align: middle; }
@@ -342,7 +309,25 @@
         .status-diff-ka { color: #0277bd; font-size: 0.85em; display: block; margin-top: 1px; font-weight: bold; }
         .status-none { color: #bdbdbd; font-size: 0.8em; }
         
+        .rate-warning { color: #d32f2f; font-size: 0.8em; display: block; margin-top: 2px; font-weight: bold; }
+        .rate-fail-text { color: #c62828; font-weight: 900; font-size: 0.95em; }
+        
         .cutoff-pass-icon { color: #2e7d32; font-size: 0.8em; margin-left: 4px; vertical-align: top; }
+
+        /* 偵錯區塊 */
+        #errorBox {
+            display: none;
+            background: #ffebee;
+            color: #c62828;
+            border: 2px solid #ef5350;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            text-align: left;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 14px;
+        }
 
         .debug-box { display: none; }
         .footer-deco { text-align: center; margin-top: 20px; font-size: 20px; color: #ccc; }
@@ -358,6 +343,8 @@
         <input type="file" id="fileInput" accept=".xlsx, .xls, .csv">
         <div id="statusMsg" style="color: #0d2e53;">(請上傳檔案)</div>
     </div>
+
+    <div id="errorBox"></div>
 
     <h1>
         <span class="kyushu-icon">🌋</span> 九州高峰會 <span class="kyushu-icon">♨️</span> 業績排名 & A&H獎金明細
@@ -418,8 +405,8 @@
 <script>
     const logBox = document.getElementById('debugLog');
     const statusMsg = document.getElementById('statusMsg');
+    const errorBox = document.getElementById('errorBox');
     
-    // --- 本地儲存 (Local Storage) 功能 ---
     function saveDashboardData() {
         const data = {
             rank20: document.getElementById('input_rank20').value,
@@ -467,6 +454,7 @@
         if (!file) return;
 
         this.value = '';
+        errorBox.style.display = 'none';
 
         document.getElementById('output').innerHTML = '';
         statusMsg.innerText = "⏳ 讀取中...";
@@ -491,6 +479,7 @@
                 let colMap = {};
                 let totalCols = [];
                 let dataStartRow = 0;
+                let foundHeaders = [];
 
                 for (let r = 0; r < Math.min(rows.length, 20); r++) {
                     const row = rows[r];
@@ -498,6 +487,7 @@
                     row.forEach((cell, idx) => {
                         if (typeof cell !== 'string') return;
                         const c = cell.trim();
+                        foundHeaders.push(c);
                         
                         if (c === '序號') colMap['Rank'] = idx;
                         else if (c.includes('代號')) colMap['ID'] = idx;
@@ -514,6 +504,12 @@
                         else if (c.includes('累計業績') && c.includes('FYP')) {
                             totalCols.push(idx);
                         }
+                        // 修正後的繼續率抓取邏輯
+                        else {
+                            const txt = c.replace(/\s/g, ''); 
+                            if (txt.includes('13個月') || (txt.includes('13') && txt.includes('繼續'))) colMap['M13_Rate'] = idx;
+                            else if (txt.includes('25個月') || (txt.includes('25') && txt.includes('繼續'))) colMap['M25_Rate'] = idx;
+                        }
                     });
                 }
 
@@ -524,9 +520,14 @@
                 }
 
                 if (colMap['AH'] === undefined || colMap['Rank'] === undefined) {
-                    statusMsg.innerText = "❌ 找不到符合格式的資料 (需包含序號、A&H業績)";
+                    statusMsg.innerText = "❌ 找不到符合格式的資料";
                     statusMsg.style.color = "#d32f2f";
                     return;
+                }
+
+                if (colMap['M13_Rate'] === undefined && colMap['M25_Rate'] === undefined) {
+                    errorBox.style.display = 'block';
+                    errorBox.innerText = "⚠️ 警告：找不到「13個月」或「25個月」相關欄位。\n請確認 Excel 標題是否正確。\n\n程式讀取到的標題如下：\n" + foundHeaders.join(", ");
                 }
 
                 for(let k=0; k<30; k++) {
@@ -591,6 +592,7 @@
                     <th style="background:var(--col-excl-bg); color:var(--col-excl-text);">累計業績<small>(不含加計/萬)</small></th>
                     <th>A&H<small>(萬)</small></th>
                     <th>特定<small>(萬)</small></th>
+                    <th>繼續率</th>
                     <th style="background:var(--col-incl-bg); color:var(--col-incl-text); font-size:1.1em;">累計業績<small>(含加計/萬)</small></th>
                     <th style="background:var(--col-bonus-bg); color:var(--col-bonus-text);">A&H獎金</th>
                     <th>狀態</th>
@@ -628,6 +630,31 @@
             const quota = getVal(row, 'Quota');
             const deduct = getVal(row, 'Deduct');
 
+            // --- 繼續率計算 (符號版邏輯) ---
+            const raw13 = getRaw(row, 'M13_Rate').toString().trim();
+            const raw25 = getRaw(row, 'M25_Rate').toString().trim();
+            
+            let persistencyHtml = '<span class="status-none">--</span>';
+            const hasData = (raw13 !== '' && raw13 !== '--') || (raw25 !== '' && raw25 !== '--');
+
+            if (hasData) {
+                // 支援 半形* 與 全形＊
+                const hasStar13 = raw13.includes('*') || raw13.includes('＊');
+                const hasStar25 = raw25.includes('*') || raw25.includes('＊');
+                const hasTriangle25 = raw25.includes('▲'); 
+
+                if (hasStar13 && hasStar25) {
+                    // 完全達標
+                    persistencyHtml = '<span style="font-weight:900; color:#2e7d32;">符合</span>';
+                } else if (hasStar13 && hasTriangle25) {
+                    // 條件達標
+                    persistencyHtml = '<span style="font-weight:900; color:#2e7d32;">符合</span><br><span class="rate-warning">(自費2.5萬)</span>';
+                } else {
+                    // 未達標
+                    persistencyHtml = '<span class="rate-fail-text">繼續率不符</span>';
+                }
+            }
+
             const adjTotal = totalExcl - deduct;
             const target = (100 * P_UNIT) + quota;
             const passTotal = adjTotal >= target;
@@ -662,7 +689,6 @@
                     const deficit = target - adjTotal;
                     const deficitWan = (deficit / 10000).toLocaleString('zh-TW', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
                     
-                    // 康愛差額
                     const kangAiDeficit = deficit / 1.43;
                     const kangAiWan = (kangAiDeficit / 10000).toLocaleString('zh-TW', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 
@@ -719,6 +745,7 @@
                 <td class="col-total-excl">${fmtWan(totalExcl)}</td>
                 <td class="col-ah-fyp">${fmtWan(ahFyp)}</td>
                 <td class="col-data-highlight">${fmtWan(specific)}</td>
+                <td>${persistencyHtml}</td>
                 <td class="col-total-incl">${fmtWan(totalIncl)}${aboveCutoffHtml}</td>
                 <td class="${bonusClass}">${bonusHtml}</td>
                 <td>${statusHtml}</td>
