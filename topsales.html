@@ -309,7 +309,15 @@
         .status-diff-ka { color: #0277bd; font-size: 0.85em; display: block; margin-top: 1px; font-weight: bold; }
         .status-none { color: #bdbdbd; font-size: 0.8em; }
         
-        .rate-warning { color: #d32f2f; font-size: 0.8em; display: block; margin-top: 2px; font-weight: bold; }
+        /* 繼續率警示字 - 【修正】字體加大 */
+        .rate-warning { 
+            color: #d32f2f; 
+            font-size: 1.2em; /* 加大 */
+            display: block; 
+            margin-top: 2px; 
+            font-weight: 900; 
+        }
+        
         .rate-fail-text { color: #c62828; font-weight: 900; font-size: 0.95em; }
         
         .cutoff-pass-icon { color: #2e7d32; font-size: 0.8em; margin-left: 4px; vertical-align: top; }
@@ -644,10 +652,10 @@
                 const hasTriangle25 = raw25.includes('▲'); 
 
                 if (hasStar13 && hasStar25) {
-                    // 完全達標
+                    // 完全達標 (13*, 25*)
                     persistencyHtml = '<span style="font-weight:900; color:#2e7d32;">符合</span>';
                 } else if (hasStar13 && hasTriangle25) {
-                    // 條件達標
+                    // 條件達標 (13*, 25▲)
                     persistencyHtml = '<span style="font-weight:900; color:#2e7d32;">符合</span><br><span class="rate-warning">(自費2.5萬)</span>';
                 } else {
                     // 未達標
