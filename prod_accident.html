@@ -195,3 +195,382 @@
                 </select>
             </div>
             <div class="input-group">
+                <label>被保險人年齡</label>
+                <select id="ageGroup" onchange="updateAll()">
+                    <option value="adult">16 - 75歲</option>
+                    <option value="child">0 - 15歲</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>健保身分</label>
+                <select id="hasHealthIns" onchange="updateAll()">
+                    <option value="yes">具有健保</option>
+                    <option value="no">無健保</option>
+                </select>
+            </div>
+        </div>
+
+        <div>
+            <div class="input-group">
+                <label>意外身故/失能保額 (萬元)</label>
+                <input type="number" id="deathBenefit" value="100" min="0" step="10" oninput="updateAll()">
+            </div>
+            <div class="input-group">
+                <label>傷害醫療日額 (元)</label>
+                <input type="number" id="dailyHospital" value="1000" min="0" step="100" oninput="updateAll()">
+            </div>
+            <div class="input-group">
+                <label>實支實付限額 (萬元)</label>
+                <input type="number" id="medicalReimburse" value="10" min="0" step="1" oninput="updateAll()">
+                <div class="xb9-note" id="xb9Note"></div>
+            </div>
+        </div>
+    </div>
+
+    <h2>商品差異比較 (數字隨設定連動)</h2>
+    <table class="comparison-table">
+        <thead>
+            <tr>
+                <th width="20%">保障項目</th>
+                <th width="25%">超全方位傷害附約<br>(新/推薦)</th>
+                <th width="22%">平安傷害附約<br>(舊/對照)</th>
+                <th width="33%">比較說明 (整合行銷亮點)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="category-row"><td colspan="4">1. 意外身故與失能保障</td></tr>
+            <tr>
+                <td>
+                    <strong>一般意外</strong> 身故/失能
+                    <span class="sub-label">基礎保障</span>
+                </td>
+                <td><span id="val_death_general_super" class="val-super"></span> <span class="sub-label">1倍保額</span></td>
+                <td><span id="val_death_general_peace" class="val-peace"></span> <span class="sub-label">1倍保額</span></td>
+                <td class="explain-cell">兩者基礎身故與失能保障額度相同。</td>
+            </tr>
+            <tr>
+                <td>
+                    <strong>火災意外</strong> 身故/一級失能
+                    <span class="sub-label">特定事故增額</span>
+                </td>
+                <td>
+                    <span id="val_death_fire_super" class="val-super"></span> 
+                    <span class="crown-icon" title="優勢項目">👑</span>
+                    <span class="sub-label">2倍保額</span>
+                </td>
+                <td><span id="val_death_fire_peace" class="val-peace"></span> <span class="sub-label">1倍</span></td>
+                <td class="explain-cell">新版針對火災事故<span class="explain-highlight">額外加倍</span>，強化居住環境與特定災難防護。</td>
+            </tr>
+            <tr>
+                <td>
+                    <strong>水陸交通</strong> 身故/一級失能
+                    <span class="sub-label">搭乘交通工具/電梯等</span>
+                </td>
+                <td>
+                    <span id="val_death_land_super" class="val-super"></span> 
+                    <span class="crown-icon" title="優勢項目">👑</span>
+                    <span class="sub-label">3倍保額</span>
+                </td>
+                <td><span id="val_death_land_peace" class="val-peace"></span> <span class="sub-label">1倍</span></td>
+                <td class="explain-cell">新版提供高達<span class="explain-highlight">3倍保障</span>，大幅轉嫁日常通勤、客運、捷運等大眾運輸風險。</td>
+            </tr>
+            <tr>
+                <td>
+                    <strong>航空意外</strong> 身故/失能
+                    <span class="sub-label">搭乘飛機</span>
+                </td>
+                <td>
+                    <span id="val_death_air_super" class="val-super"></span> 
+                    <span class="crown-icon" title="優勢項目">👑</span>
+                    <span class="sub-label">4倍保額</span>
+                </td>
+                <td><span id="val_death_air_peace" class="val-peace"></span> <span class="sub-label">1倍</span></td>
+                <td class="explain-cell">空難保障拉高至<span class="explain-highlight">4倍</span>，為出國旅遊與商務出差提供最高規格防護。</td>
+            </tr>
+
+            <tr class="category-row"><td colspan="4">2. 失能生活扶助金 (最高給付120個月)</td></tr>
+            <tr>
+                <td>第 1 級失能 (2%) <span class="sub-label">植物人/雙目失明等</span></td>
+                <td><span id="val_living_1_super" class="val-super"></span> <span class="crown-icon">👑</span> /月</td>
+                <td rowspan="6" style="vertical-align: middle; text-align: center; background: #fafafa;">
+                    <span class="tag-none">無給付</span>
+                </td>
+                <td rowspan="6" class="explain-cell" style="vertical-align: top;">
+                    <div style="font-weight:bold; color:#0056b3; margin-bottom:5px;">【新版最大亮點】</div>
+                    超全方位獨家提供1~6級失能<span class="explain-highlight">「每月」生活扶助金</span>，最長給付120個月。有效填補因嚴重意外導致需長期照護、無法工作的龐大財務缺口。<br><br>
+                    <span style="color:#666; font-size:0.9em;">(舊版平安附約完全無此給付項目)</span>
+                </td>
+            </tr>
+            <tr>
+                <td>第 2 級失能 (1.8%)</td>
+                <td><span id="val_living_2_super" class="val-super"></span> <span class="crown-icon">👑</span> /月</td>
+            </tr>
+            <tr>
+                <td>第 3 級失能 (1.6%)</td>
+                <td><span id="val_living_3_super" class="val-super"></span> <span class="crown-icon">👑</span> /月</td>
+            </tr>
+            <tr>
+                <td>第 4 級失能 (1.4%)</td>
+                <td><span id="val_living_4_super" class="val-super"></span> <span class="crown-icon">👑</span> /月</td>
+            </tr>
+            <tr>
+                <td>第 5 級失能 (1.2%)</td>
+                <td><span id="val_living_5_super" class="val-super"></span> <span class="crown-icon">👑</span> /月</td>
+            </tr>
+            <tr>
+                <td>第 6 級失能 (1.0%)</td>
+                <td><span id="val_living_6_super" class="val-super"></span> <span class="crown-icon">👑</span> /月</td>
+            </tr>
+
+            <tr class="category-row"><td colspan="4">3. 重大燒燙傷</td></tr>
+            <tr>
+                <td>
+                    <strong>重大燒燙傷保險金</strong>
+                    <span class="sub-label">面積>20%或顏面障礙</span>
+                </td>
+                <td>
+                    <span id="val_burn_major_super" class="val-super"></span> 
+                    <span class="crown-icon">👑</span>
+                    <span class="sub-label">50%保額</span>
+                </td>
+                <td><span class="tag-none">無</span></td>
+                <td class="explain-cell">新版增設一次性給付，專門應對燒燙傷所需的高額自費醫材與長期植皮復健開銷。</td>
+            </tr>
+
+            <tr class="category-row"><td colspan="4">4. 傷害醫療 (依日額設定)</td></tr>
+            <tr>
+                <td>
+                    <strong>一般病房</strong> (日額)
+                    <span class="sub-label">最高天數</span>
+                </td>
+                <td>
+                    <span id="val_daily_super" class="val-super"></span> 
+                    <span class="crown-icon">👑</span>
+                    <span class="sub-label">最高365天</span>
+                </td>
+                <td><span id="val_daily_peace" class="val-peace"></span> <span class="sub-label">最高90天</span></td>
+                <td class="explain-cell">給付天數從90天<span class="explain-highlight">大幅展延至365天</span>，面對嚴重骨折等需長期住院休養的意外更無後顧之憂。</td>
+            </tr>
+            <tr>
+                <td>
+                    <strong>加護病房/燒燙傷病房</strong>
+                    <span class="sub-label">額外給付</span>
+                </td>
+                <td>
+                    <span id="val_icu_super" class="val-super"></span> 
+                    <span class="crown-icon">👑</span>
+                    <span class="sub-label">+2倍</span>
+                </td>
+                <td><span class="tag-none">無</span></td>
+                <td class="explain-cell">針對重症入住特殊病房，額外加碼給付，減輕高階醫療照護的費用負擔。</td>
+            </tr>
+            <tr>
+                <td>
+                    <strong>出院療養金</strong>
+                </td>
+                <td>
+                    <span id="val_dis_super" class="val-super"></span> 
+                    <span class="crown-icon">👑</span>
+                    <span class="sub-label">50%日額</span>
+                </td>
+                <td><span class="tag-none">無</span></td>
+                <td class="explain-cell">新版提供療養金，彌補意外發生後，返家休養期間無法上班的<span class="explain-highlight">隱形薪資損失</span>。</td>
+            </tr>
+            <tr>
+                <td>
+                    <strong>住院生活補助</strong>
+                    <span class="sub-label">長期住院補貼</span>
+                </td>
+                <td>
+                    <div style="margin-bottom:4px;">8-30天: <span id="val_sub_short_super" class="val-super"></span> <span class="crown-icon">👑</span></div>
+                    <div>31天+: <span id="val_sub_long_super" class="val-super"></span> <span class="crown-icon">👑</span></div>
+                </td>
+                <td><span class="tag-none">無</span></td>
+                <td class="explain-cell">新版獨有補貼機制，住院越久補助越多，給予客戶最實質的長期住院慰問。</td>
+            </tr>
+
+            <tr class="category-row"><td colspan="4">5. 實支實付 (依限額設定)</td></tr>
+            <tr>
+                <td>
+                    <strong>每次傷害醫療限額</strong>
+                    <span class="sub-label">健保身分就診</span>
+                </td>
+                <td><span id="val_med_limit_super" class="val-super"></span></td>
+                <td><span id="val_med_limit_peace" class="val-peace"></span></td>
+                <td class="explain-cell">兩者基礎實支實付額度相同。</td>
+            </tr>
+            <tr>
+                <td>
+                    <strong>無理賠回饋</strong>
+                    <span class="sub-label">超過3年無理賠紀錄</span>
+                </td>
+                <td>
+                    <span id="val_bonus_super" class="val-super"></span> 
+                    <span class="crown-icon">👑</span>
+                    <span class="sub-label">限額提高至1.3倍</span>
+                </td>
+                <td><span class="tag-none">無</span></td>
+                <td class="explain-cell">新版具備「外溢保單」精神，只要維持健康無理賠，<span class="explain-highlight">額度自動長大</span>，保費更具價值。</td>
+            </tr>
+
+            <tr class="total-row">
+                <td>預估年繳總保費</td>
+                <td>
+                    <span id="total_super">0</span> 元
+                </td>
+                <td>
+                    <span id="total_peace">0</span> 元
+                </td>
+                <td class="explain-cell" style="font-size: 0.95em;">
+                    保障項目大幅擴充、額度倍增，但保費僅微幅調整，新版具備<span class="explain-highlight" style="font-size: 1.1em;">壓倒性的高性價比</span>。
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <div style="text-align: center; margin-top: 20px; font-size: 0.85em; color: #888; line-height: 1.6;">
+        資料來源：(超)全方位與平安傷害附約差異比較表、XB7/XB8/XB9費率表。<br>
+        註：XB9費率表僅提供 3~10 萬元之精確費率，輸入其他金額將以比例估算。<br>
+        註：平安傷害附約保費為依據標準職業等級係數推算之估計值，實際金額以保險公司報價為準。
+    </div>
+</div>
+
+<script>
+    // 費率資料庫
+    const ratesSuper = {
+        death: {
+            child: [38, 48, 57, 86, 133, 171],   
+            adult: [125, 156, 188, 281, 438, 563] 
+        },
+        daily: [89, 111, 134, 200, 312, 401],     
+    };
+
+    const xb9Table = {
+        3: [490, 613, 735, 1103, 1715, 2205],
+        4: [625, 781, 938, 1406, 2188, 2813],
+        5: [760, 950, 1140, 1710, 2660, 3420],
+        6: [890, 1113, 1335, 2003, 3115, 4005],
+        7: [1015, 1269, 1523, 2284, 3553, 4568],
+        8: [1145, 1431, 1718, 2576, 4008, 5153],
+        9: [1275, 1594, 1913, 2869, 4463, 5738],
+        10: [1400, 1750, 2100, 3150, 4900, 6300]
+    };
+
+    const multipliers = [1.0, 1.25, 1.5, 2.25, 3.5, 4.5];
+    const basePeace = {
+        death: 119.4, 
+        daily: 58.7,
+        medical: 91.7
+    };
+
+    function calculatePremium() {
+        const classIndex = parseInt(document.getElementById('occupationClass').value);
+        const ageType = document.getElementById('ageGroup').value;
+        const hasHealthIns = document.getElementById('hasHealthIns').value;
+
+        let deathAmt = parseFloat(document.getElementById('deathBenefit').value) || 0; 
+        let dailyAmt = parseFloat(document.getElementById('dailyHospital').value) || 0; 
+        let medicalAmt = parseFloat(document.getElementById('medicalReimburse').value) || 0; 
+
+        let totalSuper = 0;
+        let superDeathRate = (ageType === 'child') ? ratesSuper.death.child[classIndex] : ratesSuper.death.adult[classIndex];
+        totalSuper += (deathAmt / 10) * superDeathRate;
+        totalSuper += (dailyAmt / 100) * ratesSuper.daily[classIndex];
+        
+        let xb9Premium = 0;
+        let noteDiv = document.getElementById('xb9Note');
+        noteDiv.innerText = ""; 
+
+        if (xb9Table[medicalAmt]) {
+            xb9Premium = xb9Table[medicalAmt][classIndex];
+        } else {
+            let base10Wan = xb9Table[10][classIndex];
+            xb9Premium = (base10Wan / 10) * medicalAmt;
+            if(medicalAmt > 0) {
+                 noteDiv.innerText = "* 此保額無精確費率，已按10萬元費率比例估算。";
+            }
+        }
+
+        if (hasHealthIns === 'no') {
+            xb9Premium = xb9Premium * 1.91;
+        }
+
+        totalSuper += xb9Premium;
+
+        let totalPeace = 0;
+        let mult = multipliers[classIndex];
+        totalPeace += (deathAmt / 10) * basePeace.death * mult;
+        totalPeace += (dailyAmt / 100) * basePeace.daily * mult;
+        totalPeace += medicalAmt * basePeace.medical * mult;
+
+        const elTotalSuper = document.getElementById('total_super');
+        const elTotalPeace = document.getElementById('total_peace');
+        
+        elTotalSuper.innerText = Math.round(totalSuper).toLocaleString();
+        elTotalPeace.innerText = Math.round(totalPeace).toLocaleString();
+        
+        if (totalSuper < totalPeace) {
+            elTotalSuper.innerHTML += ' <span class="diff-tag tag-cheaper">較便宜</span>';
+        } else if (totalPeace < totalSuper) {
+            elTotalPeace.innerHTML += ' <span class="diff-tag tag-cheaper">較便宜</span>';
+        }
+    }
+
+    function formatCurrency(num) {
+        return Math.round(num).toLocaleString() + " 元";
+    }
+    
+    function formatWan(num) {
+        return Math.round(num).toLocaleString() + " 萬";
+    }
+
+    function updateAll() {
+        calculatePremium();
+        
+        let deathAmtWan = parseFloat(document.getElementById('deathBenefit').value) || 0; 
+        let deathVal = deathAmtWan * 10000; 
+
+        let dailyVal = parseFloat(document.getElementById('dailyHospital').value) || 0; 
+        
+        let medAmtWan = parseFloat(document.getElementById('medicalReimburse').value) || 0; 
+        let medVal = medAmtWan * 10000; 
+
+        document.getElementById('val_death_general_super').innerText = formatWan(deathAmtWan);
+        document.getElementById('val_death_general_peace').innerText = formatWan(deathAmtWan);
+
+        document.getElementById('val_death_fire_super').innerText = formatWan(deathAmtWan * 2);
+        document.getElementById('val_death_fire_peace').innerText = formatWan(deathAmtWan);
+
+        document.getElementById('val_death_land_super').innerText = formatWan(deathAmtWan * 3);
+        document.getElementById('val_death_land_peace').innerText = formatWan(deathAmtWan);
+
+        document.getElementById('val_death_air_super').innerText = formatWan(deathAmtWan * 4);
+        document.getElementById('val_death_air_peace').innerText = formatWan(deathAmtWan);
+
+        document.getElementById('val_living_1_super').innerText = formatCurrency(deathVal * 0.02);
+        document.getElementById('val_living_2_super').innerText = formatCurrency(deathVal * 0.018);
+        document.getElementById('val_living_3_super').innerText = formatCurrency(deathVal * 0.016);
+        document.getElementById('val_living_4_super').innerText = formatCurrency(deathVal * 0.014);
+        document.getElementById('val_living_5_super').innerText = formatCurrency(deathVal * 0.012);
+        document.getElementById('val_living_6_super').innerText = formatCurrency(deathVal * 0.01);
+
+        document.getElementById('val_burn_major_super').innerText = formatWan(deathAmtWan * 0.5);
+
+        document.getElementById('val_daily_super').innerText = formatCurrency(dailyVal);
+        document.getElementById('val_daily_peace').innerText = formatCurrency(dailyVal);
+
+        document.getElementById('val_icu_super').innerText = formatCurrency(dailyVal * 2);
+        document.getElementById('val_dis_super').innerText = formatCurrency(dailyVal * 0.5);
+
+        document.getElementById('val_sub_short_super').innerText = formatCurrency(dailyVal * 0.5); 
+        document.getElementById('val_sub_long_super').innerText = formatCurrency(dailyVal * 1.0); 
+
+        document.getElementById('val_med_limit_super').innerText = formatWan(medAmtWan);
+        document.getElementById('val_med_limit_peace').innerText = formatWan(medAmtWan);
+        document.getElementById('val_bonus_super').innerText = formatWan(medAmtWan * 1.3);
+    }
+
+    updateAll();
+</script>
+
+</body>
+</html>
