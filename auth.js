@@ -7,11 +7,14 @@ document.head.appendChild(antiPeekStyle);
 function showContent() {
     const style = document.getElementById('anti-peek-style');
     if (style) style.remove();
-    document.body.style.display = ''; 
-    document.body.style.opacity = '1';
+    // 確保 body 存在才修改樣式，避免當機
+    if (document.body) {
+        document.body.style.display = ''; 
+        document.body.style.opacity = '1';
+    }
 }
 
-// --- 2. 核心設定 (改用 HTTPS REST API，防阻擋) ---
+// --- 2. 核心設定 (HTTPS REST API) ---
 const FIREBASE_URL = "https://cathay-app-5889a-default-rtdb.firebaseio.com";
 const AUTO_LOGOUT_MINUTES = 30; 
 
@@ -22,70 +25,12 @@ function generateUUID() {
     });
 }
 
-// --- 3. 驗證與連線邏輯 ---
-async function initAuth() {
-    const localUser = localStorage.getItem('currentUser');
-    const localSession = localStorage.getItem('currentSession');
-
-    if (!localUser || !localSession) {
-        await performLogin();
-    } else {
-        showContent();
-        setupAutoLogout(); 
-    }
-}
-
-async function performLogin() {
-    let isAuthorized = false;
-    
-    while (!isAuthorized) {
-        let inputCode = prompt("【安全管制】\n本頁面需要登入才能瀏覽。\n請輸入您的專屬授權碼：");
-        
-        if (inputCode === null) {
-            document.body.innerHTML = "<h2 style='text-align:center;margin-top:50px;'>存取被拒絕</h2>";
-            showContent(); 
-            return;
-        }
-        
-        inputCode = inputCode.toUpperCase().trim();
-
-        try {
-            // 使用標準 HTTPS 請求，穿透公司防火牆
-            const response = await fetch(`${FIREBASE_URL}/whitelist/${inputCode}.json`);
-            const isValid = await response.json();
-
-            if (isValid === true) {
-                alert("驗證成功！歡迎使用。");
-                showContent(); 
-                
-                const newSessionID = generateUUID();
-                const timeString = new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
-                
-                // 寫入登入紀錄 (背景執行即可)
-                fetch(`${FIREBASE_URL}/users/${inputCode}.json`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        session: newSessionID,
-                        lastLogin: timeString,
-                        device: navigator.userAgent
-                    })
-                });
-
-                localStorage.setItem('currentUser', inputCode);
-                localStorage.setItem('currentSession', newSessionID);
-                isAuthorized = true;
-                
-                window.location.reload();
-            } else {
-                alert("授權碼錯誤，請重新輸入。");
-            }
-        } catch (error) {
-            alert("網路異常：無法連線至資料庫，請確認您的網路狀況。");
-            showContent();
-            return;
-        }
-    }
+// --- 3. 登出功能 (註冊到全域，確保按鈕點得到) ---
+window.doLogout = function(needConfirm = true) {
+    if (needConfirm && !confirm("確定要登出系統嗎？")) { return; }
+    localStorage.removeItem('currentUser');
+    localStorage.removeItem('currentSession');
+    location.reload(); 
 }
 
 function setupAutoLogout() {
@@ -104,17 +49,73 @@ function setupAutoLogout() {
     document.onclick = resetTimer;
 }
 
-window.doLogout = function(needConfirm = true) {
-    if (needConfirm && !confirm("確定要登出系統嗎？")) { return; }
-    localStorage.removeItem('currentUser');
-    localStorage.removeItem('currentSession');
-    location.reload(); 
+// --- 4. 主要流程 (🌟 關鍵修正：等待網頁載入完畢才執行) ---
+document.addEventListener("DOMContentLoaded", async function() {
+    const localUser = localStorage.getItem('currentUser');
+    const localSession = localStorage.getItem('currentSession');
+
+    if (!localUser || !localSession) {
+        await performLogin();
+    } else {
+        showContent();        // 顯示畫面
+        setupAutoLogout();    // 啟動閒置偵測
+        buildNavigation();    // 產生底部選單
+    }
+});
+
+async function performLogin() {
+    let isAuthorized = false;
+    
+    while (!isAuthorized) {
+        let inputCode = prompt("【安全管制】\n本頁面需要登入才能瀏覽。\n請輸入您的專屬授權碼：");
+        
+        if (inputCode === null) {
+            document.body.innerHTML = "<h2 style='text-align:center;margin-top:50px;'>存取被拒絕，請重新整理網頁。</h2>";
+            showContent(); 
+            return;
+        }
+        
+        inputCode = inputCode.toUpperCase().trim();
+
+        try {
+            const response = await fetch(`${FIREBASE_URL}/whitelist/${inputCode}.json`);
+            const isValid = await response.json();
+
+            if (isValid === true) {
+                alert("驗證成功！歡迎使用。");
+                
+                const newSessionID = generateUUID();
+                const timeString = new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
+                
+                // 寫入登入紀錄 (背景執行)
+                fetch(`${FIREBASE_URL}/users/${inputCode}.json`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        session: newSessionID,
+                        lastLogin: timeString,
+                        device: navigator.userAgent
+                    })
+                });
+
+                localStorage.setItem('currentUser', inputCode);
+                localStorage.setItem('currentSession', newSessionID);
+                isAuthorized = true;
+                
+                window.location.reload(); // 重新整理進入正式畫面
+            } else {
+                alert("授權碼錯誤，請重新輸入。");
+            }
+        } catch (error) {
+            alert("網路異常：無法連線至資料庫，請確認您的網路狀況。");
+            showContent();
+            return;
+        }
+    }
 }
 
-initAuth();
-
-// --- 4. 底部選單 ---
-document.addEventListener("DOMContentLoaded", function() {
+// --- 5. 底部選單生成器 ---
+function buildNavigation() {
     const path = window.location.pathname;
     const page = path.split("/").pop() || "index.html";
 
@@ -148,4 +149,4 @@ document.addEventListener("DOMContentLoaded", function() {
     `;
     
     document.body.insertAdjacentHTML('beforeend', navHTML);
-});
+}
