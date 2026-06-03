@@ -7,15 +7,15 @@ document.head.appendChild(antiPeekStyle);
 function showContent() {
     const style = document.getElementById('anti-peek-style');
     if (style) style.remove();
+    document.body.style.display = ''; // 修復排版跑版的問題
     document.body.style.opacity = '1';
-    document.body.style.display = 'block';
 }
 
 // --- 2. 引入 Firebase SDK ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, set, update, onValue, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-// ⚠️⚠️⚠️ 這裡記得填回您自己的 Firebase 設定 ⚠️⚠️⚠️
+// Firebase 設定
 const firebaseConfig = {
   apiKey: "AIzaSyAXmxp2R7oeM-DJsbDoT6YAVlHV4vKC_Xo",
   authDomain: "cathay-app-5889a.firebaseapp.com",
@@ -26,7 +26,6 @@ const firebaseConfig = {
   appId: "1:222981030218:web:5f557a386a38cf3d1c41b3",
   measurementId: "G-2C57S9M2H5"
 };
-
 
 // 初始化 Firebase
 const app = initializeApp(firebaseConfig);
@@ -39,49 +38,6 @@ function generateUUID() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
         var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
         return v.toString(16);
-    });
-}
-
-// 取得詳細位置 (OpenStreetMap)
-function getUserLocation() {
-    return new Promise((resolve) => {
-        if (!navigator.geolocation) {
-            resolve("不支援定位");
-            return;
-        }
-        navigator.geolocation.getCurrentPosition(
-            async (position) => {
-                const { latitude, longitude } = position.coords;
-                try {
-                    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1&accept-language=zh-TW`;
-                    const res = await fetch(url);
-                    const data = await res.json();
-                    
-                    if (data && data.address) {
-                        const addr = data.address;
-                        const city = addr.city || addr.county || '';
-                        const district = addr.suburb || addr.town || addr.district || '';
-                        const road = addr.road || addr.street || addr.pedestrian || addr.residential || '';
-                        let fullAddress = `${city} ${district} ${road}`.trim();
-                        if (!road) fullAddress = `${city} ${district} (附近)`.trim();
-                        resolve(fullAddress || "未知地點");
-                    } else {
-                        resolve(`座標:${latitude.toFixed(3)},${longitude.toFixed(3)}`);
-                    }
-                } catch (e) {
-                    resolve(`GPS:${latitude.toFixed(3)},${longitude.toFixed(3)}`);
-                }
-            },
-            (error) => {
-                switch(error.code) {
-                    case error.PERMISSION_DENIED: resolve("使用者拒絕定位"); break;
-                    case error.TIMEOUT: resolve("定位逾時"); break;
-                    case error.POSITION_UNAVAILABLE: resolve("定位無法使用"); break;
-                    default: resolve("定位錯誤"); break;
-                }
-            },
-            { timeout: 8000, enableHighAccuracy: true }
-        );
     });
 }
 
@@ -99,7 +55,7 @@ async function initAuth() {
     }
 }
 
-// --- 登入邏輯 (🔥 已移除干擾提示) ---
+// --- 登入邏輯 (已移除 GPS，修復卡死問題) ---
 async function performLogin() {
     let isAuthorized = false;
     
@@ -108,11 +64,8 @@ async function performLogin() {
         
         if (inputCode === null) {
             alert("未經授權無法存取。");
-            if (window.location.pathname.indexOf('index.html') === -1 && window.location.pathname !== '/') {
-                 window.location.href = 'index.html'; 
-            } else {
-                 location.reload();
-            }
+            document.body.innerHTML = "<h2 style='text-align:center;margin-top:50px;'>存取被拒絕，請重新整理網頁。</h2>";
+            showContent(); // 解除白屏顯示拒絕訊息
             throw new Error("User cancelled");
         }
         
@@ -123,24 +76,11 @@ async function performLogin() {
 
         if (snapshot.exists() && snapshot.val() === true) {
             
-            // 🔥 修改處：原本這裡有 alert，現在直接移除
-            // 程式會直接在背景開始定位，畫面會維持白色直到定位完成
-
-            let userLocation = "讀取中...";
-            try {
-                userLocation = await getUserLocation();
-            } catch(e) {
-                userLocation = "定位錯誤";
-            }
-
-            // 只有「失敗」的時候才跳出警告，成功的時候完全不說話
-            if (userLocation === "使用者拒絕定位" || userLocation === "不支援定位" || userLocation === "定位無法使用") {
-                alert("⛔ 必須允許定位權限才能登入。\n\n請檢查瀏覽器設定。");
-                location.reload();
-                return; 
-            }
-
-            // 寫入 Firebase
+            // 1. 驗證成功，立刻解除白屏並提示，不讓畫面卡死
+            alert("驗證成功！歡迎使用。");
+            showContent(); 
+            
+            // 2. 在背景處理 Firebase 資料寫入
             const userRef = ref(db, 'users/' + inputCode);
             const userSnapshot = await get(userRef);
             
@@ -170,10 +110,10 @@ async function performLogin() {
                 return true; 
             });
 
+            // 紀錄歷史 (移除 location)
             history.unshift({
                 time: timeString,
                 timestamp: timestamp,
-                location: userLocation,
                 device: navigator.userAgent
             });
             if (history.length > 50) history.length = 50;
@@ -185,20 +125,17 @@ async function performLogin() {
                 lastLogin: timeString,
                 device: navigator.userAgent,
                 kickCount: finalKickCount,
-                location: userLocation,
                 loginHistory: history
             });
 
             localStorage.setItem('currentUser', inputCode);
             localStorage.setItem('currentSession', newSessionID);
             
-            // 🔥 修改處：這裡的 alert 也可以移除，讓登入更順暢
-            // 移除: alert(`驗證成功！\n登入位置：${userLocation}`);
-            
-            showContent(); // 打開畫面
             isAuthorized = true;
-            monitorSession(inputCode, newSessionID);
-            setupAutoLogout();
+
+            // 3. 強制重新整理，確保畫面與選單順利載入
+            window.location.reload();
+
         } else {
             alert("授權碼錯誤，請重新輸入。");
         }
@@ -277,7 +214,7 @@ document.addEventListener("DOMContentLoaded", function() {
         <a href="client.html" class="nav-item ${page === 'client.html' ? 'active' : ''}"><span>👥</span><div>客戶</div></a>
         <a href="calc.html" class="nav-item ${page === 'calc.html' ? 'active' : ''}"><span>🧮</span><div>試算</div></a>
         <a href="products.html" class="nav-item ${page === 'products.html' ? 'active' : ''}"><span>🏥</span><div>商品</div></a>
-        <a href="event.html" class="nav-item ${page === 'event.html' ? 'active' : ''}"><span>💰</span><div>獎金</div></a>
+        <a href="event.html" class="nav-item ${page === 'event.html' ? 'active' : ''}"><span>🏆</span><div>高峰會</div></a>
     </div>
     `;
     
