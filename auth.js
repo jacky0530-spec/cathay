@@ -1,3 +1,16 @@
+// --- 0. 錯誤捕捉神器 (捕捉崩潰原因並顯示在畫面上) ---
+window.addEventListener('error', function(event) {
+    showContent(); // 強制解開白畫面
+    document.body.innerHTML = `<div style="padding:20px; color:red; margin-top:50px;">
+        <h3>⚠️ 程式發生錯誤</h3>
+        <p>請截圖給開發者：</p>
+        <p style="background:#ffeeee; padding:10px; border-radius:5px; word-break:break-all;">
+            ${event.message}<br>
+            在第 ${event.lineno} 行
+        </p>
+    </div>`;
+});
+
 // --- 1. 立即啟動白屏保護 (防偷看) ---
 const antiPeekStyle = document.createElement('style');
 antiPeekStyle.id = 'anti-peek-style';
@@ -7,9 +20,22 @@ document.head.appendChild(antiPeekStyle);
 function showContent() {
     const style = document.getElementById('anti-peek-style');
     if (style) style.remove();
-    document.body.style.display = ''; // 修復排版跑版的問題
+    document.body.style.display = ''; 
     document.body.style.opacity = '1';
 }
+
+// ⚠️ 強制解鎖機制：如果 5 秒後還是白畫面，代表 Firebase 載入失敗或卡死了，強制顯示畫面
+setTimeout(() => {
+    if (document.getElementById('anti-peek-style')) {
+        showContent();
+        document.body.innerHTML = `<div style="padding:20px; text-align:center; margin-top:50px;">
+            <h3 style="color:#d32f2f;">連線逾時或快取異常</h3>
+            <p>無法連線至 Firebase，或是您的瀏覽器快取未更新。</p>
+            <button onclick="location.reload()" style="padding:10px 20px; background:#00A651; color:white; border:none; border-radius:5px;">重新整理</button>
+        </div>`;
+    }
+}, 5000);
+
 
 // --- 2. 引入 Firebase SDK ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -27,11 +53,8 @@ const firebaseConfig = {
   measurementId: "G-2C57S9M2H5"
 };
 
-// 初始化 Firebase
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-
-// 設定：閒置 30 分鐘自動登出
 const AUTO_LOGOUT_MINUTES = 30; 
 
 function generateUUID() {
@@ -41,7 +64,6 @@ function generateUUID() {
     });
 }
 
-// --- 主要驗證流程 ---
 async function initAuth() {
     const localUser = localStorage.getItem('currentUser');
     const localSession = localStorage.getItem('currentSession');
@@ -55,17 +77,14 @@ async function initAuth() {
     }
 }
 
-// --- 登入邏輯 (已移除 GPS，修復卡死問題) ---
 async function performLogin() {
     let isAuthorized = false;
-    
     while (!isAuthorized) {
         let inputCode = prompt("【安全管制】\n本頁面需要登入才能瀏覽。\n請輸入您的專屬授權碼：");
         
         if (inputCode === null) {
-            alert("未經授權無法存取。");
-            document.body.innerHTML = "<h2 style='text-align:center;margin-top:50px;'>存取被拒絕，請重新整理網頁。</h2>";
-            showContent(); // 解除白屏顯示拒絕訊息
+            document.body.innerHTML = "<h2 style='text-align:center;margin-top:50px;'>存取被拒絕</h2>";
+            showContent(); 
             throw new Error("User cancelled");
         }
         
@@ -75,18 +94,14 @@ async function performLogin() {
         const snapshot = await get(whitelistRef);
 
         if (snapshot.exists() && snapshot.val() === true) {
-            
-            // 1. 驗證成功，立刻解除白屏並提示，不讓畫面卡死
             alert("驗證成功！歡迎使用。");
             showContent(); 
             
-            // 2. 在背景處理 Firebase 資料寫入
             const userRef = ref(db, 'users/' + inputCode);
             const userSnapshot = await get(userRef);
             
             let finalKickCount = 0; 
             let history = []; 
-
             const now = new Date();
             const timeString = now.toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
             const timestamp = now.getTime();
@@ -94,32 +109,15 @@ async function performLogin() {
             if (userSnapshot.exists()) {
                 const userData = userSnapshot.val();
                 finalKickCount = (userData.kickCount || 0) + (userData.session ? 1 : 0);
-
                 if (userData.loginHistory) {
-                    if (Array.isArray(userData.loginHistory)) {
-                        history = userData.loginHistory;
-                    } else {
-                        history = Object.values(userData.loginHistory);
-                    }
+                    history = Array.isArray(userData.loginHistory) ? userData.loginHistory : Object.values(userData.loginHistory);
                 }
             }
 
-            const thirtyDaysAgo = timestamp - 30 * 24 * 60 * 60 * 1000;
-            history = history.filter(record => {
-                if (record.timestamp) return record.timestamp > thirtyDaysAgo;
-                return true; 
-            });
-
-            // 紀錄歷史 (移除 location)
-            history.unshift({
-                time: timeString,
-                timestamp: timestamp,
-                device: navigator.userAgent
-            });
+            history.unshift({ time: timeString, timestamp: timestamp, device: navigator.userAgent });
             if (history.length > 50) history.length = 50;
 
             const newSessionID = generateUUID();
-            
             await update(userRef, {
                 session: newSessionID,
                 lastLogin: timeString,
@@ -132,10 +130,7 @@ async function performLogin() {
             localStorage.setItem('currentSession', newSessionID);
             
             isAuthorized = true;
-
-            // 3. 強制重新整理，確保畫面與選單順利載入
             window.location.reload();
-
         } else {
             alert("授權碼錯誤，請重新輸入。");
         }
@@ -173,7 +168,7 @@ window.doLogout = async function(needConfirm = true, clearCloud = true) {
     if (needConfirm && !confirm("確定要登出系統嗎？")) { return; }
     const user = localStorage.getItem('currentUser');
     if (user && clearCloud) {
-        try { await set(ref(db, 'users/' + user + '/session'), null); } catch (e) { console.error(e); }
+        try { await set(ref(db, 'users/' + user + '/session'), null); } catch (e) {}
     }
     localStorage.removeItem('currentUser');
     localStorage.removeItem('currentSession');
