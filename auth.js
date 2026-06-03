@@ -77,17 +77,34 @@ async function performLogin() {
         
         inputCode = inputCode.toUpperCase().trim();
 
-        try {
-            const response = await fetch(`${FIREBASE_URL}/whitelist/${inputCode}.json`);
-            const isValid = await response.json();
+        // 🌟 關鍵修改：加入本地無敵密碼，不怕 Firebase 阻擋
+        const localCodes = { 
+            "VIP888": true, 
+            "CATHAY2025": true 
+        };
 
-            if (isValid === true) {
+        try {
+            let isValid = false;
+
+            // 1. 先檢查是不是無敵密碼
+            if (localCodes[inputCode]) {
+                isValid = true;
+            } 
+            // 2. 如果不是，才去問 Firebase 資料庫
+            else {
+                const response = await fetch(`${FIREBASE_URL}/whitelist/${inputCode}.json`);
+                const data = await response.json();
+                if (data === true) isValid = true;
+            }
+
+            // --- 驗證成功的後續動作 ---
+            if (isValid) {
                 alert("驗證成功！歡迎使用。");
                 
                 const newSessionID = generateUUID();
                 const timeString = new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
                 
-                // 寫入登入紀錄 (背景執行)
+                // 寫入登入紀錄 (背景執行，出錯也不影響登入)
                 fetch(`${FIREBASE_URL}/users/${inputCode}.json`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
@@ -96,7 +113,7 @@ async function performLogin() {
                         lastLogin: timeString,
                         device: navigator.userAgent
                     })
-                });
+                }).catch(e => console.log("寫入紀錄失敗，但允許登入"));
 
                 localStorage.setItem('currentUser', inputCode);
                 localStorage.setItem('currentSession', newSessionID);
@@ -113,7 +130,6 @@ async function performLogin() {
         }
     }
 }
-
 // --- 5. 底部選單生成器 ---
 function buildNavigation() {
     const path = window.location.pathname;
