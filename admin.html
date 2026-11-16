@@ -115,7 +115,7 @@ const usersRef=ref(db,'users');
             latestUsers=userList;
             userList.forEach((user,index) => {
                 const isOnline = user.session ? true : false;
-                const kickCount = user.kickCount || 0;
+                const kickCount = Number.isFinite(Number(user.kickCount)) ? Math.max(0,Math.floor(Number(user.kickCount))) : 0;
                 
                 let badgeClass = 'badge-normal';
                 if (kickCount > 0) badgeClass = 'badge-warning';
@@ -145,7 +145,7 @@ const usersRef=ref(db,'users');
                         <td>${escapeHTML(user.lastLogin || '無紀錄')}</td>
                         <td><span class="badge ${badgeClass}">${kickCount} 次</span></td>
                         <td>${historyBtn}</td>
-                        <td><span class="device-info" title="${escapeHTML(user.device)}">${formatDevice(user.device)}</span></td>
+                        <td><span class="device-info" title="${escapeHTML(user.device)}">${escapeHTML(formatDevice(user.device))}</span></td>
                     </tr>
                 `;
                 tbody.innerHTML += row;

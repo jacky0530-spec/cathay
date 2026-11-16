@@ -498,6 +498,7 @@
 
         data.forEach(record => {
             const displayDate = record.recordDate || '';
+            const safeId = Number.isSafeInteger(Number(record.id)) ? Number(record.id) : null;
             const displayLine = record.lineId ? `<span class="line-id-text">${escapeHTML(record.lineId)}</span>` : '';
 
             const row = `
@@ -511,8 +512,8 @@
                     <td>${escapeHTML(record.notes)}</td>
                     <td>
                         <div class="action-btns">
-                            <button class="btn-edit" onclick="editData(${record.id})">編輯</button>
-                            <button class="btn-delete" onclick="deleteData(${record.id})">刪除</button>
+                            <button class="btn-edit" onclick="editData(${safeId})">編輯</button>
+                            <button class="btn-delete" onclick="deleteData(${safeId})">刪除</button>
                         </div>
                     </td>
                 </tr>
