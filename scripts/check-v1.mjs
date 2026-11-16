@@ -28,6 +28,8 @@ for(const p of previouslyUngated){
   assert(read(p).includes('id="cathay-preauth"'),p+' must hide sensitive UI until Firebase completes');
 }
 assert(read('backup-export.html').includes('await window.cathayAuthReady'),'Protected JSON backup requires verified membership');
+assert(read('client.html').includes('id="cathay-preauth"'),'Customer data page must hide until login');
+assert(read('admin.html').includes('id="cathay-preauth"'),'Admin page must hide until login');
 assert(auth.includes("getElementById('cathay-preauth')?.remove()"),'Authorized login must reveal page content');
 assert(product.includes('停售商品區'));
 assert(product.indexOf('href="prod_cancer_protect.html"') < product.indexOf('停售商品區'));
