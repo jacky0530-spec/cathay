@@ -1,4 +1,4 @@
-name: V1.0 靜態回歸檢查
+name: V1.0 靜態回歸與 Firebase 規則檢查
 on:
   pull_request:
     branches: [main]
@@ -13,5 +13,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: 檢查試算網址、停售分類、備份及 JavaScript 語法
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: 檢查靜態路徑、商品分類與 JavaScript 語法
         run: node scripts/check-v1.mjs
+      - name: 安裝 Firebase 本機模擬器測試套件
+        run: npm install --no-audit --no-fund
+      - name: 驗證匿名、使用者、管理員與失效帳號權限
+        run: npm run test:rules
