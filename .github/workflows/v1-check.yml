@@ -1,0 +1,17 @@
+name: V1.0 靜態回歸檢查
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: 檢查試算網址、停售分類、備份及 JavaScript 語法
+        run: node scripts/check-v1.mjs
