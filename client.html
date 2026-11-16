@@ -227,12 +227,16 @@
             <button onclick="cancelEdit()" id="cancelBtn" class="btn-cancel">取消編輯</button>
             <button onclick="exportData()" class="btn-export">匯出 Excel (CSV)</button>
 <button type="button" onclick="exportBackupJSON()" class="btn-export" style="background:#176d77">下載完整 JSON 備份</button>
+<button type="button" onclick="uploadCloudBackup()" class="btn-export" style="background:#386e54">上傳雲端備份</button>
+<button type="button" onclick="restoreCloudBackup()" class="btn-export" style="background:#3363a0">合併雲端備份</button>
         </div>
 
         <p style="color:#775019;background:#fff8e8;padding:11px;border-radius:8px">⚠️ 目前資料儲存在這台裝置的瀏覽器中。請定期下載完整 JSON 備份並妥善加密保存。</p>
 <div class="import-section">
             <span style="font-size: 14px; font-weight: bold;">匯入資料：</span>
             <input type="file" id="csvFileInput" accept=".csv">
+<input type="file" id="jsonFileInput" accept=".json" aria-label="選擇 JSON 備份檔案">
+<button type="button" onclick="importBackupJSON()" class="btn-import">合併 JSON 備份</button>
             <button onclick="importCSV()" class="btn-import">確認匯入</button>
         </div>
     </div>
@@ -412,6 +416,68 @@
       const url=URL.createObjectURL(b),a=document.createElement('a');a.href=url;a.download='cathay-client-backup-'+new Date().toISOString().slice(0,10)+'.json';
       document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);
     }
+
+    function getClientRecords() {
+      const records=JSON.parse(localStorage.getItem('contactRecords')||'[]');
+      if(!Array.isArray(records))throw Error('資料格式不符');
+      return records;
+    }
+    function recordFingerprint(r) {
+      return ['recordDate','name','phone','lineId','address','experience','notes']
+        .map(key=>String(r[key]==null?'':r[key])).join('\u001f');
+    }
+    function mergeClientRecords(incoming) {
+      if(!Array.isArray(incoming))throw Error('備份格式不符');
+      const local=getClientRecords();
+      const existing=new Set(local.map(recordFingerprint));
+      const occupied=new Set(local.map(r=>String(r.id)));
+      let nextId=Math.max(Date.now(),...local.map(r=>Number.isSafeInteger(Number(r.id))?Number(r.id):0))+1;
+      let added=0,skipped=0;
+      for(const candidate of incoming){
+        if(!candidate||typeof candidate!=='object'||typeof candidate.name!=='string'||typeof candidate.phone!=='string'){skipped++;continue;}
+        const key=recordFingerprint(candidate);
+        if(existing.has(key)){skipped++;continue;}
+        const record={...candidate};
+        const proposed=Number(record.id);
+        if(!Number.isSafeInteger(proposed)||occupied.has(String(proposed))){record.id=nextId++;}else{record.id=proposed;}
+        occupied.add(String(record.id));existing.add(key);local.push(record);added++;
+      }
+      localStorage.setItem('contactRecords',JSON.stringify(local));
+      loadData();
+      alert('合併完成：新增 '+added+' 筆、略過重複或格式不符 '+skipped+' 筆。本機資料原有筆數仍保留。');
+    }
+    async function uploadCloudBackup() {
+      try{
+        const records=getClientRecords();
+        if(!records.length){alert('本機沒有資料，為防止覆蓋原雲端備份，不允許上傳空資料。');return;}
+        if(!confirm('確定將本機 '+records.length+' 筆客戶資料上傳至「個人」Firebase 雲端備份？原備份將被取代。'))return;
+        const count=await window.cathayCloud.backup(records);
+        alert('成功上傳 '+count+' 筆至個人雲端備份。');
+      }catch(e){alert('雲端備份失敗：請確認已登入、網路與 Firebase 權限設定。');}
+    }
+    async function restoreCloudBackup() {
+      try{
+        const data=await window.cathayCloud.restore();
+        if(!data||data.schemaVersion!==1||!Array.isArray(data.records)){alert('找不到有效的個人雲端備份。');return;}
+        if(!confirm('雲端共有 '+data.records.length+' 筆。要先下載目前本機 JSON，再將雲端資料「合併」進本機嗎？'))return;
+        exportBackupJSON();
+        mergeClientRecords(data.records);
+      }catch(e){alert('雲端讀取／合併失敗，原本本機資料不變。');}
+    }
+    async function importBackupJSON() {
+      const input=document.getElementById('jsonFileInput');
+      const file=input.files&&input.files[0];
+      if(!file){alert('請先選擇 JSON 備份檔');return;}
+      try{
+        const data=JSON.parse(await file.text());
+        if(data.schemaVersion!==1||!Array.isArray(data.records))throw Error('Invalid backup');
+        if(!confirm('確定將 '+data.records.length+' 筆 JSON 備份合併進目前資料？不會清除既有資料。'))return;
+        exportBackupJSON();
+        mergeClientRecords(data.records);
+        input.value='';
+      }catch(error){alert('JSON 檔案格式不正確或匯入失敗，本機資料未清除。');}
+    }
+
     function renderTable(data) {
         const tbody = document.getElementById('tableBody');
         const noDataMsg = document.getElementById('noDataMsg');
