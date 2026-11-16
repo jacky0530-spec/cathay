@@ -12,13 +12,21 @@
       ".read": "auth != null && root.child('members').child(auth.uid).child('active').val() === true && root.child('members').child(auth.uid).child('role').val() === 'admin'",
       "$uid": {
         ".read": "auth != null && auth.uid === $uid && root.child('members').child(auth.uid).child('active').val() === true",
-        ".write": "auth != null && auth.uid === $uid && root.child('members').child(auth.uid).child('active').val() === true"
+        "lastLogin": {
+          ".write": "auth != null && auth.uid === $uid && root.child('members').child(auth.uid).child('active').val() === true",
+          ".validate": "newData.isString() && newData.val().length <= 64"
+        },
+        "device": {
+          ".write": "auth != null && auth.uid === $uid && root.child('members').child(auth.uid).child('active').val() === true",
+          ".validate": "newData.isString() && newData.val().length <= 512"
+        }
       }
     },
     "clientBackups": {
       "$uid": {
         ".read": "auth != null && auth.uid === $uid && root.child('members').child(auth.uid).child('active').val() === true",
-        ".write": "auth != null && auth.uid === $uid && root.child('members').child(auth.uid).child('active').val() === true && newData.child('schemaVersion').val() === 1"
+        ".write": "auth != null && auth.uid === $uid && root.child('members').child(auth.uid).child('active').val() === true && newData.child('schemaVersion').val() === 1",
+        ".validate": "newData.hasChildren(['schemaVersion','updatedAt','records']) && newData.child('schemaVersion').val() === 1 && newData.child('updatedAt').isString() && newData.child('updatedAt').val().length <= 40 && newData.child('records').hasChildren()"
       }
     },
     "whitelist": {
