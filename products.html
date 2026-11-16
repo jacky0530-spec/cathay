@@ -96,7 +96,8 @@
         /* 投資型按鈕微調 */
         .invest-btn .icon { filter: hue-rotate(45deg); }
 
-    </style>
+    @media (min-width: 900px) { .comparison-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+</style>
 <style id="v1-stopped">
 .stop-section {margin:24px 0 16px;background:#ebedef;border-radius:14px;padding:8px 10px 14px;}
 .stop-intro {font-size:13px;color:#555;margin:4px 10px 12px;line-height:1.6;}
@@ -148,6 +149,14 @@
             <div class="arrow">➜</div>
         </a>
 
+        </div>
+
+<section class="stop-section" aria-label="停售商品區"><h2 class="section-title" style="border-color:#cf4147">🚫 停售商品區</h2><p class="stop-intro">以下商品已停售，僅保留原有試算頁面供既有保單及教育訓練查詢。</p>
+<a class="stop-item" href="prod_invest_forever.html"><span class="stop-icon">♾️</span><span>月月(永)溢 <span class="stop-badge">已停售</span></span><span class="stop-arrow">›</span></a>
+<a class="stop-item" href="prod_invest_full.html"><span class="stop-icon">🟢</span><span>月月(滿)溢 <span class="stop-badge">已停售</span></span><span class="stop-arrow">›</span></a>
+<a class="stop-item" href="prod_overflow_love.html"><span class="stop-icon">💖</span><span>滿溢康愛 <span class="stop-badge">已停售</span></span><span class="stop-arrow">›</span></a></section>
+
+<div class="grid-menu comparison-grid">
         <a href="prod_accident.html" class="prod-btn">
             <div class="icon">🚑</div>
             <div class="name">意外險<br>比較</div>
@@ -169,10 +178,7 @@
         </a>
     </div>
 
-    <section class="stop-section" aria-label="停售商品區"><h2 class="section-title" style="border-color:#cf4147">🚫 停售商品區</h2><p class="stop-intro">以下商品已停售，僅保留原有試算頁面供既有保單及教育訓練查詢。</p>
-<a class="stop-item" href="prod_invest_forever.html"><span class="stop-icon">♾️</span><span>月月(永)溢 <span class="stop-badge">已停售</span></span><span class="stop-arrow">›</span></a>
-<a class="stop-item" href="prod_invest_full.html"><span class="stop-icon">🟢</span><span>月月(滿)溢 <span class="stop-badge">已停售</span></span><span class="stop-arrow">›</span></a>
-<a class="stop-item" href="prod_overflow_love.html"><span class="stop-icon">💖</span><span>滿溢康愛 <span class="stop-badge">已停售</span></span><span class="stop-arrow">›</span></a></section>
+    
 <p class="stop-foot">V1.0 · 商品條款、費率及銷售狀態請以正式公告為準。</p>
 <script>
         if ('serviceWorker' in navigator) {
