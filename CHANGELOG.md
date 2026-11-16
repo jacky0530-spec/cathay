@@ -1,5 +1,12 @@
 # 版本更新紀錄
 
+## V1.0 管理監控相容性修正 — 2026-11-17（草稿）
+- 修正舊管理報表以 `session` 字串判斷在線，導致新版 Firebase 登入一律顯示離線的問題。
+- 使用 Firebase `.info/connected` 與 `onDisconnect()` 記錄每個瀏覽器連線；登出時嘗試立即移除本人連線。
+- 登入時間改為每個瀏覽器工作階段寫入一次，避免每次換頁都把「最後登入」誤當最後瀏覽時間。
+- 保留舊資料的 `lastLogin`、`kickCount`、`loginHistory` 並兼容舊日期格式；不清除歷史資料。
+- Firebase 模擬器新增在線連線寫入、跨帳號拒絕、停用帳號拒絕及正常移除測試。
+
 ## V1.0 直接網址權限補強 — 2026-11-17（開發草稿）
 - 全 30 個 HTML 頁面確認登入引入情況；補齊 `calc_business.html`、`cardshow.html`、`portfolio.html`、`topsales.html` 的 `auth.js`。
 - V1.0 開發分支中的 `backup-export.html` 改為 Firebase 會員驗證後才能讀取本機紀錄；原正式 main 上的臨時遷移備份頁不受影響。

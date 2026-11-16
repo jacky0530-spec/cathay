@@ -45,6 +45,15 @@ try {
   await assertFails(set(path(alice,'users/alice/role'),'admin'));
   await assertFails(update(path(alice,'users/bob'),{lastLogin:'future'}));
   await assertFails(set(path(inactive,'users/inactive/lastLogin'),'future'));
+  // Presence is written only by the owning active user; cleanup after disconnect is allowed.
+  await assertSucceeds(set(path(alice,'users/alice/connections/browserA'),true));
+  await assertFails(set(path(bob,'users/alice/connections/browserB'),true));
+  await assertFails(set(path(inactive,'users/inactive/connections/browserC'),true));
+  await assertFails(set(path(alice,'users/alice/connections/browserBad'),'spoofed'));
+  await assertSucceeds(get(path(admin,'users/alice/connections')));
+  await assertSucceeds(set(path(alice,'users/alice/connections/browserA'),null));
+  await assertFails(set(path(alice,'users/alice/connections/browserA/name'),'malicious'));
+
 
   // Versioned backup: user may create a new snapshot, but never overwrite/delete an earlier one.
   await assertSucceeds(set(path(alice,'clientBackups/alice/versionA'),backup));

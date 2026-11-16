@@ -1,7 +1,7 @@
 // V1.0: Firebase Authentication + database member rules; no shared front-end passwords.
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import { getDatabase, get, set, ref, update, push, query, orderByChild, limitToLast } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+import { getDatabase, get, set, ref, update, push, query, orderByChild, limitToLast, onValue, onDisconnect, remove } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 const firebaseConfig = {
   apiKey: "AIzaSyAXmxp2R7oeM-DJsbDoT6YAVlHV4vKC_Xo",
   authDomain: "cathay-app-5889a.firebaseapp.com",
@@ -36,9 +36,30 @@ function loginScreen(message){
   });
 }
 let idleTimer;
+let presenceRef=null, unsubscribePresence=null;
+function startPresence(uid){
+  // Firebase server disconnect operations must be queued before marking this connection online.
+  if(unsubscribePresence)unsubscribePresence();
+  unsubscribePresence=onValue(ref(db,'.info/connected'),async snapshot=>{
+    if(snapshot.val()!==true)return;
+    const session=push(ref(db,'users/'+uid+'/connections'));
+    try{
+      await onDisconnect(session).remove();
+      await set(session,true);
+      presenceRef=session;
+    }catch(error){
+      // A failed presence write must not permit data access or interfere with an authorized login.
+      console.warn('Presence update failed');
+    }
+  });
+}
 window.doLogout=async function(ask=true){
   if(ask&&!confirm('確定要登出嗎？'))return;
   clearTimeout(idleTimer);
+  if(unsubscribePresence){unsubscribePresence();unsubscribePresence=null;}
+  try{if(presenceRef)await remove(presenceRef);}catch(error){/* onDisconnect handles network loss */ }
+  presenceRef=null;
+  if(auth.currentUser)sessionStorage.removeItem('cathay-login-recorded:'+auth.currentUser.uid);
   await signOut(auth);
   location.href='index.html';
 };
@@ -103,7 +124,14 @@ function run(){
       if(!snapshot.exists()||snapshot.val().active!==true)throw Error('No membership');
       window.cathayMember={uid:user.uid,role:snapshot.val().role||'user'};
       completeReady(window.cathayMember);
-      update(ref(db,'users/'+user.uid),{lastLogin:new Date().toISOString(),device:navigator.userAgent}).catch(()=>{});
+      const loginMarker='cathay-login-recorded:'+user.uid;
+      if(!sessionStorage.getItem(loginMarker)){
+        // Once per browser tab session, not on every page navigation.
+        update(ref(db,'users/'+user.uid),{lastLogin:new Date().toISOString(),device:navigator.userAgent})
+          .then(()=>sessionStorage.setItem(loginMarker,'1'))
+          .catch(()=>{});
+      }
+      startPresence(user.uid);
       reveal();navigation();idle();
     }catch(error){await signOut(auth);loginScreen('此帳號尚未獲得授權，請聯絡管理員。');}
   },()=>loginScreen('無法連線至驗證服務。'));

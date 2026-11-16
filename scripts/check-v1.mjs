@@ -40,6 +40,11 @@ assert(!product.includes('href="prod_overflow_love.html" class="highlight-pink"'
 assert(!product.includes('class="prod-btn invest-btn"'));
 assert(!/VIP888|CATHAY2025|admin888/.test(auth+admin),'shared password in active code');
 assert(auth.includes('signInWithEmailAndPassword')&&admin.includes("member.role!=='admin'"));
+assert(auth.includes("onDisconnect(session).remove()"),'Presence must queue disconnect cleanup');
+assert(auth.includes("cathay-login-recorded:"),'Login timestamp must not reset on each page navigation');
+assert(admin.includes("connectionCount > 0"),'Admin status must use live connections rather than legacy session strings');
+assert(rules.rules.users['$uid'].connections['$connectionId']['.write'].includes('auth.uid === $uid'),'Presence writes must be owner-only');
+
 assert(client.includes('function exportBackupJSON')&&client.includes('function mergeClientRecords'));
 assert(client.includes('localStorage.getItem(\'contactRecords\')'));
 const manifest=JSON.parse(read('manifest.json'));

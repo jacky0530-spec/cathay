@@ -64,11 +64,11 @@
         <table>
             <thead>
                 <tr>
-                    <th width="8%">狀態</th>
-                    <th width="10%">授權碼</th>
+                    <th width="8%">連線狀態</th>
+                    <th width="10%">帳號 UID／舊授權碼</th>
                     <th width="22%">登入地點 (最新)</th>
                     <th width="15%">最後登入</th>
-                    <th width="8%">被踢</th>
+                    <th width="8%">舊版踢除</th>
                     <th width="10%">足跡</th>
                     <th width="27%">登入裝置</th>
                 </tr>
@@ -114,7 +114,8 @@ const usersRef=ref(db,'users');
 
             latestUsers=userList;
             userList.forEach((user,index) => {
-                const isOnline = user.session ? true : false;
+                const connectionCount = user.connections && typeof user.connections==='object' ? Object.keys(user.connections).length : 0;
+                const isOnline = connectionCount > 0;
                 const kickCount = Number.isFinite(Number(user.kickCount)) ? Math.max(0,Math.floor(Number(user.kickCount))) : 0;
                 
                 let badgeClass = 'badge-normal';
@@ -130,7 +131,9 @@ const usersRef=ref(db,'users');
                     }
                 }
 
-                const hasHistory = user.loginHistory && user.loginHistory.length > 0;
+                const histories = Array.isArray(user.loginHistory) ? user.loginHistory :
+                    (user.loginHistory && typeof user.loginHistory==='object' ? Object.values(user.loginHistory) : []);
+                const hasHistory = histories.length > 0;
                 let historyBtn = `<button class="history-btn" disabled>無紀錄</button>`;
                 
                 if (hasHistory) {
@@ -139,10 +142,10 @@ const usersRef=ref(db,'users');
 
                 const row = `
                     <tr>
-                        <td><span class="status-dot ${isOnline ? 'online' : ''}"></span></td>
+                        <td><span class="status-dot ${isOnline ? 'online' : ''}"></span>${isOnline ? '在線' : '離線'}</td>
                         <td style="font-weight:bold; color:#333;">${escapeHTML(user.code)}</td>
                         <td>${locDisplay}</td>
-                        <td>${escapeHTML(user.lastLogin || '無紀錄')}</td>
+                        <td>${escapeHTML(formatLoginTime(user.lastLogin))}</td>
                         <td><span class="badge ${badgeClass}">${kickCount} 次</span></td>
                         <td>${historyBtn}</td>
                         <td><span class="device-info" title="${escapeHTML(user.device)}">${escapeHTML(formatDevice(user.device))}</span></td>
@@ -153,6 +156,15 @@ const usersRef=ref(db,'users');
         });
 
         function escapeHTML(value){return String(value==null?'':value).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[ch]);}
+        function formatLoginTime(value){
+            if(value==null||value==='')return '無紀錄';
+            if(typeof value==='number' || (typeof value==='string' && /^\\d{4}-\\d{2}-\\d{2}T/.test(value))){
+                const date=new Date(value);
+                if(Number.isFinite(date.getTime()))
+                    return date.toLocaleString('zh-TW',{timeZone:'Asia/Taipei'});
+            }
+            return String(value);
+        }
         function formatDevice(userAgent) {
             if (!userAgent) return '未知裝置';
             const match = userAgent.match(/\(([^)]+)\)/);
@@ -166,11 +178,13 @@ const usersRef=ref(db,'users');
         window.showHistoryByIndex = function(index) {
             const user=latestUsers[index];
             if(!user)return;
-            const jsonStr=JSON.stringify(user.loginHistory||[]);
+            const events=Array.isArray(user.loginHistory)?user.loginHistory:
+                (user.loginHistory&&typeof user.loginHistory==='object'?Object.values(user.loginHistory):[]);
+            const jsonStr=JSON.stringify(events);
             const code=user.code;
             try {
                 const history = JSON.parse(jsonStr);
-                let msg = `【${code}】最近 30 天足跡紀錄 (共 ${history.length} 筆)：\n\n`;
+                let msg = `【${code}】既有登入紀錄 (共 ${history.length} 筆)：\n\n`;
                 
                 history.forEach((item, index) => {
                     // 原本是 split(' ')[0] 只取日期，現在改為直接顯示 item.time
