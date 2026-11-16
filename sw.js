@@ -1,6 +1,39 @@
-// V1.0: do not cache Firebase/API requests or local client data.
-const CACHE_NAME='cathay-app-v1.0';
-const ASSETS=['./','index.html','products.html','calc.html','client.html','event.html','tools.html','system.html','auth.js','assets/css/section.css','manifest.json','icon-192.png','icon-512.png','calc_labor.html','calc_combo.html','calc_retire.html','calc_plan.html','event_rules.html','calc_ah.html','calc_business.html','prod_overflow_love.html','prod_invest_forever.html','prod_invest_full.html','prod_good_health.html','prod_cancer_protect.html','prod_lifetime_medical.html','prod_accident.html','prod_rider.html','prod_surgery.html','prod_bone.html'];
-self.addEventListener('install',e=>e.waitUntil((async()=>{const cache=await caches.open(CACHE_NAME);await Promise.allSettled(ASSETS.map(asset=>cache.add(new Request(asset,{cache:'reload'}))));await self.skipWaiting()})()));
-self.addEventListener('activate',e=>e.waitUntil((async()=>{const keys=await caches.keys();await Promise.all(keys.filter(k=>k.startsWith('cathay-app-')&&k!==CACHE_NAME).map(k=>caches.delete(k)));await self.clients.claim()})()));
-self.addEventListener('fetch',e=>{const r=e.request,u=new URL(r.url);if(r.method!=='GET'||u.origin!==self.location.origin)return;e.respondWith((async()=>{const c=await caches.open(CACHE_NAME);if(r.mode==='navigate'){try{const n=await fetch(r);if(n.ok)c.put(r,n.clone());return n}catch(_){return await c.match(r)||Response.error()}}const hit=await c.match(r);if(hit)return hit;const n=await fetch(r);if(n.ok)c.put(r,n.clone());return n})())});
+// V1.0 security: NEVER serve cached authentication, customer, or HTML pages.
+// Firebase authentication requires an online connection; do not fall back to stale offline pages.
+const CACHE_NAME='cathay-app-v1.0.1';
+const ASSETS=[
+  'assets/css/section.css','manifest.json','icon-192.png','icon-512.png'
+];
+self.addEventListener('install',event=>{
+  event.waitUntil((async()=>{
+    const cache=await caches.open(CACHE_NAME);
+    await Promise.allSettled(ASSETS.map(path=>cache.add(new Request(path,{cache:'reload'}))));
+    await self.skipWaiting();
+  })());
+});
+self.addEventListener('activate',event=>{
+  event.waitUntil((async()=>{
+    const all=await caches.keys();
+    await Promise.all(all.filter(k=>k.startsWith('cathay-app-')&&k!==CACHE_NAME).map(k=>caches.delete(k)));
+    await self.clients.claim();
+  })());
+});
+self.addEventListener('fetch',event=>{
+  const request=event.request, url=new URL(request.url);
+  if(request.method!=='GET'||url.origin!==self.location.origin)return;
+  // A stale auth.js could silently restore insecure login; always request the current code.
+  const needsFreshNetwork=request.mode==='navigate' ||
+    /\/$|\.(?:html?|js|mjs)$/i.test(url.pathname);
+  if(needsFreshNetwork){
+    event.respondWith(fetch(request,{cache:'no-store'}));
+    return;
+  }
+  event.respondWith((async()=>{
+    const cache=await caches.open(CACHE_NAME);
+    const saved=await cache.match(request);
+    if(saved)return saved;
+    const response=await fetch(request);
+    if(response.ok)cache.put(request,response.clone());
+    return response;
+  })());
+});
