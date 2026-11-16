@@ -15,6 +15,7 @@
     button:disabled{background:#9bafa4;cursor:not-allowed}
     .steps{padding-left:22px;line-height:1.8}a{color:#006d42}
   </style>
+  <style id="cathay-preauth">body{visibility:hidden!important}</style>
 </head>
 <body>
 <main>
@@ -32,7 +33,10 @@
   <p><small>這是唯讀備份頁面，沒有雲端同步或其他傳輸功能。資料一直留在原瀏覽器，直到您自行清除網站資料。</small></p>
   <p><a href="client.html">返回原客戶管理頁</a></p>
 </main>
-<script>
+<script type="module">
+// V1.0: unlike the temporary legacy main export page, the post-migration page requires Firebase membership.
+import "./auth.js";
+await window.cathayAuthReady;
 (() => {
   'use strict';
   const status=document.getElementById('status');

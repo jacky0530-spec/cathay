@@ -1,5 +1,11 @@
 # 版本更新紀錄
 
+## V1.0 直接網址權限補強 — 2026-11-17（開發草稿）
+- 全 30 個 HTML 頁面確認登入引入情況；補齊 `calc_business.html`、`cardshow.html`、`portfolio.html`、`topsales.html` 的 `auth.js`。
+- V1.0 開發分支中的 `backup-export.html` 改為 Firebase 會員驗證後才能讀取本機紀錄；原正式 main 上的臨時遷移備份頁不受影響。
+- 對原先未保護的五頁加同步預隱藏 CSS，避免 Firebase 核驗前閃現資料；靜態 CI 納入所有 HTML 頁面的登入引入檢查。
+- 請注意：GitHub Pages 是公開靜態主機，前端登入遮罩**無法**保護 HTML 原始碼；敏感客戶資料的實際授權必須由 Firebase Rules 實施。
+
 ## V1.0 安全補強 — 2026-11-17（同一個草稿 PR）
 
 - Firebase 備份改為不可覆寫／刪除的歷史版本結構 `clientBackups/<UID>/<版本ID>`。

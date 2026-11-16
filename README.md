@@ -23,6 +23,12 @@
 
 每次備份都會新增一個不可由使用者覆寫或刪除的 Firebase 歷史版本；使用者可選擇最近 20 份備份進行合併。更早版本仍保存於資料庫中，但目前介面只顯示最近 20 份。此設計需要先部署並驗證配套的 Firebase Rules；不等於已具備合規的伺服器層備份與刪除程序。
 
+## 全站身分驗證檢查
+
+已將直接網址可開啟的 `calc_business.html`、`cardshow.html`、`portfolio.html`、`topsales.html` 加入共用登入腳本，並把 V1.0 版本的 `backup-export.html` 改為 Firebase 會員驗證後才能讀取 localStorage。正式 main 既有的過渡備份頁不受這項分支修改影響。
+
+**GitHub Pages 公開站的 HTML、JS 原始碼仍可直接下載；前端登入僅是 UI 的存取流程，不是伺服器端的靜態資源權限控制。** 請勿在公開 HTML / JS 包含真實客戶資料、內部機密、密碼或 API 私密金鑰。客戶雲端資料由 Firebase Rules 保護。
+
 ## 發布門檻
 
 **GitHub 新增 `firebase.database.rules.json` 並不代表已套用到 Firebase。** 必須先按 [Firebase 遷移與驗收手冊](docs/MIGRATION.md) 建立個人帳號／會員權限，並在管理員端實際部署與測試 Rules，完成所有裝置客戶資料備份，才能合併此分支。

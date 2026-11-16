@@ -20,7 +20,7 @@ window.cathayMember = null;
 const cover=document.createElement('style');
 cover.textContent='body{visibility:hidden!important}';
 document.head.appendChild(cover);
-function reveal(){cover.remove();document.body.style.visibility='visible';}
+function reveal(){cover.remove();document.getElementById('cathay-preauth')?.remove();document.body.style.visibility='visible';}
 function loginScreen(message){
   document.body.innerHTML='<main style="max-width:410px;margin:8vh auto;padding:25px;background:white;border-radius:14px;box-shadow:0 3px 12px #0002;font-family:system-ui,Microsoft JhengHei"><h1>🔐 國泰雲端學習站</h1><p>請使用管理員核發的個人帳號登入。</p><form id="login-form"><label>電子郵件<input type="email" id="login-email" required autocomplete="username" style="display:block;box-sizing:border-box;width:100%;padding:10px;margin:8px 0 15px"></label><label>密碼<input type="password" id="login-pass" required autocomplete="current-password" style="display:block;box-sizing:border-box;width:100%;padding:10px;margin:8px 0 15px"></label><button id="login-btn" type="submit" style="background:#00a651;color:white;border:0;border-radius:8px;padding:13px;width:100%">登入</button></form><p id="login-msg" role="alert" style="color:#b22;font-size:13px"></p></main>';
   reveal();

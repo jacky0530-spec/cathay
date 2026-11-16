@@ -6,6 +6,17 @@ const pageFiles=readdirSync('.').filter(f=>f.endsWith('.html'));
 const required=['index.html','client.html','products.html','calc.html','tools.html','system.html','admin.html','sw.js','auth.js','manifest.json','firebase.database.rules.json'];
 for(const name of required)assert(existsSync(name),'missing '+name);
 const product=read('products.html'),client=read('client.html'),auth=read('auth.js'),admin=read('admin.html');
+const protectedPages = pageFiles.filter(p=>p!=='404.html');
+for(const p of protectedPages){
+  const code=read(p);
+  assert(code.includes('auth.js'),p+' lacks Firebase member validation import');
+}
+const previouslyUngated=['calc_business.html','cardshow.html','portfolio.html','topsales.html','backup-export.html'];
+for(const p of previouslyUngated){
+  assert(read(p).includes('id="cathay-preauth"'),p+' must hide sensitive UI until Firebase completes');
+}
+assert(read('backup-export.html').includes('await window.cathayAuthReady'),'Protected JSON backup requires verified membership');
+assert(auth.includes("getElementById('cathay-preauth')?.remove()"),'Authorized login must reveal page content');
 assert(product.includes('停售商品區'));
 assert(product.indexOf('href="prod_cancer_protect.html"') < product.indexOf('停售商品區'));
 assert(product.indexOf('停售商品區') < product.indexOf('href="prod_accident.html"'));
@@ -45,7 +56,7 @@ for(const filename of toCheck){
   const syntax=spawnSync(process.execPath,['--check','--input-type=module'],{input:read(filename),encoding:'utf8'});
   assert.equal(syntax.status,0,filename+' JavaScript syntax: '+syntax.stderr);
 }
-for(const page of ['index.html','products.html','client.html','admin.html','event.html','calc_plan.html','calc_combo.html','tools.html','system.html']){
+for(const page of ['index.html','products.html','client.html','admin.html','event.html','calc_plan.html','calc_combo.html','tools.html','system.html','calc_business.html','cardshow.html','portfolio.html','topsales.html','backup-export.html']){
   const html=read(page);
   for(const m of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)){
     if(m[1].includes('src='))continue;
