@@ -227,8 +227,8 @@
             <button onclick="cancelEdit()" id="cancelBtn" class="btn-cancel">取消編輯</button>
             <button onclick="exportData()" class="btn-export">匯出 Excel (CSV)</button>
 <button type="button" onclick="exportBackupJSON()" class="btn-export" style="background:#176d77">下載完整 JSON 備份</button>
-<button type="button" onclick="uploadCloudBackup()" class="btn-export" style="background:#386e54">上傳雲端備份</button>
-<button type="button" onclick="restoreCloudBackup()" class="btn-export" style="background:#3363a0">合併雲端備份</button>
+<button type="button" onclick="uploadCloudBackup()" class="btn-export" style="background:#386e54">新增雲端備份版本</button>
+<button type="button" onclick="restoreCloudBackup()" class="btn-export" style="background:#3363a0">選擇雲端版本合併</button>
         </div>
 
         <p style="color:#775019;background:#fff8e8;padding:11px;border-radius:8px">⚠️ 目前資料儲存在這台裝置的瀏覽器中。請定期下載完整 JSON 備份並妥善加密保存。</p>
@@ -431,7 +431,12 @@
       const local=getClientRecords();
       const existing=new Set(local.map(recordFingerprint));
       const occupied=new Set(local.map(r=>String(r.id)));
-      let nextId=Math.max(Date.now(),...local.map(r=>Number.isSafeInteger(Number(r.id))?Number(r.id):0))+1;
+      let nextId=Date.now();
+      for(const record of local){
+        const id=Number(record.id);
+        if(Number.isSafeInteger(id)) nextId=Math.max(nextId,id);
+      }
+      nextId+=1;
       let added=0,skipped=0;
       for(const candidate of incoming){
         if(!candidate||typeof candidate!=='object'||typeof candidate.name!=='string'||typeof candidate.phone!=='string'){skipped++;continue;}
@@ -449,20 +454,36 @@
     async function uploadCloudBackup() {
       try{
         const records=getClientRecords();
-        if(!records.length){alert('本機沒有資料，為防止覆蓋原雲端備份，不允許上傳空資料。');return;}
-        if(!confirm('確定將本機 '+records.length+' 筆客戶資料上傳至「個人」Firebase 雲端備份？原備份將被取代。'))return;
-        const count=await window.cathayCloud.backup(records);
-        alert('成功上傳 '+count+' 筆至個人雲端備份。');
+        if(!records.length){alert('本機沒有資料，不允許上傳空備份。');return;}
+        if(!confirm('確定將本機 '+records.length+' 筆客戶資料新增為個人雲端備份版本？系統不會覆蓋之前的版本。'))return;
+        const result=await window.cathayCloud.backup(records);
+        alert('已新增 '+result.count+' 筆的雲端備份版本（'+result.updatedAt+'）。之前版本仍保留。');
       }catch(e){alert('雲端備份失敗：請確認已登入、網路與 Firebase 權限設定。');}
+    }
+    async function selectCloudBackup() {
+      const versions=await window.cathayCloud.listBackups();
+      if(!versions.length){alert('目前找不到個人雲端備份。');return null;}
+      if(versions.length===1)return versions[0];
+      const summary=versions.map((v,i)=>(i+1)+'. '+v.updatedAt+'（'+v.count+' 筆）').join('\n');
+      const choice=prompt('請選擇要合併的備份版本編號（最多顯示最近20份）：\n'+summary,'1');
+      if(choice===null)return null;
+      const index=Number(choice);
+      if(!/^\d+$/.test(choice.trim())||!Number.isInteger(index)||index<1||index>versions.length){
+        alert('備份編號無效，沒有更動任何客戶資料。');
+        return null;
+      }
+      return versions[index-1];
     }
     async function restoreCloudBackup() {
       try{
-        const data=await window.cathayCloud.restore();
-        if(!data||data.schemaVersion!==1||!Array.isArray(data.records)){alert('找不到有效的個人雲端備份。');return;}
-        if(!confirm('雲端共有 '+data.records.length+' 筆。要先下載目前本機 JSON，再將雲端資料「合併」進本機嗎？'))return;
+        const selected=await selectCloudBackup();
+        if(!selected)return;
+        const data=await window.cathayCloud.restore(selected.id);
+        if(!data||data.schemaVersion!==1||!Array.isArray(data.records)){alert('此雲端備份格式不符，未更動本機資料。');return;}
+        if(!confirm('選取 '+selected.updatedAt+' 的 '+data.records.length+' 筆備份。\n將先提出本機 JSON 下載，再以「合併」方式匯入；原有記錄不會被覆蓋。要繼續嗎？'))return;
         exportBackupJSON();
         mergeClientRecords(data.records);
-      }catch(e){alert('雲端讀取／合併失敗，原本本機資料不變。');}
+      }catch(e){alert('雲端讀取或合併失敗，請先核對本機資料。');}
     }
     async function importBackupJSON() {
       const input=document.getElementById('jsonFileInput');
