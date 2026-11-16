@@ -51,6 +51,14 @@ assert(client.includes('localStorage.getItem(\'contactRecords\')'));
 const manifest=JSON.parse(read('manifest.json'));
 assert.equal(manifest.display,'standalone');
 assert(!('5display' in manifest));
+const serviceWorker=read('sw.js');
+assert(serviceWorker.includes('needsFreshNetwork'), 'PWA must require network for auth scripts and HTML');
+assert(serviceWorker.includes("fetch(request,{cache:'no-store'})"), 'Sensitive files must never use stale offline fallback');
+assert(!serviceWorker.includes("'auth.js'"), 'PWA must not pre-cache authentication script');
+assert(!serviceWorker.includes("'client.html'"), 'PWA must not pre-cache client data page');
+assert(client.includes('csvParseText(await file.text())'), 'CSV import must use quoted-field parser');
+assert(!client.includes("line.split(',')"), 'Unsafe naive CSV splitter detected');
+
 const rules=JSON.parse(read('firebase.database.rules.json'));
 assert(rules.rules.users['$uid'].connections['$connectionId']['.write'].includes('auth.uid === $uid'),'Presence writes must be owner-only');
 assert.equal(rules.rules['.read'],false);

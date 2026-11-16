@@ -33,6 +33,11 @@
 
 原版管理報表依靠舊 `session` 欄位判斷在線，新版改用 Firebase `.info/connected` + `onDisconnect` 記錄每個登入瀏覽器的即時連線；管理員以 `users/<UID>/connections` 判斷在線。每個瀏覽器工作階段的登入時間僅寫入一次，不再每換頁就改寫。舊版位置、踢除次數及歷史資料保留，**不宣稱可自動重建舊版地理位置／踢除功能**。
 
+## 客戶 CSV 與 PWA 安全
+- 原本的 CSV 匯入直接以逗號切割，可能導致備註包含逗號／換行時資料錯欄。V1.0 改為引號格式解析、完整資料檢查、去重合併；CSV 僅用於交換，完整保存請用 JSON。
+- V1.0 PWA **需要網路**才能開啟登入、客戶及所有 HTML 頁面；這是為了避免切換 Firebase 登入後使用過期的離線驗證腳本。僅快取不含客戶資料的共用 CSS、圖示及 Manifest。
+- 瀏覽器的 HTTP 快取、舊版本 Service Worker 或實機環境需在上線前實際驗證；更新 `sw.js` 不代表使用者裝置已自動完成切換。
+
 ## 發布門檻
 
 **GitHub 新增 `firebase.database.rules.json` 並不代表已套用到 Firebase。** 必須先按 [Firebase 遷移與驗收手冊](docs/MIGRATION.md) 建立個人帳號／會員權限，並在管理員端實際部署與測試 Rules，完成所有裝置客戶資料備份，才能合併此分支。
