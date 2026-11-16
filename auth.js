@@ -1,168 +1,92 @@
-// --- 1. 立即啟動白屏保護 (防偷看) ---
-const antiPeekStyle = document.createElement('style');
-antiPeekStyle.id = 'anti-peek-style';
-antiPeekStyle.innerHTML = "body { display: none !important; opacity: 0 !important; }";
-document.head.appendChild(antiPeekStyle);
-
-function showContent() {
-    const style = document.getElementById('anti-peek-style');
-    if (style) style.remove();
-    // 確保 body 存在才修改樣式，避免當機
-    if (document.body) {
-        document.body.style.display = ''; 
-        document.body.style.opacity = '1';
-    }
+// V1.0: Firebase Authentication + database member rules; no shared front-end passwords.
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import { getDatabase, get, set, ref, update } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+const firebaseConfig = {
+  apiKey: "AIzaSyAXmxp2R7oeM-DJsbDoT6YAVlHV4vKC_Xo",
+  authDomain: "cathay-app-5889a.firebaseapp.com",
+  databaseURL: "https://cathay-app-5889a-default-rtdb.firebaseio.com",
+  projectId: "cathay-app-5889a",
+  storageBucket: "cathay-app-5889a.firebasestorage.app",
+  messagingSenderId: "222981030218",
+  appId: "1:222981030218:web:5f557a386a38cf3d1c41b3",
+  measurementId: "G-2C57S9M2H5"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app), db = getDatabase(app);
+let completeReady;
+window.cathayAuthReady = new Promise(resolve => {completeReady = resolve;});
+window.cathayMember = null;
+const cover=document.createElement('style');
+cover.textContent='body{visibility:hidden!important}';
+document.head.appendChild(cover);
+function reveal(){cover.remove();document.body.style.visibility='visible';}
+function loginScreen(message){
+  document.body.innerHTML='<main style="max-width:410px;margin:8vh auto;padding:25px;background:white;border-radius:14px;box-shadow:0 3px 12px #0002;font-family:system-ui,Microsoft JhengHei"><h1>🔐 國泰雲端學習站</h1><p>請使用管理員核發的個人帳號登入。</p><form id="login-form"><label>電子郵件<input type="email" id="login-email" required autocomplete="username" style="display:block;box-sizing:border-box;width:100%;padding:10px;margin:8px 0 15px"></label><label>密碼<input type="password" id="login-pass" required autocomplete="current-password" style="display:block;box-sizing:border-box;width:100%;padding:10px;margin:8px 0 15px"></label><button id="login-btn" type="submit" style="background:#00a651;color:white;border:0;border-radius:8px;padding:13px;width:100%">登入</button></form><p id="login-msg" role="alert" style="color:#b22;font-size:13px"></p></main>';
+  reveal();
+  const msg=document.getElementById('login-msg');msg.textContent=message||'';
+  document.getElementById('login-form').addEventListener('submit',async event=>{
+    event.preventDefault();
+    const button=document.getElementById('login-btn');
+    button.disabled=true;msg.textContent='驗證中…';
+    try{
+      await signInWithEmailAndPassword(auth,document.getElementById('login-email').value.trim(),document.getElementById('login-pass').value);
+      location.reload();
+    }catch(error){msg.textContent='驗證失敗，請檢查帳號、密碼及權限設定。';button.disabled=false;}
+  });
 }
-
-// --- 2. 核心設定 (HTTPS REST API) ---
-const FIREBASE_URL = "https://cathay-app-5889a-default-rtdb.firebaseio.com";
-const AUTO_LOGOUT_MINUTES = 30; 
-
-function generateUUID() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-    });
+let idleTimer;
+window.doLogout=async function(ask=true){
+  if(ask&&!confirm('確定要登出嗎？'))return;
+  clearTimeout(idleTimer);
+  await signOut(auth);
+  location.href='index.html';
+};
+function navigation(){
+  if(document.querySelector('.bottom-nav'))return;
+  const page=location.pathname.split('/').pop()||'index.html';
+  const items=[['index.html','🏠','首頁'],['client.html','👥','客戶'],['calc.html','🧮','試算'],['products.html','🏥','商品'],['event.html','🏆','高峰會']];
+  const bar=document.createElement('nav');
+  bar.className='bottom-nav';bar.setAttribute('aria-label','主要功能');
+  bar.style.cssText='position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid #ddd;box-shadow:0 -2px 10px #0001;display:flex;justify-content:space-around;height:60px;z-index:9999;padding-bottom:env(safe-area-inset-bottom)';
+  for(const item of items){
+    const a=document.createElement('a');a.href=item[0];a.style.cssText='flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-decoration:none;font-size:11px;color:'+(page===item[0]?'#00a651':'#888');
+    const icon=document.createElement('span');icon.style.fontSize='20px';icon.textContent=item[1];
+    const title=document.createElement('span');title.textContent=item[2];
+    a.append(icon,title);bar.append(a);
+  }
+  document.body.style.paddingBottom='80px';document.body.append(bar);
 }
-
-// --- 3. 登出功能 (註冊到全域，確保按鈕點得到) ---
-window.doLogout = function(needConfirm = true) {
-    if (needConfirm && !confirm("確定要登出系統嗎？")) { return; }
-    localStorage.removeItem('currentUser');
-    localStorage.removeItem('currentSession');
-    location.reload(); 
+function idle(){
+  function reset(){clearTimeout(idleTimer);idleTimer=setTimeout(()=>window.doLogout(false),30*60*1000);}
+  ['pointerdown','keydown','touchstart'].forEach(name=>document.addEventListener(name,reset,{passive:true}));
+  reset();
 }
-
-function setupAutoLogout() {
-    let timer;
-    function resetTimer() {
-        clearTimeout(timer);
-        timer = setTimeout(() => {
-            alert("您已閒置超過 " + AUTO_LOGOUT_MINUTES + " 分鐘，系統自動登出。");
-            window.doLogout(false); 
-        }, AUTO_LOGOUT_MINUTES * 60 * 1000);
-    }
-    window.onload = resetTimer;
-    document.onmousemove = resetTimer;
-    document.onkeypress = resetTimer;
-    document.ontouchstart = resetTimer;
-    document.onclick = resetTimer;
+window.cathayCloud={
+  async backup(records){
+    await window.cathayAuthReady;
+    if(!auth.currentUser||!Array.isArray(records))throw Error('Invalid backup');
+    await set(ref(db,'clientBackups/'+auth.currentUser.uid),{schemaVersion:1,updatedAt:new Date().toISOString(),records});
+    return records.length;
+  },
+  async restore(){
+    await window.cathayAuthReady;
+    if(!auth.currentUser)throw Error('Not authorized');
+    const snapshot=await get(ref(db,'clientBackups/'+auth.currentUser.uid));
+    return snapshot.exists()?snapshot.val():null;
+  }
+};
+function run(){
+  onAuthStateChanged(auth,async user=>{
+    if(!user){loginScreen();return;}
+    try{
+      const snapshot=await get(ref(db,'members/'+user.uid));
+      if(!snapshot.exists()||snapshot.val().active!==true)throw Error('No membership');
+      window.cathayMember={uid:user.uid,role:snapshot.val().role||'user'};
+      completeReady(window.cathayMember);
+      update(ref(db,'users/'+user.uid),{lastLogin:new Date().toISOString(),device:navigator.userAgent}).catch(()=>{});
+      reveal();navigation();idle();
+    }catch(error){await signOut(auth);loginScreen('此帳號尚未獲得授權，請聯絡管理員。');}
+  },()=>loginScreen('無法連線至驗證服務。'));
 }
-
-// --- 4. 主要流程 (🌟 關鍵修正：等待網頁載入完畢才執行) ---
-document.addEventListener("DOMContentLoaded", async function() {
-    const localUser = localStorage.getItem('currentUser');
-    const localSession = localStorage.getItem('currentSession');
-
-    if (!localUser || !localSession) {
-        await performLogin();
-    } else {
-        showContent();        // 顯示畫面
-        setupAutoLogout();    // 啟動閒置偵測
-        buildNavigation();    // 產生底部選單
-    }
-});
-
-async function performLogin() {
-    let isAuthorized = false;
-    
-    while (!isAuthorized) {
-        let inputCode = prompt("【安全管制】\n本頁面需要登入才能瀏覽。\n請輸入您的專屬授權碼：");
-        
-        if (inputCode === null) {
-            document.body.innerHTML = "<h2 style='text-align:center;margin-top:50px;'>存取被拒絕，請重新整理網頁。</h2>";
-            showContent(); 
-            return;
-        }
-        
-        inputCode = inputCode.toUpperCase().trim();
-
-        // 🌟 關鍵修改：加入本地無敵密碼，不怕 Firebase 阻擋
-        const localCodes = { 
-            "VIP888": true, 
-            "CATHAY2025": true 
-        };
-
-        try {
-            let isValid = false;
-
-            // 1. 先檢查是不是無敵密碼
-            if (localCodes[inputCode]) {
-                isValid = true;
-            } 
-            // 2. 如果不是，才去問 Firebase 資料庫
-            else {
-                const response = await fetch(`${FIREBASE_URL}/whitelist/${inputCode}.json`);
-                const data = await response.json();
-                if (data === true) isValid = true;
-            }
-
-            // --- 驗證成功的後續動作 ---
-            if (isValid) {
-                alert("驗證成功！歡迎使用。");
-                
-                const newSessionID = generateUUID();
-                const timeString = new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
-                
-                // 寫入登入紀錄 (背景執行，出錯也不影響登入)
-                fetch(`${FIREBASE_URL}/users/${inputCode}.json`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        session: newSessionID,
-                        lastLogin: timeString,
-                        device: navigator.userAgent
-                    })
-                }).catch(e => console.log("寫入紀錄失敗，但允許登入"));
-
-                localStorage.setItem('currentUser', inputCode);
-                localStorage.setItem('currentSession', newSessionID);
-                isAuthorized = true;
-                
-                window.location.reload(); // 重新整理進入正式畫面
-            } else {
-                alert("授權碼錯誤，請重新輸入。");
-            }
-        } catch (error) {
-            alert("網路異常：無法連線至資料庫，請確認您的網路狀況。");
-            showContent();
-            return;
-        }
-    }
-}
-// --- 5. 底部選單生成器 ---
-function buildNavigation() {
-    const path = window.location.pathname;
-    const page = path.split("/").pop() || "index.html";
-
-    const navHTML = `
-    <style>
-        body { padding-bottom: 70px; }
-        .bottom-nav {
-            position: fixed; bottom: 0; left: 0; width: 100%; height: 60px;
-            background: #ffffff; border-top: 1px solid #e0e0e0;
-            display: flex; justify-content: space-around; align-items: center;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 9999;
-            padding-bottom: env(safe-area-inset-bottom);
-        }
-        .nav-item {
-            text-decoration: none; color: #999; text-align: center;
-            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            padding: 5px 0; -webkit-tap-highlight-color: transparent;
-        }
-        .nav-item span { font-size: 20px; margin-bottom: 2px; display: block; }
-        .nav-item div { font-size: 11px; font-weight: 500; } 
-        .nav-item.active { color: #00A651; }
-    </style>
-
-    <div class="bottom-nav">
-        <a href="index.html" class="nav-item ${page === 'index.html' ? 'active' : ''}"><span>🏠</span><div>首頁</div></a>
-        <a href="client.html" class="nav-item ${page === 'client.html' ? 'active' : ''}"><span>👥</span><div>客戶</div></a>
-        <a href="calc.html" class="nav-item ${page === 'calc.html' ? 'active' : ''}"><span>🧮</span><div>試算</div></a>
-        <a href="products.html" class="nav-item ${page === 'products.html' ? 'active' : ''}"><span>🏥</span><div>商品</div></a>
-        <a href="event.html" class="nav-item ${page === 'event.html' ? 'active' : ''}"><span>🏆</span><div>高峰會</div></a>
-    </div>
-    `;
-    
-    document.body.insertAdjacentHTML('beforeend', navHTML);
-}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
