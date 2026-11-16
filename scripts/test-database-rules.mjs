@@ -46,16 +46,25 @@ try {
   await assertFails(update(path(alice,'users/bob'),{lastLogin:'future'}));
   await assertFails(set(path(inactive,'users/inactive/lastLogin'),'future'));
 
-  await assertSucceeds(set(path(alice,'clientBackups/alice'),backup));
-  const response=await assertSucceeds(get(path(alice,'clientBackups/alice')));
-  assert.equal(response.val().records[0].name,'TEST ONLY');
-  await assertFails(get(path(bob,'clientBackups/alice')));
-  await assertFails(get(path(admin,'clientBackups/alice')));
-  await assertFails(set(path(bob,'clientBackups/alice'),backup));
-  await assertFails(set(path(inactive,'clientBackups/inactive'),backup));
-  await assertFails(set(path(alice,'clientBackups/alice'),{schemaVersion:2,updatedAt:backup.updatedAt,records:backup.records}));
-  await assertFails(set(path(alice,'clientBackups/alice'),{schemaVersion:1,updatedAt:backup.updatedAt}));
-  await assertFails(set(path(alice,'clientBackups/alice'),{schemaVersion:1,updatedAt:backup.updatedAt,records:[]}));
+  // Versioned backup: user may create a new snapshot, but never overwrite/delete an earlier one.
+  await assertSucceeds(set(path(alice,'clientBackups/alice/versionA'),backup));
+  await assertSucceeds(set(path(alice,'clientBackups/alice/versionB'),{...backup,updatedAt:'2026-11-17T07:00:00.000Z'}));
+  const saved=await assertSucceeds(get(path(alice,'clientBackups/alice/versionA')));
+  assert.equal(saved.val().records[0].name,'TEST ONLY');
+  const second=await assertSucceeds(get(path(alice,'clientBackups/alice/versionB')));
+  assert.equal(second.val().schemaVersion,1);
+  await assertFails(set(path(alice,'clientBackups/alice/versionA'),backup));
+  await assertFails(set(path(alice,'clientBackups/alice/versionA'),null));
+  await assertFails(set(path(alice,'clientBackups/alice/versionA/records/0/name'),'Tampered'));
+  await assertFails(get(path(bob,'clientBackups/alice/versionA')));
+  await assertFails(get(path(admin,'clientBackups/alice/versionA')));
+  await assertFails(set(path(bob,'clientBackups/alice/versionX'),backup));
+  await assertFails(set(path(inactive,'clientBackups/inactive/versionX'),backup));
+  await assertFails(set(path(alice,'clientBackups/alice/versionInvalid'),{schemaVersion:2,updatedAt:backup.updatedAt,records:backup.records}));
+  await assertFails(set(path(alice,'clientBackups/alice/versionMissing'),{schemaVersion:1,updatedAt:backup.updatedAt}));
+  await assertFails(set(path(alice,'clientBackups/alice/versionEmpty'),{schemaVersion:1,updatedAt:backup.updatedAt,records:[]}));
+  // Direct writes to a backup-owner root must also fail.
+  await assertFails(set(path(alice,'clientBackups/alice'),{versionA:backup}));
   console.log('V1.0 Firebase Realtime Database Emulator permissions: PASS');
 } finally {
   await env.cleanup();
