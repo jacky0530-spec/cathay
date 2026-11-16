@@ -43,7 +43,6 @@ assert(auth.includes('signInWithEmailAndPassword')&&admin.includes("member.role!
 assert(auth.includes("onDisconnect(session).remove()"),'Presence must queue disconnect cleanup');
 assert(auth.includes("cathay-login-recorded:"),'Login timestamp must not reset on each page navigation');
 assert(admin.includes("connectionCount > 0"),'Admin status must use live connections rather than legacy session strings');
-assert(rules.rules.users['$uid'].connections['$connectionId']['.write'].includes('auth.uid === $uid'),'Presence writes must be owner-only');
 
 assert(client.includes('function exportBackupJSON')&&client.includes('function mergeClientRecords'));
 assert(client.includes('localStorage.getItem(\'contactRecords\')'));
@@ -51,6 +50,7 @@ const manifest=JSON.parse(read('manifest.json'));
 assert.equal(manifest.display,'standalone');
 assert(!('5display' in manifest));
 const rules=JSON.parse(read('firebase.database.rules.json'));
+assert(rules.rules.users['$uid'].connections['$connectionId']['.write'].includes('auth.uid === $uid'),'Presence writes must be owner-only');
 assert.equal(rules.rules['.read'],false);
 assert.equal(rules.rules.whitelist['.read'],false);
 assert(rules.rules.clientBackups);
