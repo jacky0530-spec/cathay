@@ -26,6 +26,10 @@ const rules=JSON.parse(read('firebase.database.rules.json'));
 assert.equal(rules.rules['.read'],false);
 assert.equal(rules.rules.whitelist['.read'],false);
 assert(rules.rules.clientBackups);
+assert(rules.rules.clientBackups['$uid']['$backupId']['.write'].includes('!data.exists()'),'Backup history must be append-only');
+assert(auth.includes('push(ref(db,\'clientBackups/\'') && auth.includes('listBackups()'),'Backup version APIs missing');
+assert(!client.includes('原備份將被取代。'),'Old overwrite warning still present');
+
 for(const page of pageFiles){
   const html=read(page);
   for(const m of html.matchAll(/(?:href|src)=["']([^"'#]+)["']/g)){

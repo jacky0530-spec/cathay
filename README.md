@@ -10,7 +10,7 @@
 
 - 商品區獨立「停售商品區」：月月(永)溢、月月(滿)溢、滿溢康愛。原試算 URL 不變。
 - PWA：修正 `sw.js` 與 `manifest.json`，相對路徑支援 GitHub Pages。
-- 客戶 CRM：保留原 `localStorage.contactRecords` 格式；完整 JSON 下載、JSON 合併匯入、Firebase 個人雲端手動備份／合併復原；不自動刪除／覆蓋本機。
+- 客戶 CRM：保留原 `localStorage.contactRecords` 格式；完整 JSON 下載、JSON 合併匯入、Firebase 個人雲端**不可覆寫歷史版本**的手動備份、歷史版本選擇與合併復原；不自動刪除／覆蓋本機。
 - 安全：移除前端共用授權碼及管理員固定密碼；改用 Firebase Authentication＋`/members/<UID>` 會員授權＋資料庫 Rules。
 - 保留現有 `calc_*.html` 與 `prod_*.html` 計算公式；對明顯歷史固定參數加註待核實。
 - 新入口頁 `tools.html`、`system.html` 共用 `assets/css/section.css`，舊試算頁暫不搬動，以免破壞功能。
@@ -18,6 +18,10 @@
 ## 遷移前的獨立客戶備份（正式 main）
 
 目前正式站仍使用舊版 CRM，尚未包含新版 JSON 按鈕。已另行在 main 新增 `backup-export.html`，可在原資料所在的同一瀏覽器開啟 `https://jacky0530-spec.github.io/cathay/backup-export.html` 下載完整 JSON。該頁不連線到其他服務，但仍須自行在瀏覽器確認下載成功。
+
+## V1.0 雲端備份版本保護
+
+每次備份都會新增一個不可由使用者覆寫或刪除的 Firebase 歷史版本；使用者可選擇最近 20 份備份進行合併。更早版本仍保存於資料庫中，但目前介面只顯示最近 20 份。此設計需要先部署並驗證配套的 Firebase Rules；不等於已具備合規的伺服器層備份與刪除程序。
 
 ## 發布門檻
 
