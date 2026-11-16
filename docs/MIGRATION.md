@@ -4,8 +4,8 @@
 
 ## A. 備份每台裝置的客戶資料
 
-1. 在目前正式網站的每台手機、iPad、電腦，進入 `client.html`。
-2. 點「下載完整 JSON 備份」，核對下載檔的 `records` 筆數。每台設備、每個瀏覽器的 `localStorage.contactRecords` **可能不同**。
+1. 在目前正式網站的每台手機、iPad、電腦，以**原本有資料的同一個瀏覽器**進入 `backup-export.html`（網址：`https://jacky0530-spec.github.io/cathay/backup-export.html`），確認和客戶管理頁相同網域。這是已加入正式 main 的獨立唯讀備份頁，不需啟用 V1.0 登入。
+2. 檢查頁面顯示的筆數，再點「下載完整 JSON 備份」。若頁面找不到紀錄，請確認同一瀏覽器／同一網站 origin，先不要清除網站資料。核對下載檔的 `records` 筆數。每台設備、每個瀏覽器的 `localStorage.contactRecords` **可能不同**。
 3. 將 JSON 檔保存在加密位置；不可上傳到公開 GitHub、群組或未授權雲端。
 4. 遷移期間不要清除網站資料，並維持原網站網域與路徑；客戶資料**不在** GitHub 版本備份中。
 
@@ -39,3 +39,9 @@
 原始程式備份分支為 `backup/pre-v1-20261116`，commit 為 `24298e3214843be1595f70daf76ba53120908c02`。回退 GitHub 程式碼並不會回退 Firebase Rules；如需回退，必須事先單獨備份規則設定。客戶本機資料亦需 JSON 備份。
 
 **正式發布門檻：Firebase 成員建檔、Rules 部署、權限測試、至少一台原客戶資料裝置的備份與復原演練全部完成。**
+
+## 備份工具注意事項（V1.0 staging）
+
+- `backup-export.html` 已另行新增到原始 main，**不修改原登入程式、試算或現有客戶資料**。
+- GitHub 可以確認程式檔存在，但 GitHub Pages 網址是否完成發布、不同設備 Safari 下載是否順利，須實際開頁確認。
+- 正式站沒有 V1.0 新增的 `client.html` 備份按鈕，所以**遷移前請使用獨立備份頁**，不要誤以為舊頁已有 JSON 匯出按鈕。

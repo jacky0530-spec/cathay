@@ -15,6 +15,10 @@
 - 保留現有 `calc_*.html` 與 `prod_*.html` 計算公式；對明顯歷史固定參數加註待核實。
 - 新入口頁 `tools.html`、`system.html` 共用 `assets/css/section.css`，舊試算頁暫不搬動，以免破壞功能。
 
+## 遷移前的獨立客戶備份（正式 main）
+
+目前正式站仍使用舊版 CRM，尚未包含新版 JSON 按鈕。已另行在 main 新增 `backup-export.html`，可在原資料所在的同一瀏覽器開啟 `https://jacky0530-spec.github.io/cathay/backup-export.html` 下載完整 JSON。該頁不連線到其他服務，但仍須自行在瀏覽器確認下載成功。
+
 ## 發布門檻
 
 **GitHub 新增 `firebase.database.rules.json` 並不代表已套用到 Firebase。** 必須先按 [Firebase 遷移與驗收手冊](docs/MIGRATION.md) 建立個人帳號／會員權限，並在管理員端實際部署與測試 Rules，完成所有裝置客戶資料備份，才能合併此分支。

@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>客戶資料安全備份工具 — Cathay V1.0 遷移前</title>
+  <style>
+    *{box-sizing:border-box}body{font-family:system-ui,-apple-system,"Microsoft JhengHei",sans-serif;background:#f4f6f5;color:#183d2a;margin:0;padding:18px}
+    main{max-width:680px;margin:32px auto;background:white;padding:26px;border:1px solid #e1e7e3;border-radius:16px;box-shadow:0 4px 16px #0001}
+    h1{font-size:23px;margin:0 0 12px}p{line-height:1.75}small{color:#6e7972}strong{font-weight:700}
+    .notice{background:#fff7e7;color:#785017;border:1px solid #efd59a;border-radius:9px;padding:12px;margin:15px 0}
+    .status{padding:13px 15px;margin:15px 0;background:#eef7f0;border-radius:10px}
+    button{display:block;width:100%;background:#008752;border:0;color:white;padding:15px;border-radius:10px;font-size:17px;font-weight:700;cursor:pointer}
+    button:disabled{background:#9bafa4;cursor:not-allowed}
+    .steps{padding-left:22px;line-height:1.8}a{color:#006d42}
+  </style>
+</head>
+<body>
+<main>
+  <h1>🔐 客戶資料備份工具</h1>
+  <p>提供 Cathay V1.0 安全改版前的<strong>一次性本機備份</strong>。只讀取目前這個網站、這個瀏覽器中的 <code>contactRecords</code>，不會刪除、覆寫、上傳或寄送任何資料。</p>
+  <div class="notice">⚠️ 本頁必須由<strong>原本存有客戶資料的同一台裝置及同一個瀏覽器</strong>開啟。請勿用無痕模式、其他瀏覽器或不同網址開啟。下載檔包含客戶姓名、電話等個資，請保存於加密空間，不要傳到公開 GitHub 或聊天群組。</div>
+  <div class="status" id="status" role="status">正在檢查本機客戶資料…</div>
+  <button id="download" type="button" disabled>下載完整 JSON 備份</button>
+  <ol class="steps">
+    <li>確認上方顯示的筆數，與原本客戶管理頁的筆數相同。</li>
+    <li>點選「下載完整 JSON 備份」，將檔案存到安全的位置。</li>
+    <li>開啟下載檔，確認有 <code>schemaVersion</code>、<code>exportedAt</code>、<code>records</code> 三個欄位，且 <code>records</code> 筆數正確。</li>
+    <li>不同手機、平板、電腦的原始資料可能不同，請各自備份並保存檔案。</li>
+  </ol>
+  <p><small>這是唯讀備份頁面，沒有雲端同步或其他傳輸功能。資料一直留在原瀏覽器，直到您自行清除網站資料。</small></p>
+  <p><a href="client.html">返回原客戶管理頁</a></p>
+</main>
+<script>
+(() => {
+  'use strict';
+  const status=document.getElementById('status');
+  const button=document.getElementById('download');
+  let records;
+  try {
+    const raw=localStorage.getItem('contactRecords');
+    if(raw==null){
+      status.textContent='這個瀏覽器沒有找到 contactRecords。請回到原本建檔的裝置與瀏覽器開啟。';
+      return;
+    }
+    records=JSON.parse(raw);
+    if(!Array.isArray(records)) throw new Error('Not array');
+    status.textContent='找到本機客戶資料：'+records.length+' 筆。';
+    if(!records.length){status.textContent+=' 目前沒有可匯出的紀錄。';return;}
+    button.disabled=false;
+  } catch(error){
+    status.textContent='資料讀取失敗；請勿清除瀏覽器資料，請先聯絡管理員。';
+    return;
+  }
+  button.addEventListener('click',() => {
+    // Deliberately no external requests or analytics; the Blob stays on-device.
+    const payload={schemaVersion:1,exportedAt:new Date().toISOString(),source:'cathay-localStorage',records};
+    const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download='cathay-client-backup-'+new Date().toISOString().replace(/[:.]/g,'-')+'.json';
+    a.style.display='none';
+    document.body.append(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),15000);
+    status.textContent='已提出下載 '+records.length+' 筆的要求。請在瀏覽器下載項目中確認檔案確實存在。';
+  });
+})();
+</script>
+</body>
+</html>
