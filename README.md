@@ -1,25 +1,26 @@
-# Cathay V1.0 專案結構與安全整理版
+# 國泰雲端學習站 — V1.0「專案結構與安全整理版」
 
-## 六大入口
-客戶管理 `client.html`；財務試算 `calc.html`；保險商品 `products.html`；績效 `event.html`；金融工具 `tools.html`；系統管理 `system.html`。
+> **草稿分支，尚未正式部署。** 原始程式備份：`backup/pre-v1-20261116`。現有 GitHub Pages 正式站不受此分支修改影響。
 
-## 已整理
-- 商品「月月(永)溢、月月(滿)溢、滿溢康愛」移到停售商品區，保留原網址和歷史試算。
-- 修復 PWA 的 manifest.display、Service Worker 語法與 GitHub Pages 子路徑。
-- 客戶資料維持 `localStorage.contactRecords`，新增完整 JSON 下載備份；**程式碼備份不能取代客戶資料備份**。
-- 修正客戶表格插入 HTML 的文字逃逸處理；既有試算公式未改。
-- 固定年份資料先附審查警語，不擅自修改未經確認之費率或保險條款。
+## 六大首頁入口
 
-## 發布前重要限制
-原登入頁使用瀏覽器端授權碼及 Firebase whitelist。**這不是伺服器端授權**；必須先啟用 Firebase Authentication、設定成員名單、實際部署安全 Rules，並在測試環境通過權限測試，才可替換登入程式。
+客戶管理 `client.html`、財務試算 `calc.html`、商品 `products.html`、業務績效 `event.html`、金融工具 `tools.html`、系統管理 `system.html`。
 
-安全遷移和雲端資料備份的完整功能將以本 V1.0 草稿分支繼續實作。完成前請勿直接發布本分支。
+## 主要更新
 
-## 備份與回退
-原始主分支：`backup/pre-v1-20261116`，原 commit `24298e3214843be1595f70daf76ba53120908c02`。
+- 商品區獨立「停售商品區」：月月(永)溢、月月(滿)溢、滿溢康愛。原試算 URL 不變。
+- PWA：修正 `sw.js` 與 `manifest.json`，相對路徑支援 GitHub Pages。
+- 客戶 CRM：保留原 `localStorage.contactRecords` 格式；完整 JSON 下載、JSON 合併匯入、Firebase 個人雲端手動備份／合併復原；不自動刪除／覆蓋本機。
+- 安全：移除前端共用授權碼及管理員固定密碼；改用 Firebase Authentication＋`/members/<UID>` 會員授權＋資料庫 Rules。
+- 保留現有 `calc_*.html` 與 `prod_*.html` 計算公式；對明顯歷史固定參數加註待核實。
+- 新入口頁 `tools.html`、`system.html` 共用 `assets/css/section.css`，舊試算頁暫不搬動，以免破壞功能。
 
-### 待核驗的資料來源
-- 遺產稅：`calc_plan.html` 原頁為 2025 參數，待財政部 2026 正式資料核對。
-- 國保：`calc_combo.html` 固定投保金額和請領假設，待勞保局確認。
-- 高峰競賽、A&H、業務薪獎：待核對公司現行內部規章。
-- 商品、基金和信用卡：待核對保單條款、費率表與官方權益公告及適用日期。
+## 發布門檻
+
+**GitHub 新增 `firebase.database.rules.json` 並不代表已套用到 Firebase。** 必須先按 [Firebase 遷移與驗收手冊](docs/MIGRATION.md) 建立個人帳號／會員權限，並在管理員端實際部署與測試 Rules，完成所有裝置客戶資料備份，才能合併此分支。
+
+[資料來源與年度清冊](docs/DATA_SOURCES.md)｜[版本變更](CHANGELOG.md)
+
+## 回退
+
+完整程式可由 `backup/pre-v1-20261116` 回復；Firebase Rules 及各裝置的客戶資料需獨立備份與回復。**不可將客戶 JSON 備份上傳至公開倉庫。**

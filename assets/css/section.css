@@ -1,0 +1,8 @@
+/* V1.0 shared style for new section landing pages; existing calculators untouched */
+*{box-sizing:border-box}
+body{font-family:system-ui,"Microsoft JhengHei",sans-serif;background:#f4f6f5;color:#253c33;margin:0;padding:20px 18px 90px}
+main{max-width:800px;margin:auto}
+h1{font-size:23px;margin:0 0 14px}
+p{line-height:1.7;color:#696969}
+.card{display:block;padding:17px;margin:12px 0;background:white;border-radius:12px;text-decoration:none;color:#066a42;box-shadow:0 2px 7px #0001}
+.card:focus-visible{outline:3px solid #00a651;outline-offset:2px}
