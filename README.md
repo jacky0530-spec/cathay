@@ -29,6 +29,10 @@
 
 **GitHub Pages 公開站的 HTML、JS 原始碼仍可直接下載；前端登入僅是 UI 的存取流程，不是伺服器端的靜態資源權限控制。** 請勿在公開 HTML / JS 包含真實客戶資料、內部機密、密碼或 API 私密金鑰。客戶雲端資料由 Firebase Rules 保護。
 
+## 管理員監控相容性（V1.0）
+
+原版管理報表依靠舊 `session` 欄位判斷在線，新版改用 Firebase `.info/connected` + `onDisconnect` 記錄每個登入瀏覽器的即時連線；管理員以 `users/<UID>/connections` 判斷在線。每個瀏覽器工作階段的登入時間僅寫入一次，不再每換頁就改寫。舊版位置、踢除次數及歷史資料保留，**不宣稱可自動重建舊版地理位置／踢除功能**。
+
 ## 發布門檻
 
 **GitHub 新增 `firebase.database.rules.json` 並不代表已套用到 Firebase。** 必須先按 [Firebase 遷移與驗收手冊](docs/MIGRATION.md) 建立個人帳號／會員權限，並在管理員端實際部署與測試 Rules，完成所有裝置客戶資料備份，才能合併此分支。
