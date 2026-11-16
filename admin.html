@@ -158,7 +158,7 @@ const usersRef=ref(db,'users');
         function escapeHTML(value){return String(value==null?'':value).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[ch]);}
         function formatLoginTime(value){
             if(value==null||value==='')return '無紀錄';
-            if(typeof value==='number' || (typeof value==='string' && /^\\d{4}-\\d{2}-\\d{2}T/.test(value))){
+            if(typeof value==='number' || (typeof value==='string' && /^\d{4}-\d{2}-\d{2}T/.test(value))){
                 const date=new Date(value);
                 if(Number.isFinite(date.getTime()))
                     return date.toLocaleString('zh-TW',{timeZone:'Asia/Taipei'});
