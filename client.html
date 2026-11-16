@@ -226,9 +226,11 @@
             <button onclick="saveData()" id="saveBtn" class="btn-save">儲存資料</button>
             <button onclick="cancelEdit()" id="cancelBtn" class="btn-cancel">取消編輯</button>
             <button onclick="exportData()" class="btn-export">匯出 Excel (CSV)</button>
+<button type="button" onclick="exportBackupJSON()" class="btn-export" style="background:#176d77">下載完整 JSON 備份</button>
         </div>
 
-        <div class="import-section">
+        <p style="color:#775019;background:#fff8e8;padding:11px;border-radius:8px">⚠️ 目前資料儲存在這台裝置的瀏覽器中。請定期下載完整 JSON 備份並妥善加密保存。</p>
+<div class="import-section">
             <span style="font-size: 14px; font-weight: bold;">匯入資料：</span>
             <input type="file" id="csvFileInput" accept=".csv">
             <button onclick="importCSV()" class="btn-import">確認匯入</button>
@@ -402,6 +404,14 @@
         renderTable(records);
     }
 
+    function escapeHTML(value) { return String(value==null?'':value).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[ch]); }
+    function exportBackupJSON() {
+      let records;try{records=JSON.parse(localStorage.getItem('contactRecords')||'[]');}catch(e){alert('客戶資料讀取錯誤，請勿清除瀏覽器資料。');return;}
+      if(!Array.isArray(records)){alert('客戶資料格式異常');return;}
+      const b=new Blob([JSON.stringify({schemaVersion:1,exportedAt:new Date().toISOString(),records},null,2)],{type:'application/json'});
+      const url=URL.createObjectURL(b),a=document.createElement('a');a.href=url;a.download='cathay-client-backup-'+new Date().toISOString().slice(0,10)+'.json';
+      document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);
+    }
     function renderTable(data) {
         const tbody = document.getElementById('tableBody');
         const noDataMsg = document.getElementById('noDataMsg');
@@ -422,17 +432,17 @@
 
         data.forEach(record => {
             const displayDate = record.recordDate || '';
-            const displayLine = record.lineId ? `<span class="line-id-text">${record.lineId}</span>` : '';
+            const displayLine = record.lineId ? `<span class="line-id-text">${escapeHTML(record.lineId)}</span>` : '';
 
             const row = `
                 <tr>
-                    <td>${displayDate}</td>
-                    <td><strong>${record.name}</strong></td>
-                    <td>${record.phone}</td>
+                    <td>${escapeHTML(displayDate)}</td>
+                    <td><strong>${escapeHTML(record.name)}</strong></td>
+                    <td>${escapeHTML(record.phone)}</td>
                     <td>${displayLine}</td>
-                    <td>${record.address}</td>
-                    <td>${record.experience}</td>
-                    <td>${record.notes}</td>
+                    <td>${escapeHTML(record.address)}</td>
+                    <td>${escapeHTML(record.experience)}</td>
+                    <td>${escapeHTML(record.notes)}</td>
                     <td>
                         <div class="action-btns">
                             <button class="btn-edit" onclick="editData(${record.id})">編輯</button>

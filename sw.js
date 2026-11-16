@@ -1,41 +1,6 @@
-const CACHE_NAME = 'cathay-app-v30';
-const urlsToCache = [
-  '/',
-  'index.html',
-  'client.html',
-  'auth.js',
-  'manifest.json',
-  'icon-192.png',
-  'icon-512.png'
-  'calc_labor.html',  // 新增
-  'calc_combo.html',  // 新增
-  'calc_retire.html', // 新增
-  'products.html',
-  'prod_overflow_love.html',   // 新增
-  'prod_accident.html', 
-  'prod_rider.html', 
-  'prod_surgery.html', 
-  'prod_bone.html', 
-  'prod_invest_forever.html', 
-  'prod_invest_full.html', 
-  'event.html',
-  'event_rules.html', // 新增
-  'calc_ah.html',     // 新增
-  'kyushu.jpg',
-];
-
-// 安裝 Service Worker
-self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
-  );
-});
-
-// 攔截網路請求：有快取就用快取，沒快取就上網抓
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => response || fetch(event.request))
-  );
-});
+// V1.0: do not cache Firebase/API requests or local client data.
+const CACHE_NAME='cathay-app-v1.0';
+const ASSETS=['./','index.html','products.html','calc.html','client.html','event.html','tools.html','system.html','auth.js','manifest.json','icon-192.png','icon-512.png','calc_labor.html','calc_combo.html','calc_retire.html','calc_plan.html','event_rules.html','calc_ah.html','calc_business.html','prod_overflow_love.html','prod_invest_forever.html','prod_invest_full.html','prod_good_health.html','prod_cancer_protect.html','prod_lifetime_medical.html','prod_accident.html','prod_rider.html','prod_surgery.html','prod_bone.html'];
+self.addEventListener('install',e=>e.waitUntil((async()=>{const cache=await caches.open(CACHE_NAME);await Promise.allSettled(ASSETS.map(asset=>cache.add(new Request(asset,{cache:'reload'}))));await self.skipWaiting()})()));
+self.addEventListener('activate',e=>e.waitUntil((async()=>{const keys=await caches.keys();await Promise.all(keys.filter(k=>k.startsWith('cathay-app-')&&k!==CACHE_NAME).map(k=>caches.delete(k)));await self.clients.claim()})()));
+self.addEventListener('fetch',e=>{const r=e.request,u=new URL(r.url);if(r.method!=='GET'||u.origin!==self.location.origin)return;e.respondWith((async()=>{const c=await caches.open(CACHE_NAME);if(r.mode==='navigate'){try{const n=await fetch(r);if(n.ok)c.put(r,n.clone());return n}catch(_){return await c.match(r)||Response.error()}}const hit=await c.match(r);if(hit)return hit;const n=await fetch(r);if(n.ok)c.put(r,n.clone());return n})())});
