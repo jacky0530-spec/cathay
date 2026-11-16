@@ -9,7 +9,7 @@ const product=read('products.html'),client=read('client.html'),auth=read('auth.j
 const protectedPages = pageFiles.filter(p=>p!=='404.html');
 for(const p of protectedPages){
   const code=read(p);
-  assert(code.includes('auth.js'),p+' lacks Firebase member validation import');
+  assert(code.includes('auth.js'),p+' lacks Firebase member validation import (chars='+code.length+', utf8First='+code.charCodeAt(0)+', sample='+JSON.stringify(code.slice(160,255))+')');
 }
 const previouslyUngated=['calc_business.html','cardshow.html','portfolio.html','topsales.html','backup-export.html'];
 for(const p of previouslyUngated){
