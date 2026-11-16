@@ -25,8 +25,13 @@
     "clientBackups": {
       "$uid": {
         ".read": "auth != null && auth.uid === $uid && root.child('members').child(auth.uid).child('active').val() === true",
-        ".write": "auth != null && auth.uid === $uid && root.child('members').child(auth.uid).child('active').val() === true && newData.child('schemaVersion').val() === 1",
-        ".validate": "newData.hasChildren(['schemaVersion','updatedAt','records']) && newData.child('schemaVersion').val() === 1 && newData.child('updatedAt').isString() && newData.child('updatedAt').val().length <= 40 && newData.child('records').hasChildren()"
+        ".indexOn": [
+          "updatedAt"
+        ],
+        "$backupId": {
+          ".write": "auth != null && auth.uid === $uid && root.child('members').child(auth.uid).child('active').val() === true && !data.exists() && newData.exists()",
+          ".validate": "newData.hasChildren(['schemaVersion','updatedAt','records']) && newData.child('schemaVersion').val() === 1 && newData.child('updatedAt').isString() && newData.child('updatedAt').val().length <= 40 && newData.child('records').hasChildren()"
+        }
       }
     },
     "whitelist": {
