@@ -1,0 +1,29 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "members": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || (root.child('members').child(auth.uid).child('active').val() === true && root.child('members').child(auth.uid).child('role').val() === 'admin'))",
+        ".write": false
+      }
+    },
+    "users": {
+      ".read": "auth != null && root.child('members').child(auth.uid).child('active').val() === true && root.child('members').child(auth.uid).child('role').val() === 'admin'",
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid && root.child('members').child(auth.uid).child('active').val() === true",
+        ".write": "auth != null && auth.uid === $uid && root.child('members').child(auth.uid).child('active').val() === true"
+      }
+    },
+    "clientBackups": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid && root.child('members').child(auth.uid).child('active').val() === true",
+        ".write": "auth != null && auth.uid === $uid && root.child('members').child(auth.uid).child('active').val() === true && newData.child('schemaVersion').val() === 1"
+      }
+    },
+    "whitelist": {
+      ".read": false,
+      ".write": false
+    }
+  }
+}
