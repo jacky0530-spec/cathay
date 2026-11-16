@@ -44,3 +44,21 @@ db.set('contactRecords','invalid-json');
 assert.throws(()=>context.mergeClientRecords([old]));
 assert.equal(db.get('contactRecords'),'invalid-json','Do not overwrite malformed storage');
 console.log('V1.0 CRM merge regression: PASS');
+
+const csvStart=html.indexOf('    function csvEncodeCell(value) {');
+const csvEnd=html.indexOf('    function exportData() {',csvStart);
+assert(csvStart>0&&csvEnd>csvStart,'CSV encoder/parser missing');
+vm.runInContext(html.slice(csvStart,csvEnd),context,{filename:'client-csv-helpers.js'});
+const originalCell='姓,名 "含引號"\n附註';
+const encoded=context.csvEncodeCell(originalCell);
+assert.equal(encoded,'"姓,名 ""含引號""\n附註"');
+const parsed=context.csvParseText('\uFEFF"日期","姓名","電話"\r\n"2026-11-17",'+encoded+',"0900000000"\r\n');
+assert.equal(parsed.length,2);
+assert.equal(parsed[1][1],originalCell,'CSV must preserve commas, quotes and line breaks');
+assert.equal(parsed[1][2],'0900000000');
+assert.equal(context.csvParseText('"",a,b').length,1);
+assert.throws(()=>context.csvParseText('a,"unfinished'),/引號未結束/);
+assert.throws(()=>context.csvParseText('a,"b"other,c'),/格式不正確/);
+assert(context.csvEncodeCell('=SUM(1,1)').startsWith('"\'='),'CSV export should prevent formula interpretation');
+console.log('V1.0 CSV parser & formula-neutralization: PASS');
+
