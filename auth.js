@@ -1,7 +1,7 @@
 // V1.0: Firebase Authentication + database member rules; no shared front-end passwords.
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import { getDatabase, get, set, ref, update } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+import { getDatabase, get, set, ref, update, push, query, orderByChild, limitToLast } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 const firebaseConfig = {
   apiKey: "AIzaSyAXmxp2R7oeM-DJsbDoT6YAVlHV4vKC_Xo",
   authDomain: "cathay-app-5889a.firebaseapp.com",
@@ -65,14 +65,33 @@ function idle(){
 window.cathayCloud={
   async backup(records){
     await window.cathayAuthReady;
-    if(!auth.currentUser||!Array.isArray(records))throw Error('Invalid backup');
-    await set(ref(db,'clientBackups/'+auth.currentUser.uid),{schemaVersion:1,updatedAt:new Date().toISOString(),records});
-    return records.length;
+    if(!auth.currentUser||!Array.isArray(records)||records.length===0)throw Error('Invalid backup');
+    const uid=auth.currentUser.uid;
+    // Each save creates a new immutable version, never overwrites a previous backup.
+    const target=push(ref(db,'clientBackups/'+uid));
+    const updatedAt=new Date().toISOString();
+    await set(target,{schemaVersion:1,updatedAt,records});
+    return {id:target.key,count:records.length,updatedAt};
   },
-  async restore(){
+  async listBackups(){
     await window.cathayAuthReady;
     if(!auth.currentUser)throw Error('Not authorized');
-    const snapshot=await get(ref(db,'clientBackups/'+auth.currentUser.uid));
+    const uid=auth.currentUser.uid;
+    const target=query(ref(db,'clientBackups/'+uid),orderByChild('updatedAt'),limitToLast(20));
+    const snapshot=await get(target);
+    if(!snapshot.exists())return [];
+    return Object.entries(snapshot.val())
+      .map(([id,data])=>({
+        id,updatedAt:data.updatedAt||'未知日期',
+        count:Array.isArray(data.records)?data.records.length:
+          (data.records&&typeof data.records==='object'?Object.keys(data.records).length:0)
+      })).sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt));
+  },
+  async restore(backupId){
+    await window.cathayAuthReady;
+    if(!auth.currentUser||!/^[A-Za-z0-9_-]{12,40}$/.test(backupId))throw Error('Invalid backup id');
+    const uid=auth.currentUser.uid;
+    const snapshot=await get(ref(db,'clientBackups/'+uid+'/'+backupId));
     return snapshot.exists()?snapshot.val():null;
   }
 };
