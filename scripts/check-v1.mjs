@@ -1,7 +1,19 @@
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
-const read=(p)=>readFileSync(p,'utf8');
+// Some untouched legacy product pages are UTF-16LE with BOM. Preserve source files and decode for tests.
+const read=(p)=>{
+  const raw=readFileSync(p);
+  if(raw.length>=2 && raw[0]===0xff && raw[1]===0xfe)
+    return raw.subarray(2).toString('utf16le');
+  if(raw.length>=2 && raw[0]===0xfe && raw[1]===0xff){
+    const copy=Buffer.from(raw.subarray(2));
+    if(copy.length%2!==0)throw new Error(p+' has invalid UTF-16BE byte length');
+    copy.swap16();
+    return copy.toString('utf16le');
+  }
+  return raw.toString('utf8').replace(/^\uFEFF/,'');
+};
 const pageFiles=readdirSync('.').filter(f=>f.endsWith('.html'));
 const required=['index.html','client.html','products.html','calc.html','tools.html','system.html','admin.html','sw.js','auth.js','manifest.json','firebase.database.rules.json'];
 for(const name of required)assert(existsSync(name),'missing '+name);
