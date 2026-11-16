@@ -7,6 +7,9 @@ const required=['index.html','client.html','products.html','calc.html','tools.ht
 for(const name of required)assert(existsSync(name),'missing '+name);
 const product=read('products.html'),client=read('client.html'),auth=read('auth.js'),admin=read('admin.html');
 assert(product.includes('停售商品區'));
+assert(product.indexOf('href="prod_cancer_protect.html"') < product.indexOf('停售商品區'));
+assert(product.indexOf('停售商品區') < product.indexOf('href="prod_accident.html"'));
+
 for(const [name,file] of [['月月(永)溢','prod_invest_forever.html'],['月月(滿)溢','prod_invest_full.html'],['滿溢康愛','prod_overflow_love.html']]){
   assert(product.includes('href="'+file+'"><span class="stop-icon"'),name+' missing from stopped section');
 }
