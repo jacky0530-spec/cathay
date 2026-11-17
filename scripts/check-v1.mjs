@@ -25,7 +25,7 @@ assert(sparkRules.users['.write']===true,'Spark compatibility must preserve lega
 assert(sparkRules.whitelist['$code']['.write'].includes("role').val() === 'admin'"),'VIP writes must be server-rule admin-only');
 assert(sparkRules.vipProfiles['.read'].includes("role').val() === 'admin'"),'Employee labels must be admin-only');
 assert(managerJs.includes('signInWithEmailAndPassword'),'Manager must use tested Firebase Auth');
-assert(managerJs.includes("members/'+uid"),'Manager must verify own membership');
+assert(managerJs.includes("readFirebaseRest('members/'+encodeURIComponent(uid))"),'Manager must verify own membership using authenticated Firebase REST');
 assert(managerJs.includes('runTransaction'),'Account creation and toggles must avoid blind overwrites');
 assert(!managerJs.includes('getFunctions(') && !managerJs.includes('workers.dev'),'No paid Firebase Functions or Cloudflare');
 
