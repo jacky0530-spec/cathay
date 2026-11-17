@@ -1,0 +1,20 @@
+# Copy to wrangler.toml only after an independent Cloudflare Worker and D1 exist.
+# Do not deploy this example directly to the live cathay application.
+name = "cathay-vip-auth-staging"
+main = "worker/index.mjs"
+compatibility_date = "2026-11-17"
+workers_dev = true
+
+[vars]
+SITE_ORIGIN = "https://jacky0530-spec.github.io"
+FIREBASE_PROJECT_ID = "cathay-app-5889a"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "cathay-vip-auth-staging"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+
+# Set these in Cloudflare encrypted Worker secrets (NEVER commit values):
+# CODE_PEPPER (>=32 random characters, stable across releases)
+# SESSION_SECRET (>=32 random characters, different from CODE_PEPPER)
+# ADMIN_UIDS (comma-separated Firebase UID allowlist; at least one)
