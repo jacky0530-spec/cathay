@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta http-equiv="Cache-Control" content="no-store">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com; connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://cathay-app-5889a-default-rtdb.firebaseio.com wss://cathay-app-5889a-default-rtdb.firebaseio.com; style-src 'unsafe-inline'; form-action 'none'; base-uri 'none'; object-src 'none'">
+<title>Cathay V1.0｜Firebase 管理員登入檢測</title>
+<style>
+*{box-sizing:border-box}body{font-family:system-ui,-apple-system,"Microsoft JhengHei",sans-serif;background:#f2f6f4;margin:0;padding:20px;color:#173e2b}
+main{max-width:540px;background:#fff;margin:45px auto;padding:28px;border:1px solid #d9e8df;border-radius:16px}
+h1{font-size:24px;margin:0 0 12px}p{line-height:1.8}label{display:block;margin:18px 0 6px;font-weight:600}
+input{width:100%;padding:13px;font-size:16px;border:1px solid #abc5b5;border-radius:8px}
+button{margin-top:20px;padding:14px;border:0;border-radius:9px;width:100%;background:#007e4b;color:#fff;font-size:16px;font-weight:700;cursor:pointer}
+button:disabled{opacity:.6;cursor:wait}
+#status{padding:14px;margin-top:18px;background:#f2f3f3;border-radius:9px;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere}
+#status[data-state="success"]{background:#e0f5e7;color:#115d2e}
+#status[data-state="error"]{background:#ffebeb;color:#871f29}
+.note{background:#fff7e6;padding:12px;border-radius:8px;font-size:14px}
+small{color:#526e5e;line-height:1.6}
+</style>
+</head>
+<body>
+<main>
+<h1>Firebase 管理員登入檢測</h1>
+<p>專為 Cathay V1.0 正式切換前的帳號測試設計，只驗證您的 Firebase 電子郵件／密碼及 <code>members/UID</code> 權限。</p>
+<p class="note"><strong>安全說明：</strong>本頁不讀取、修改或清除任何客戶資料，不修改 <code>users</code>、<code>whitelist</code> 或資料庫規則。測試登入狀態只保留在本頁記憶體，測試結束立即登出。</p>
+<form id="test-login">
+<label for="test-email">Firebase Authentication 電子郵件</label>
+<input id="test-email" type="email" required autocomplete="username">
+<label for="test-password">Firebase Authentication 密碼</label>
+<input id="test-password" type="password" required autocomplete="current-password">
+<button id="test-submit" type="submit">測試管理員登入</button>
+</form>
+<div id="status" role="status" aria-live="polite">尚未開始。請確認網址為 jacky0530-spec.github.io/cathay/。</div>
+<p><small>此頁只會向 Google Firebase 服務傳送登入驗證請求；不會收集或記錄您的密碼。即使測試通過，也不表示 V1.0 已上線或整個管理後台已完成測試。</small></p>
+</main>
+<script type="module" src="firebase-login-test.js"></script>
+</body>
+</html>
