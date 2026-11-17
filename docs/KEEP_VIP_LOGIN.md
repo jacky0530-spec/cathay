@@ -1,27 +1,26 @@
-# 保留原 VIP 授權碼登入＋管理者新增人員（新版需求）
+# 保留原 VIP 登入，管理者新增人員：Firebase 原生方案
 
-> 使用者於 2026-11-17 確認：不更換現有業務員的登入帳號與步驟；未來新進人員由授權管理者在管理頁新增。客戶資料不執行備份，也絕不清除既有 `localStorage.contactRecords`。**目前只是核准設計方向，並非功能已實作。**
+> 使用者 2026-11-17 明確決定：**不使用 Cloudflare**、不更換既有 VIP 授權碼與輸入步驟；未來由管理員新增及停用授權。**不要求備份、不改動本機 `localStorage.contactRecords`。**
 
-## 接受條件
+## 預定架構
+- 前端：GitHub Pages 原網址和 VIP 輸入視窗維持不變。
+- 驗證與管理：使用 **Cloud Functions for Firebase**（Firebase 原生產品，不是 Cloudflare Worker），以 Firebase Admin SDK 存取已存在的 Realtime Database。
+- 管理員：維持已驗證的 Firebase Authentication 電子郵件帳號；每次操作仍要驗證 `members/<UID>` 的 `active=true`、`role=admin`。
+- 同事：不需建立郵件或設定密碼，只輸入原 VIP 碼。授權碼由 Cloud Function 在伺服器端做 HMAC 驗證，登入後核發 Firebase Custom Token，前端無感地以 `signInWithCustomToken` 建立 Firebase 身分。
+- 新資料：`vipAccess/accounts/vip_<HMAC>`、`vipAccess/rate`、`vipAccess/audit`；不用第二套資料庫。對一般客戶端禁止存取私有管理索引。
+- 管理員新增／停權、同步原 `whitelist` 的部分已完成**開發原型**，但不能當成正式可用功能。
 
-1. **原有帳號、登入步驟不變。** 使用者繼續開啟原網址、輸入原 VIP 授權碼；不要求既有成員先註冊電子郵件或另設密碼。
-2. **新人由管理者建立。** 管理員以目前已成功測試的 Firebase Authentication 帳號登入獨立管理頁；可以新增獨立授權碼、停用、重新啟用、查看授權狀態與稽核紀錄。管理頁不可在未授權情況下操作。
-3. **驗證在受保護後端完成。** 目前 `main/auth.js` 用瀏覽器直接 `GET /whitelist/<CODE>.json` 且含前端硬編碼的通用通行碼；`localStorage.currentSession` 也可以在用戶端被修改。這些不能作為正式安全控制。應改成由受保護的 API 驗證舊 VIP 碼、檢查啟用狀態，並簽發短效且可撤銷的伺服器可驗證會話。畫面／輸入步驟可以不變。
-4. **不可公開授權碼。** 將新舊授權資料遷入後端私有儲存，僅保留足以驗證的雜湊／帶伺服器端密鑰的衍生值；不得在公開 HTML、JS、GitHub、Firebase 可匿名讀取路徑留存明文通用密碼或完整授權碼列表。舊授權碼可能較短，應加上登入頻率限制、濫用阻擋及停權能力；必要時逐步建議個別更新較弱的授權碼，不能宣稱絕對安全。
-5. **角色區分。** `admin` 才能新增、停用、重啟與查閱管理稽核；一般業務員只能使用既有功能。管理員的權限要由後端驗證 Firebase 身分與有效角色，不是依靠瀏覽器顯示／本機存放的 `role`。
-6. **客戶資料保留。** 同一網站 origin，`contactRecords` 不搬移、不刪除、不覆蓋；所有原始試算及商品功能保留。使用者明確要求不執行備份，應告知未備份的資料遺失風險但不得反覆要求備份。
-7. **回歸測試。** 舊授權碼驗證成功、無效碼拒絕、停用碼立即拒絕、新人建立與登入、非管理員新增失敗、管理員身分過期拒絕、限流、舊使用者連結與本機資料、PWA 快取、試算公式均需測試。
-8. **未驗收不得上線。** 目前 V1.0 草稿 `auth.js` 已改為電子郵件／密碼登入，**不符合本次需求**；不可直接合併或直接發布 `firebase.database.rules.json` 封鎖舊 VIP 登入。
+## 不可妥協的發布條件
+1. Firebase Cloud Functions 部署要求 Blaze 計費方案；**未經使用者明確同意不升級、不部署**，也不保證免費。
+2. 現有老授權碼只允許管理員審核後同步；現有前端硬編碼的共用碼已公開，無法保證保密，須另外安排安全更換及回歸測試。
+3. 正式站 `auth.js` 尚未改回 VIP 输入、亦未整合 `signInWithCustomToken`；**不可合併 V1.0**。
+4. 舊 Firebase Rules `whitelist` 公開讀、`users` 公開寫必須在前端完全切換後再關閉；不能先關而讓同事無法登入。
+5. 必須在 Rules 層阻擋已停用帳號存取受保護資料，不能只靠 UI 隱藏按鈕、localStorage 或前端重新整理。
+6. CRM、商品試算與資料不搬移、不刪除；網站 origin 維持相同；原商品保費計算不能受到影響。
+7. 完成 Firebase Emulator + 實機驗收，才考慮合併到 `main`。
 
-## 建議架構（待實作）
-
-- **前台**：保留目前 GitHub Pages 網址與 VIP 授權碼提示視窗，將原本公開 Firebase 白名單查詢改呼叫受保護的登入 API。
-- **後端**：可用 Cloudflare Worker + 私有資料庫（例如 D1）負責授權碼驗證、授權狀態、節流及稽核。選用 Cloudflare 的原因是目前 Firebase 專案顯示 Spark 免費方案，而 Firebase Cloud Functions 的新部署通常需要 Blaze；仍需確定最終服務、成本與權限。
-- **管理台**：採已驗證成功的 Firebase 管理員帳號；後端驗證 Firebase ID token 與管理員狀態後，才允許新增／停權。
-- **安全收尾**：在前端與 Worker 完整替換後，取消 Firebase `whitelist` 匿名讀取和 `users` 匿名寫入，移除前端硬編碼通行碼；不得提前關閉使現有用戶登不進去。
-
-## 現在的狀態
-
-- 目前已發布的 Firebase 過渡規則、舊版 GitHub Pages 網站維持不動。
-- 只有目前已測試的管理員 Firebase 身分可作為後台管理權限的基礎；尚未建置使用者新增／停權 API。
-- 草稿內用 Firebase 電子郵件登入替代 VIP 的功能須重構或放棄，**不可把它視為符合此需求的完成版本**。
+## 目前狀態
+- 已有純 Firebase Functions 原型：`vip-access/firebase-native/functions/`，目前沒有部署。
+- Firebase Authentication 管理員已實機驗證，舊站使用者也已確認登入正常。
+- 正式 Firebase Rules、`whitelist` 和其他現有資料未動。
+- 未同意 Blaze 計費前，只開發離線測試與可驗證的上線檢查。

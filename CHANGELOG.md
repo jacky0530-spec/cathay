@@ -1,5 +1,13 @@
 # 版本更新紀錄
 
+## V1.0 不使用 Cloudflare：改為 Firebase 原生服務 — 2026-11-17（草稿）
+- 使用者明確要求完全不要 Cloudflare；**停止 Cloudflare Worker、D1、Wrangler 部署流程**，已由開發分支移除相關使用中的檔案。
+- 採 GitHub Pages＋現有 Firebase Authentication、Realtime Database＋Cloud Functions for Firebase；保留 VIP 授權碼及同事原本登入步驟。
+- 新增 Firebase callable Functions 原型，驗證 VIP 授權碼、發行 Firebase Custom Token、管理員新增／停用／同步舊白名單及登入節流；新增合成資料單元測試。
+- Firebase Cloud Functions 部署需要 Blaze 計費方案；尚未取得使用者計費同意，**不部署、不升級**，不建立其他後端平台或資料庫。
+- 不修改 `main`、正式 Firebase Rules、原白名單、`users`、`members`、試算內容與本機 `contactRecords`。
+- 原本 D1／Worker 的歷史方案在 Git 提交記錄中可追溯，但不再包含於目前部署草稿中。
+
 ## V1.0 GitHub → Cloudflare Worker 測試部署設定（開發分支）— 2026-11-17
 - 新增受版控的公開 `vip-access/wrangler.toml`，對應獨立測試 Worker `cathay-vip-firebase-staging` 與既有 Firebase（**無 D1 binding**）。
 - Cloudflare Git Builds 設定說明指定 `feature/v1-structure-security` 分支與 `vip-access` Root directory，避免意外從 `main` 部署錯誤程式。

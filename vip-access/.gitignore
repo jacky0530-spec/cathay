@@ -1,9 +1,8 @@
-# Never commit Cloudflare development secrets, local state, or personal config.
-.dev.vars
-.dev.vars.*
+# Never commit credential files, development environment secrets or local artifacts.
 .env
 .env.*
-.wrangler/
-wrangler.local.toml
-wrangler.local.jsonc
 node_modules/
+*.service-account.json
+*serviceAccountKey*.json
+firebase-debug.log
+firebase-debug.*.log

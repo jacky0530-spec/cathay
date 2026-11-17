@@ -1,29 +1,20 @@
-# Cathay V1.0 過渡規則 — 暫不發布
+# Cathay V1.0：保留既有 VIP 登入的安全切換清單
 
-> **最新登入需求（2026-11-17）**：使用者明確要求保留現有 VIP 授權碼與操作流程，由管理員新增新人。先前「所有使用者搬到 Firebase Email/Password」方案已不適用。請依 [KEEP_VIP_LOGIN.md](KEEP_VIP_LOGIN.md) 重新設計前台登入與管理後台。在新後端驗證完成之前，不發布本檔過渡規則、不部署最終規則、不合併 V1.0。
+**現行正式站繼續使用原 VIP 登入，其他同事正常。現在不能合併 V1.0，也不能直接發布最終 Firebase Rules。**
 
-> **目前只為草稿與 Firebase 模擬器測試。** 此檔尚未部署；舊網站登入及客戶本機資料維持原狀。
+## 方案
+- GitHub Pages 原網址 + 既有 Firebase Authentication、Realtime Database。
+- Firebase Cloud Functions 驗證 VIP 碼並核發 Custom Token；使用者畫面與授權碼不變。
+- Firebase 管理員後台將實作新增、停用、重啟、同步舊授權碼。完全不使用 Cloudflare 或 D1。
+- 此方案在正式部署前需 Blaze 計費方案，現階段未經核准不改計費。
 
-## 已完成的驗證
-- Firebase Authentication 已用使用者實機測試登入成功。
-- Realtime Database `members/<UID>` 的 `active=true, role=admin` 已實機讀取成功。
-- 使用者確認舊正式網站在現行過渡規則下正常。
-- 使用者決定**不進行客戶資料備份**；禁止任何清空、更換 origin 或自動覆寫 `localStorage.contactRecords` 的上線操作。
+## 安全切換順序
+1. 先在開發分支完成 Functions／管理台／VIP 登入整合與 Emulator 測試；不更動正式網站。
+2. 原 `whitelist`、`users`、`members` 保留；逐一核對仍需使用的舊 VIP 碼。已公開共用通行碼要有安全更換計畫。
+3. 經使用者明確同意 Blaze 計費與部署後，才設定 Firebase Functions 所需的伺服器端 Secret 並測試。
+4. 在 Firebase Emulator 驗證新 `vipAccess` 只有 Admin SDK 寫入且一般帳號不能讀取私有內容，停用帳號立即失去受保護的資料權限。
+5. 維持原網站網址及 VIP 輸入方式；完成新版 `auth.js` 和 `signInWithCustomToken`，測試多位舊用戶、新人、停權、復權、手機與 PWA。
+6. 所有必要使用者已驗收後再同步發布新版前端與保護性 Rules，撤除匿名讀 `whitelist`、匿名寫 `users`。
+7. `localStorage.contactRecords` 不清除、不搬移、不覆寫；依使用者決定不執行備份。注意未備份的瀏覽器資料遺失風險。
 
-## 三個階段的規則
-| 階段 | 來源 | 可用範圍 | 風險 |
-|---|---|---|---|
-| A 現行 | Firebase Console（使用者已發布） | 舊授權碼、個人 UID 會員讀取 | `whitelist` 公開讀取、`users` 公開寫入 |
-| B V1 相容期（**尚未發布**） | `firebase.transition.rules.json` | A 所有舊功能 + V1 管理員讀取 + 限定會員資料路徑 | **仍保留舊版公開讀寫；不可長期使用** |
-| C 完全切換（**尚未發布**） | `firebase.database.rules.json` | Firebase Auth、管理員報表、會員權限、私人備份 | 舊授權碼登入和匿名登入紀錄寫入立即失效 |
-
-## 切換前檢查清單
-1. 不要合併 V1 PR，不要在目前階段發布本檔。
-2. 確認還有多少舊版登入使用者，並預先建立各自的 Firebase Authentication 帳號及 `members/<UID>`。**目前僅證實一位管理員。**
-3. 在 Emulator 模擬測試 A → B → C，並核對正式 Firebase 的現有 Rules、資料及被其他專案依賴的路徑。
-4. 需要在舊站仍運作時測試 V1 管理頁，可短期部署 B；**B 的公用寫入安全風險跟現有舊站相同，不能視為正式安全完成**。
-5. 確定所有必須繼續使用的帳號已遷移，安排受控時段把新網站與 C 規則一起切換。兩者未完成前不可自稱 V1 上線。
-6. 以 Firebase 個人帳號實機驗證登入、停用帳號、admin 權限、管理報表、客戶本機資料不清空。
-7. 不備份時的客戶本機資料遺失風險仍存在；程式碼版控不能復原本機資料。
-
-**部署順序注意：** 不能先部署 C 而未切換前端，否則舊站將無法登入；不能在 C 尚未部署時長期運行新站，因為舊站的公開讀寫仍存在。B 僅供短期驗收。
+**注意：** `firebase.database.rules.json` 目前是先前全員 Firebase Email 登入的草稿規則，尚不符合此 VIP 架構；不能直接套用。原先 D1／Worker 部署檔已停止使用。

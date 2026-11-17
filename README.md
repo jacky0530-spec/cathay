@@ -2,12 +2,11 @@
 
 > **草稿分支，尚未正式部署。** 原始程式備份：`backup/pre-v1-20261116`。現有 GitHub Pages 正式站不受此分支修改影響。
 
-## VIP 授權管理後端：Firebase 方案（2026-11-17）
+## VIP 授權管理：僅使用 GitHub Pages＋Firebase（2026-11-17）
 
-已由使用者選擇沿用現有 Firebase Realtime Database，**不再建立 Cloudflare D1**。開發中的 `vip-access/firebase-worker/` 使用 Cloudflare Worker 作為伺服器端驗證層，資料仍存既有 `cathay-app-5889a`，管理員 Firebase Authentication 與 `members/<UID>` 保留。先前 D1 程式僅留作備選。見 `vip-access/README.md`。
+**使用者明確要求完全不使用 Cloudflare，先前 Cloudflare Worker、D1、Wrangler 等部署方案已停用。**
 
-**正式 GitHub Pages 網站沒有修改。** 這個分支 `auth.js` 仍強制全員 Firebase Email/Password，尚未符合保留舊 VIP 登入的需求，不能合併。
-
+V1.0 新方案：保留 GitHub Pages 正式網址與原有 VIP 授權碼輸入步驟，以 Firebase **Cloud Functions for Firebase（原生）** 驗證授權碼並讓管理員新增／停用人員。仍使用現有 Firebase Authentication 及 Realtime Database `cathay-app-5889a`；不建立第二套資料庫。Firebase Cloud Functions 必須使用 Blaze 計費方案，**目前僅開發分支原型，沒有升級計費、部署、修改資料庫 Rules 或切換正式網站**。請先檢查計費接受度，再決定是否進入實際部署。見 [Firebase 原生設計與部署門檻](vip-access/README.md)。
 
 ## 2026-11-17 新需求：原 VIP 登入不變
 

@@ -23,15 +23,12 @@ jobs:
         run: node scripts/test-client-merge.mjs
       - name: 驗證 JSON 備份檔校驗工具（純本機／不傳輸）
         run: node scripts/test-backup-verify.mjs
-      - name: 檢查 VIP 管理頁與 Worker JavaScript 語法
+      - name: 檢查 Firebase 原生 Functions 語法
         run: |
-          node --check vip-access/manager.mjs
-          node --check vip-access/worker/index.mjs
-          node --check vip-access/worker/crypto.mjs
-          node --check vip-access/firebase-worker/database.mjs
-          node --check vip-access/firebase-worker/index.mjs
-      - name: 測試 VIP 授權碼管理後端（不連正式資料庫）
-        run: node --test vip-access/test/worker.test.mjs vip-access/test/d1-sqlite.test.mjs vip-access/test/firebase-worker.test.mjs vip-access/test/firebase-rest.test.mjs
+          node --check vip-access/firebase-native/functions/core.js
+          node --check vip-access/firebase-native/functions/index.js
+      - name: Firebase 原生 VIP 授權函式離線測試
+        run: node --test vip-access/firebase-native/functions/core.test.js
       - name: 安裝 Firebase 本機模擬器測試套件
         run: npm install --no-audit --no-fund
       - name: 驗證匿名、使用者、管理員與失效帳號權限
