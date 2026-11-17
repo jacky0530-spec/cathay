@@ -1,5 +1,11 @@
 # 版本更新紀錄
 
+## V1.0 GitHub → Cloudflare Worker 測試部署設定（開發分支）— 2026-11-17
+- 新增受版控的公開 `vip-access/wrangler.toml`，對應獨立測試 Worker `cathay-vip-firebase-staging` 與既有 Firebase（**無 D1 binding**）。
+- Cloudflare Git Builds 設定說明指定 `feature/v1-structure-security` 分支與 `vip-access` Root directory，避免意外從 `main` 部署錯誤程式。
+- 測試 Worker 未設定後端 Secrets 前預設拒絕授權請求，不能誤當作正式登入；不會觸及原網站、資料庫 Rules 或本機客戶資料。
+- Cloudflare Worker 尚未確認實際部署成功，不能宣稱 V1.0 已上線。
+
 ## V1.0 Firebase 授權後端 — 2026-11-17（開發未部署）
 - 改為沿用正式 `cathay-app-5889a` Realtime Database，不新增 Cloudflare D1。
 - 建立獨立 Cloudflare Worker 連接現有 Firebase REST API，以 Google 服務帳號 OAuth2 後端授權。

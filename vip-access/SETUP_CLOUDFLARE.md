@@ -23,10 +23,26 @@
 3. 不要更動正式 Realtime Database Rules，因為其他同事目前仍使用舊站登入。
 4. 原本已通過的 Firebase 管理員驗證不需重做。
 
+## 下一步：把獨立 Worker 連接 GitHub（不動正式網站）
+
+**前提：** Cloudflare Workers & Pages 內已建立名稱為 `cathay-vip-firebase-staging` 的**獨立測試 Worker**。若尚未建立，只建立該 Worker；不要選既有的網站或問卷專案。
+
+1. 前往 [Cloudflare Workers & Pages](https://dash.cloudflare.com/)，選擇 `cathay-vip-firebase-staging` → **Settings → Builds → Connect**。
+2. 選 GitHub，授權可存取 `jacky0530-spec/cathay`，不要開放其他不必要的私人 Repository。
+3. Git repository 選 `jacky0530-spec/cathay`；**Git branch 改為 `feature/v1-structure-security`，不要使用預設的 `main`**。
+4. **Root directory** 填入 `vip-access`。此分支內已追蹤公開設定檔 `vip-access/wrangler.toml`，其 `name` 與 Worker 相同、`main` 指向 `firebase-worker/index.mjs`。
+5. **Build command** 留空（本專案 Worker 不需編譯）；**Deploy command** `npx wrangler deploy`。若畫面需要預覽命令，可保留 `npx wrangler preview`。
+6. 請檢查畫面設定後才按 **Connect／Save and Deploy**。此 Worker 因尚未配置 `FIREBASE_SERVICE_ACCOUNT_JSON` 與簽章 Secrets，後端會拒絕一般請求，不能當正式系統使用。
+7. 執行後只需提供部署結果畫面、`workers.dev` 網址以及 Build 狀態（可遮住帳號資訊）。**不要提供 API Token、Firebase 服務帳號 JSON 或任何密碼。**
+
+**安全提醒：** Cloudflare 的 Git Builds 在選定分支有新 commit 時會自動部署此獨立 Worker。部署的測試程式不能自行讓正式 `jacky0530-spec.github.io/cathay/` 改用新登入；原有 VIP 授權碼與資料庫 Rules 仍保持原樣。測試 Worker 目前沒有連線 Secrets，不能存取 Firebase。
+
+官方部署說明：https://developers.cloudflare.com/workers/ci-cd/builds/ 
+
 ## 下一階段：建立獨立 Worker（暫不要求操作）
 
 1. 在 [Cloudflare Dashboard](https://dash.cloudflare.com/) 建立測試專用 Worker `cathay-vip-firebase-staging`，**不建立任何 D1**。
-2. 從 `vip-access/wrangler.toml.example` 複製本機 `vip-access/wrangler.toml`，保持 `main = "firebase-worker/index.mjs"`，且保留已確認的 `SITE_ORIGIN`、`FIREBASE_PROJECT_ID`。
+2. 開發分支已追蹤可公開的 `vip-access/wrangler.toml`，保持 `main = "firebase-worker/index.mjs"`，且保留已確認的 `SITE_ORIGIN`、`FIREBASE_PROJECT_ID`；不能把密鑰寫進此檔。
 3. 在 Firebase 專案的「Project settings → Service Accounts」產生專門授權給 Worker 的服務帳號私鑰（JSON），並只放在 Cloudflare Worker 的加密 Secret `FIREBASE_SERVICE_ACCOUNT_JSON`。**這是高權限憑證：不得上傳 GitHub、傳到聊天或用截圖顯示，亦不得加入一般環境變數。** 盡量使用權限最小化的專屬服務帳號；評估後續改用無長期金鑰的身分聯邦架構。
 4. 將 `CODE_PEPPER`、`SESSION_SECRET` 設定成彼此不同的獨立 32 字元以上密鑰，僅放在 Cloudflare encrypted Secrets。
 5. `LEGACY_COMPAT_CODES` 只在明確確認舊站硬編碼通行碼仍有人使用時才短期設定；它們已暴露於公開 JavaScript，應安排汰換。**不要在公開設定檔或此聊天中提供實際值**。
