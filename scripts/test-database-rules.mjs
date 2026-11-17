@@ -74,6 +74,24 @@ try {
   await assertFails(set(path(alice,'clientBackups/alice/versionEmpty'),{schemaVersion:1,updatedAt:backup.updatedAt,records:[]}));
   // Direct writes to a backup-owner root must also fail.
   await assertFails(set(path(alice,'clientBackups/alice'),{versionA:backup}));
+  // Membership state changes must immediately take effect in database authorization.
+  await env.withSecurityRulesDisabled(async sys=>{
+    await set(path(sys,'members/alice/active'),false);
+  });
+  await assertSucceeds(get(path(alice,'members/alice'))); // still readable to detect revocation
+  await assertFails(get(path(alice,'clientBackups/alice/versionA')));
+  await assertFails(set(path(alice,'clientBackups/alice/blockedVersion'),backup));
+  await assertFails(update(path(alice,'users/alice'),{device:'Unauthorized after deactivation'}));
+  await assertFails(set(path(alice,'users/alice/connections/blocked'),true));
+  await assertSucceeds(set(path(alice,'users/alice/connections/browserLeft'),null));
+  await env.withSecurityRulesDisabled(async sys=>{
+    await set(path(sys,'members/alice/active'),true);
+    await set(path(sys,'members/admin/role'),'user');
+  });
+  await assertSucceeds(get(path(alice,'clientBackups/alice/versionA')));
+  await assertFails(get(path(admin,'users'))); // downgraded admin loses access now
+  await assertFails(get(path(admin,'members/alice')));
+  await assertSucceeds(get(path(admin,'members/admin')));
   console.log('V1.0 Firebase Realtime Database Emulator permissions: PASS');
 } finally {
   await env.cleanup();
