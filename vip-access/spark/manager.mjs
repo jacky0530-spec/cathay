@@ -44,6 +44,9 @@ function reportError(error){
  if(error?.code==='auth/too-many-requests')return 'Firebase 暫時限制登入次數，請稍後再試。';
  if(error?.code==='auth/unauthorized-domain')return '目前網址尚未列入 Firebase Authentication 授權網域。';
  if(error?.code==='auth/user-disabled')return 'Firebase 管理員帳號已停用，請檢查 Authentication 設定。';
+ if(error?.message==='auth_timeout')return 'Firebase 帳號驗證逾時。請確認網路，重新整理後再試。';
+ if(error?.message==='membership_timeout')return 'Firebase 帳號已驗證，但管理員權限查詢逾時。請檢查資料庫連線及規則。';
+ if(error?.message==='list_timeout')return '授權清單讀取逾時；登入身分已通過，請按「重新整理清單」再試。';
  if(error?.message==='login_required')return '登入狀態已失效，請重新登入。';
  if(error?.message==='not_admin')return '登入帳號沒有管理員權限。';
  if(error?.code==='auth/invalid-credential')return '帳號或密碼驗證失敗。';
@@ -91,19 +94,42 @@ async function refresh(){
   actionCell.append(button);row.append(actionCell);tbody.append(row);
  }
 }
+// Keep Firebase Authentication, membership validation and list loading separate.
+// A slow or denied list read must never make a successful login look stuck.
+function withDeadline(promise,ms,phase){
+ let timeout;
+ const timer=new Promise((_,reject)=>{
+  timeout=setTimeout(()=>reject(new Error(phase+'_timeout')),ms);
+ });
+ return Promise.race([promise,timer]).finally(()=>clearTimeout(timeout));
+}
 el('loginForm').addEventListener('submit',async event=>{
- event.preventDefault();el('loginButton').disabled=true;
+ event.preventDefault();
+ if(!el('password').value){say('請先輸入 Firebase 管理員密碼。',true);return;}
+ const button=el('loginButton');
+ button.disabled=true;button.textContent='驗證中…';
+ let signedIn=false;
  try{
-  await signInWithEmailAndPassword(auth,el('email').value.trim(),el('password').value);
+  say('步驟 1／3：正在驗證 Firebase 管理員帳號…');
+  await withDeadline(signInWithEmailAndPassword(auth,el('email').value.trim(),el('password').value),15000,'auth');
+  signedIn=true;
   el('password').value='';
-  await checkAdmin();await refresh();
+  say('步驟 2／3：帳號驗證成功，正在確認管理員權限…');
+  await withDeadline(checkAdmin(),15000,'membership');
   el('loginArea').hidden=true;el('manageArea').hidden=false;
-  say('管理員身分驗證成功。');
+  say('步驟 3／3：管理員登入成功，正在載入 VIP 授權清單…');
+  // The admin UI is usable even when the optional list read fails or stalls.
+  void withDeadline(refresh(),15000,'list').then(
+   ()=>say('管理員登入成功，授權清單已載入。'),
+   error=>say('管理員登入成功，但清單載入失敗：'+reportError(error),true)
+  );
  }catch(error){
   el('password').value='';
-  try{await signOut(auth);}catch(_){}
+  if(signedIn){try{await signOut(auth);}catch(_){}}
   say(reportError(error),true);
- }finally{el('loginButton').disabled=false;}
+ }finally{
+  button.disabled=false;button.textContent='登入後台';
+ }
 });
 el('createForm').addEventListener('submit',async event=>{
  event.preventDefault();el('createButton').disabled=true;clearIssued();

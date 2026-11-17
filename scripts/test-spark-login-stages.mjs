@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const code=readFileSync('vip-access/spark/manager.mjs','utf8');
+assert(code.includes("say('步驟 1／3：正在驗證 Firebase 管理員帳號…')"));
+assert(code.includes("say('步驟 2／3：帳號驗證成功，正在確認管理員權限…')"));
+assert(code.includes("el('loginArea').hidden=true;el('manageArea').hidden=false;"));
+assert(code.includes("void withDeadline(refresh(),15000,'list').then("));
+assert(!code.includes('await checkAdmin();await refresh();'),'List must not block login display');
+assert(code.includes('membership_timeout')&&code.includes('list_timeout'));
+assert(code.includes('normalizeNewVipCode')&&code.includes('nextVipStatus(current,enabled)'));
+assert(!code.includes('localStorage.clear('));
+console.log('Firebase Spark V0.1.4 login status and unblocking checks: PASS');
