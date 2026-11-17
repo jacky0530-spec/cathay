@@ -37,7 +37,14 @@ assert(transition.members['$uid']['.read']===JSON.parse(read('firebase.database.
 assert(transition.clientBackups['$uid']['$backupId']['.write']===JSON.parse(read('firebase.database.rules.json')).rules.clientBackups['$uid']['$backupId']['.write'],'Private backup write differs from production target');
 
 // The file-only verifier is deliberately public; its CSP prohibits network exfiltration.
-const protectedPages = pageFiles.filter(p=>!['404.html','backup-verify.html'].includes(p) && !/^firebase-login-test(?:-v\d+)?\.html$/.test(p));
+const protectedPages = pageFiles.filter(p=>!['404.html','backup-verify.html','vip-admin-spark.html'].includes(p) && !/^firebase-login-test(?:-v\d+)?\.html$/.test(p));
+if(pageFiles.includes('vip-admin-spark.html')) {
+  const page=read('vip-admin-spark.html');
+  const code=read('vip-admin-spark.js');
+  assert(page.includes('vip-admin-spark.js'),'Standalone Spark admin must import its own authentication script');
+  assert(code.includes('signInWithEmailAndPassword') && code.includes("members/'+uid"),'Standalone Spark admin must authenticate and verify administrator membership');
+  assert(!code.includes('localStorage.clear('),'Spark admin must never clear customer localStorage');
+}
 // Standalone login diagnostics must never be treated as authenticated website pages.
 for(const p of pageFiles.filter(p=>/^firebase-login-test(?:-v\d+)?\.html$/.test(p))){
   const code=read(p);
