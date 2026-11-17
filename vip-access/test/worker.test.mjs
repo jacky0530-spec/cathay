@@ -115,9 +115,12 @@ test('Signed sessions reject forged, expired, and revoked versions',async()=>{
 });
 test('Firebase admin token checks issuer, project and RS256 signature',async()=>{
  assert.equal(await verifyFirebaseJwt(adminJwt,projectId),'admin-uid');
- await assert.rejects(()=>verifyFirebaseJwt(await makeJwt('admin-uid',{aud:'other'}),projectId));
- await assert.rejects(()=>verifyFirebaseJwt(await makeJwt('admin-uid',{exp:now()-1}),projectId));
- await assert.rejects(()=>verifyFirebaseJwt(await makeJwt('admin-uid',{},true),projectId));
+ const wrongAudience=await makeJwt('admin-uid',{aud:'other'});
+ const expired=await makeJwt('admin-uid',{exp:now()-1});
+ const brokenSignature=await makeJwt('admin-uid',{},true);
+ await assert.rejects(()=>verifyFirebaseJwt(wrongAudience,projectId));
+ await assert.rejects(()=>verifyFirebaseJwt(expired,projectId));
+ await assert.rejects(()=>verifyFirebaseJwt(brokenSignature,projectId));
 });
 test('Worker: account creation, existing-code login, protected audit, disabling and re-enabling',async()=>{
  assert.equal((await call('POST','/api/admin/vip',{body:{label:'專案範例'}})).status,401);
