@@ -29,8 +29,11 @@ td:last-child,th:last-child{text-align:right}.scroll{overflow:auto}
 <h2>授權管理</h2><p><button id="logout" type="button" class="secondary">安全登出</button></p>
 <form id="createForm"><label for="label">新人名稱／識別標籤</label>
 <input id="label" type="text" maxlength="80" required placeholder="例如：業務員姓名或代號">
-<p><button id="createButton" type="submit">建立新 VIP 授權碼</button></p></form>
-<div id="issued" class="notice" hidden><strong>本次建立的授權碼（只顯示這一次）</strong>
+<label for="vipCode">VIP 授權碼（由管理員自行編輯）</label>
+<input id="vipCode" type="text" minlength="6" maxlength="32" required autocapitalize="characters" autocomplete="off" spellcheck="false" inputmode="text" pattern="[A-Za-z0-9_-]{6,32}" placeholder="例如：VIP2026A01">
+<p><small>請輸入 6～32 位英文、數字、底線或連字號；英文自動轉大寫。不能與既有授權碼重複，包含已停用的代碼。</small></p>
+<p><button id="createButton" type="submit">建立指定的 VIP 授權碼</button></p></form>
+<div id="issued" class="notice" hidden><strong>本次由管理員設定的授權碼（本頁僅顯示這一次）</strong>
 <p id="issuedValue"></p><button id="copy" type="button" class="secondary">複製</button>
 <button id="hideCode" type="button" class="secondary">隱藏</button></div>
 <h2>現有授權</h2>
