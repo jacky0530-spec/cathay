@@ -2,6 +2,10 @@
 
 > **草稿分支，尚未正式部署。** 原始程式備份：`backup/pre-v1-20261116`。現有 GitHub Pages 正式站不受此分支修改影響。
 
+## 2026-11-17 新需求：原 VIP 登入不變
+
+**使用者已決定保留現有 VIP 授權碼與登入操作，並讓授權管理員自行新增新人。** 因此目前草稿將全員改為 Firebase Email/Password 的 `auth.js` **不符合最新發布條件**，不得直接合併。應先把保留 VIP 的受保護後端驗證＋管理員新增／停用功能完成並測試。完整規格見 [保留 VIP 登入＋管理者授權](docs/KEEP_VIP_LOGIN.md)。目前仍維持正式舊網站與已發布的過渡 Rules；不動客戶紀錄。
+
 ## 六大首頁入口
 
 客戶管理 `client.html`、財務試算 `calc.html`、商品 `products.html`、業務績效 `event.html`、金融工具 `tools.html`、系統管理 `system.html`。
