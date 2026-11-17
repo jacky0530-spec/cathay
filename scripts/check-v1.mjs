@@ -18,7 +18,8 @@ const pageFiles=readdirSync('.').filter(f=>f.endsWith('.html'));
 const required=['index.html','client.html','products.html','calc.html','tools.html','system.html','admin.html','sw.js','auth.js','manifest.json','firebase.database.rules.json'];
 for(const name of required)assert(existsSync(name),'missing '+name);
 const product=read('products.html'),client=read('client.html'),auth=read('auth.js'),admin=read('admin.html');
-const protectedPages = pageFiles.filter(p=>p!=='404.html');
+// The file-only verifier is deliberately public; its CSP prohibits network exfiltration.
+const protectedPages = pageFiles.filter(p=>!['404.html','backup-verify.html'].includes(p));
 for(const p of protectedPages){
   const code=read(p);
   assert(code.includes('auth.js'),p+' lacks Firebase member validation import (chars='+code.length+', utf8First='+code.charCodeAt(0)+', sample='+JSON.stringify(code.slice(160,255))+')');
@@ -28,6 +29,10 @@ for(const p of previouslyUngated){
   assert(read(p).includes('id="cathay-preauth"'),p+' must hide sensitive UI until Firebase completes');
 }
 assert(read('backup-export.html').includes('await window.cathayAuthReady'),'Protected JSON backup requires verified membership');
+const verifier=read('backup-verify.html');
+assert(verifier.includes("connect-src 'none'"),'Local backup verifier must disable network requests');
+assert(!/\b(?:fetch|XMLHttpRequest|sendBeacon)\s*\(/.test(verifier),'Local verifier must not send backup data');
+assert(verifier.includes("crypto.subtle.digest('SHA-256'"),'Verifier checksum not implemented');
 assert(read('client.html').includes('id="cathay-preauth"'),'Customer data page must hide until login');
 assert(read('admin.html').includes('id="cathay-preauth"'),'Admin page must hide until login');
 assert(auth.includes("getElementById('cathay-preauth')?.remove()"),'Authorized login must reveal page content');

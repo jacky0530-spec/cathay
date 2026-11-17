@@ -38,6 +38,10 @@
 - V1.0 PWA **需要網路**才能開啟登入、客戶及所有 HTML 頁面；這是為了避免切換 Firebase 登入後使用過期的離線驗證腳本。僅快取不含客戶資料的共用 CSS、圖示及 Manifest。
 - 瀏覽器的 HTTP 快取、舊版本 Service Worker 或實機環境需在上線前實際驗證；更新 `sw.js` 不代表使用者裝置已自動完成切換。
 
+## 下載後的 JSON 完整性驗證
+
+正式 `main` 已新增唯讀 `backup-verify.html`（`https://jacky0530-spec.github.io/cathay/backup-verify.html`），不需向任何人上傳 JSON，可在本機選擇檔案驗證 schemaVersion、資料筆數、缺漏欄位、重複 ID，以及 SHA-256。檔案不離開瀏覽器。驗證通過仍需確認下載檔在安全位置、且日後可以復原。V1.0 保留此頁作為公開的**本機檔案檢查工具**，不得用它作為伺服器端資料存取介面。
+
 ## 發布門檻
 
 **GitHub 新增 `firebase.database.rules.json` 並不代表已套用到 Firebase。** 必須先按 [Firebase 遷移與驗收手冊](docs/MIGRATION.md) 建立個人帳號／會員權限，並在管理員端實際部署與測試 Rules，完成所有裝置客戶資料備份，才能合併此分支。

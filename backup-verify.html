@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; img-src 'none'; font-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'">
+  <title>客戶 JSON 備份檔驗證 — Cathay V1.0</title>
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;background:#f3f6f5;color:#1e3e2e;font-family:system-ui,-apple-system,"Microsoft JhengHei",sans-serif;padding:18px}
+    main{max-width:720px;margin:28px auto;padding:26px;background:white;border:1px solid #dce6e0;border-radius:16px;box-shadow:0 4px 14px #0000000c}
+    h1{font-size:24px;margin:0 0 14px}h2{font-size:18px;margin:22px 0 10px}p,li{line-height:1.75}
+    .info{background:#edf7f1;border:1px solid #b9deca;padding:13px;border-radius:10px}
+    .warning{background:#fff7e7;border:1px solid #edd2a0;padding:13px;border-radius:10px}
+    input{display:block;max-width:100%;padding:13px;border:2px dashed #80af96;border-radius:10px;margin:14px 0;font-size:16px}
+    table{border-collapse:collapse;width:100%;table-layout:fixed}td{padding:11px 8px;border-bottom:1px solid #e2e8e4;overflow-wrap:anywhere}
+    td:first-child{width:42%;font-weight:650}td:last-child{font-variant-numeric:tabular-nums}
+    .state{font-weight:bold;padding:12px;border-radius:10px;background:#eff4f1}
+    .ok{background:#e7f6eb;color:#17572d}.bad{background:#ffeded;color:#9b1e2b}.warn{background:#fff6df;color:#78521b}
+    small{color:#5c6d65}a{color:#006e42}
+    code{overflow-wrap:anywhere}
+  </style>
+</head>
+<body>
+<main>
+  <h1>🔍 客戶 JSON 備份檔驗證</h1>
+  <p class="info">此工具只在目前裝置的瀏覽器中讀取您選擇的 JSON 檔案，<strong>不傳送、不儲存、不修改客戶資料</strong>。驗證結果只顯示筆數、檔案雜湊值和異常統計，不顯示姓名、電話或備註。</p>
+  <div class="warning">⚠️ 請僅選取自己先前下載的 <code>cathay-client-backup-*.json</code>。勿將含個資的檔案傳到 GitHub、LINE 群組或聊天室。驗證通過也不代表已完成加密備份、雲端同步或 Firebase 權限測試。</div>
+  <label for="file"><strong>選擇完整 JSON 備份檔</strong></label>
+  <input type="file" id="file" accept=".json,application/json">
+  <div id="state" class="state" role="status">尚未選擇檔案。</div>
+  <table aria-label="備份檔檢查結果"><tbody id="results"></tbody></table>
+  <h2>使用方式</h2>
+  <ol>
+    <li>在原本有資料的同一個瀏覽器先從 <a href="backup-export.html">客戶資料備份工具</a> 下載 JSON。</li>
+    <li>回到本頁選取剛剛下載的 JSON，確認「格式有效」、筆數及異常統計。</li>
+    <li>若從相同瀏覽器下載，本工具也會嘗試比對目前本機資料是否一致；若來自其他裝置，筆數不同不一定代表檔案損毀。</li>
+    <li>將檔案存入受控的加密備份空間；保留顯示的 SHA-256 校驗值，日後可再次確認檔案未改變。</li>
+  </ol>
+  <p><small>本工具不會修復或還原檔案，也不會刪除瀏覽器中的 <code>contactRecords</code>。如顯示損毀或筆數異常，請保留原始檔案與現有瀏覽器資料，先不要進行新版系統遷移。</small></p>
+</main>
+<script>
+(()=>{
+  'use strict';
+  const input=document.getElementById('file');
+  const status=document.getElementById('state');
+  const results=document.getElementById('results');
+  function row(title,value){
+    const tr=document.createElement('tr'),label=document.createElement('td'),val=document.createElement('td');
+    label.textContent=title;val.textContent=String(value);tr.append(label,val);results.append(tr);
+  }
+  function say(message,kind){status.textContent=message;status.className='state '+kind;}
+  function hex(bytes){return Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');}
+  input.addEventListener('change',async()=>{
+    results.replaceChildren();
+    const file=input.files&&input.files[0];
+    if(!file){say('尚未選擇檔案。','');return;}
+    try{
+      if(file.size===0||file.size>50*1024*1024)throw Error('檔案大小為 0 或超過 50 MB，請勿以此檔案當作有效備份。');
+      const buffer=await file.arrayBuffer();
+      const text=new TextDecoder('utf-8',{fatal:true}).decode(buffer).replace(/^\uFEFF/,'');
+      const backup=JSON.parse(text);
+      if(!backup||Array.isArray(backup)||typeof backup!=='object'||backup.schemaVersion!==1||!Array.isArray(backup.records))
+        throw Error('不是支援的 V1 JSON 備份格式，必須包含 schemaVersion: 1 與 records 陣列。');
+      const date=backup.exportedAt;
+      if(typeof date!=='string'||!Number.isFinite(Date.parse(date)))
+        throw Error('缺少有效的 exportedAt 匯出日期。');
+      const records=backup.records;
+      let malformed=0,missing=0,duplicates=0;
+      const ids=new Set();
+      for(const entry of records){
+        if(!entry||typeof entry!=='object'||Array.isArray(entry)){malformed++;continue;}
+        if(typeof entry.name!=='string'||!entry.name.trim()||typeof entry.phone!=='string'||!entry.phone.trim())missing++;
+        if(entry.id!=null){
+          const id=String(entry.id);
+          if(ids.has(id))duplicates++;
+          else ids.add(id);
+        }
+      }
+      let local='目前瀏覽器沒有既有客戶資料可比對';
+      try{
+        const raw=localStorage.getItem('contactRecords');
+        if(raw!==null){
+          const current=JSON.parse(raw);
+          if(Array.isArray(current)){
+            local=current.length+' 筆；'+(JSON.stringify(current)===JSON.stringify(records)?'與備份逐項相符':'與備份內容不同（可能來自其他裝置或不同時間）');
+          }else local='本機既有資料格式異常，請勿清除';
+        }
+      }catch(error){local='無法讀取或比對本機資料；不影響備份檔檢查';}
+      const digest=await crypto.subtle.digest('SHA-256',buffer);
+      row('檔案格式','V1 JSON：有效');
+      row('備份建立時間',date);
+      row('客戶紀錄筆數',records.length);
+      row('異常紀錄格式',malformed);
+      row('缺姓名或電話',missing);
+      row('重複的 ID',duplicates);
+      row('與目前瀏覽器比較',local);
+      row('檔案大小',file.size.toLocaleString('zh-TW')+' bytes');
+      row('SHA-256（完整檔案）',hex(new Uint8Array(digest)));
+      if(records.length===0||malformed||missing||duplicates)
+        say('備份可以解析，但有空白或資料異常；建議暫緩遷移並確認。','warn');
+      else say('格式有效，未發現基本欄位或重複 ID 異常。請核對筆數並妥善加密保存。','ok');
+    }catch(error){
+      results.replaceChildren();
+      say('驗證未通過：'+(error&&error.message?error.message:'無法解析檔案')+'。請保留原始資料。','bad');
+    }finally{input.value='';}
+  });
+})();
+</script>
+</body>
+</html>
