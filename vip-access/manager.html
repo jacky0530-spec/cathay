@@ -41,19 +41,21 @@ code{overflow-wrap:anywhere}
 <form id="createForm">
 <label for="label">人員名稱或辨識標籤</label><input id="label" maxlength="80" placeholder="例如：業務員代號" required>
 <label for="legacyCode">既有 VIP 授權碼（選填）</label>
-<input id="legacyCode" maxlength="48" autocomplete="off" placeholder="空白＝系統建立新授權碼">
+<input id="legacyCode" maxlength="64" autocomplete="off" placeholder="空白＝系統建立新授權碼">
 <p>新增人員時留空即可由後端產生新授權碼；既有使用者才填入原 VIP 碼，方便逐步保留原登入方式。</p>
 <button type="submit" id="addButton">新增／登記授權碼</button>
 </form>
 <div id="issued" hidden class="notice"><strong>本次產生／登記的授權碼（僅顯示這一次）</strong>
 <p id="issuedValue"></p><button type="button" id="hideIssued" class="secondary">隱藏授權碼</button></div>
 <h2>目前授權人員</h2>
+<p class="notice"><strong>目前仍是測試階段：</strong>這個後台的新增／停用只控制新後端，正式舊網站仍採原 Firebase 白名單驗證，因此<strong>舊站現階段不受此處停用操作影響</strong>。新產生的 VIP 碼也要等前台安全切換後才能正式使用。</p>
+<button type="button" id="syncLegacyButton" class="secondary">同步原有 VIP 白名單（不修改舊資料）</button>
 <button type="button" id="refreshButton">重新整理清單</button>
 <div class="scroll"><table><thead><tr><th>名稱／代號</th><th>碼尾碼</th><th>狀態</th><th>最後使用</th><th>管理</th></tr></thead>
 <tbody id="accountRows"></tbody></table></div>
 </section>
 <p id="message" role="status" aria-live="polite">尚未配置 Cloudflare Worker，請先完成後端部署與測試。</p>
-<p><small>安全規則：只有通過 Firebase 身分驗證且位於 Worker 管理員 UID 白名單者可以增刪授權。表格不會顯示完整既有授權碼。停用會讓伺服器端已發出的登入憑證失效。</small></p>
+<p><small>安全規則：只有通過 Firebase 身分驗證，且 members/UID 為 active=true、role=admin 的管理員才可操作。表格不會顯示完整既有授權碼。停用會讓伺服器端已發出的登入憑證失效。</small></p>
 </main>
 <script type="module" src="./manager.mjs"></script>
 </body>

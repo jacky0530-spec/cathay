@@ -1,4 +1,4 @@
-// VIP manager UI: fail closed until Cloudflare Worker URL is verified and configured.
+// Firebase-backed VIP manager UI: disabled until a verified trusted Worker origin is configured.
 // NEVER enter Firebase credentials into a third-party or arbitrary API URL.
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import {initializeAuth,inMemoryPersistence,signInWithEmailAndPassword,signOut} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
@@ -47,7 +47,7 @@ async function refresh(){
    const change=document.createElement('button');change.type='button';
    change.textContent=acc.active?'停用':'啟用';change.className=acc.active?'secondary':'';
    change.addEventListener('click',async()=>{
-     if(!confirm('確定'+(acc.active?'停用':'啟用')+'這組授權嗎？'))return;
+     if(!confirm('確定'+(acc.active?'停用':'啟用')+'這組新版授權嗎？\n目前舊網站仍使用原白名單，不會受到本測試後台的停權影響。'))return;
      change.disabled=true;
      try{
        await api('/api/admin/vip/'+encodeURIComponent(acc.id)+'/status',{method:'POST',body:{active:!acc.active}});
@@ -86,7 +86,7 @@ create.addEventListener('submit',async event=>{
    const result=await api('/api/admin/vip',{method:'POST',body:payload});
    document.getElementById('issuedValue').textContent=result.code;
    document.getElementById('issued').hidden=false;
-   create.reset();say('授權碼已新增，請以私密管道提供給本人。');
+   create.reset();say('測試授權已建立。新的 VIP 碼僅供新後端測試，正式舊站尚無法用它登入；待完成安全切換後再提供同事使用。');
    await refresh();
  }catch(error){say(error.message||'新增失敗',true);}
  finally{add.disabled=false;}
@@ -94,6 +94,16 @@ create.addEventListener('submit',async event=>{
 document.getElementById('hideIssued').addEventListener('click',()=>{
  document.getElementById('issuedValue').textContent='';
  document.getElementById('issued').hidden=true;
+});
+document.getElementById('syncLegacyButton').addEventListener('click',async()=>{
+ if(!confirm('確定同步現有 Firebase whitelist 中的啟用授權碼到新版私有管理索引？\n原有 whitelist 及舊網站登入不會修改。'))return;
+ const button=document.getElementById('syncLegacyButton');button.disabled=true;
+ try{
+  const result=await api('/api/admin/legacy/sync',{method:'POST',body:{}});
+  say('已辨識原有白名單 '+result.recognized+' 組，新增私有管理索引 '+result.added+' 組。原登入不受影響。');
+  await refresh();
+ }catch(error){say(error.message||'同步失敗',true);}
+ finally{button.disabled=false;}
 });
 document.getElementById('refreshButton').addEventListener('click',()=>refresh().catch(e=>say(e.message,true)));
 document.getElementById('logoutButton').addEventListener('click',async()=>{
