@@ -38,7 +38,13 @@ class FakeDB{
  constructor(){this.codes=new Map();this.limits=new Map();this.events=[];}
  prepare(sql){
   const db=this;
-  return {bind(...args){return {
+  return {
+   async all(){
+     if(sql.includes('FROM vip_codes ORDER BY'))return {results:[...db.codes.values()]};
+     if(sql.includes('FROM admin_audit ORDER BY'))return {results:db.events};
+     throw Error('Unmocked SQL all '+sql);
+   },
+   bind(...args){return {
    async first(){
     if(sql.startsWith('INSERT INTO rate_limits')){
       const [key,expires,at]=args;
