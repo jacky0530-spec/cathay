@@ -54,7 +54,7 @@ form.addEventListener('submit',async event=>{
   try{
     say('階段 1 / 2：正在使用電子郵件與密碼登入 Firebase Authentication…');
     const login=await within(signInWithEmailAndPassword(auth,email.value.trim(),password.value),15000,'Firebase Authentication 登入');
-    say('階段 1 / 2：帳號登入成功。\\n階段 2 / 2：正在讀取 Firebase Realtime Database 的 members/UID…');
+    say('階段 1 / 2：帳號登入成功。\n階段 2 / 2：正在讀取 Firebase Realtime Database 的 members/UID…');
     unsubscribeConnected=onValue(ref(db,'.info/connected'),snapshot=>{
       connectionStatus=snapshot.val()===true?'已連上 Firebase Realtime Database':'尚未連上 Firebase Realtime Database';
     },()=>{connectionStatus='連線狀態無法確認';});
@@ -98,8 +98,8 @@ form.addEventListener('submit',async event=>{
       kind='error';timedOut=true;
     }
     if(unsubscribeConnected)unsubscribeConnected();
-    result+='\\nRealtime Database 連線狀態：'+connectionStatus;
-    if(cspBlocks.length)result+='\\n瀏覽器阻擋的 Firebase 連線來源：\\n'+cspBlocks.join('\\n');
+    result+='\nRealtime Database 連線狀態：'+connectionStatus;
+    if(cspBlocks.length)result+='\n瀏覽器阻擋的 Firebase 連線來源：\n'+cspBlocks.join('\n');
     say((result||'測試未完成。')+'\n未讀寫任何客戶資料，正式系統未變動。'+
       (timedOut?'\n請重新整理測試頁後再重試。':''),kind);
     button.disabled=timedOut;
