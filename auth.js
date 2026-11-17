@@ -37,6 +37,35 @@ function loginScreen(message){
 }
 let idleTimer;
 let presenceRef=null, unsubscribePresence=null;
+let unsubscribeMembership=null, membershipRevoking=false;
+async function revokeMembership(message){
+  if(membershipRevoking)return;
+  membershipRevoking=true;
+  // Invalidate the UI immediately. This does not touch contactRecords or other browser data.
+  document.body.style.visibility='hidden';
+  window.cathayMember=null;
+  clearTimeout(idleTimer);
+  if(unsubscribeMembership){unsubscribeMembership();unsubscribeMembership=null;}
+  if(unsubscribeMembership){unsubscribeMembership();unsubscribeMembership=null;}
+  if(unsubscribePresence){unsubscribePresence();unsubscribePresence=null;}
+  try{if(presenceRef)await remove(presenceRef);}catch(_){/* onDisconnect handles offline cleanup */ }
+  presenceRef=null;
+  try{await signOut(auth);}catch(_){}
+  loginScreen(message||'會員授權已失效，請重新登入。');
+  membershipRevoking=false;
+}
+function watchMembership(uid,initialRole){
+  if(unsubscribeMembership)unsubscribeMembership();
+  unsubscribeMembership=onValue(ref(db,'members/'+uid),snapshot=>{
+    if(!auth.currentUser||auth.currentUser.uid!==uid)return;
+    const info=snapshot.val();
+    if(!info||info.active!==true||info.role!==initialRole){
+      void revokeMembership('會員資格或權限已變更，請聯絡管理員後重新登入。');
+    }
+  },()=>{
+    void revokeMembership('無法持續驗證會員權限，已安全登出。');
+  });
+}
 function startPresence(uid){
   // Firebase server disconnect operations must be queued before marking this connection online.
   if(unsubscribePresence)unsubscribePresence();
@@ -118,11 +147,19 @@ window.cathayCloud={
 };
 function run(){
   onAuthStateChanged(auth,async user=>{
-    if(!user){loginScreen();return;}
+    if(!user){
+      if(unsubscribeMembership){unsubscribeMembership();unsubscribeMembership=null;}
+      window.cathayMember=null;
+      loginScreen();
+      return;
+    }
     try{
       const snapshot=await get(ref(db,'members/'+user.uid));
-      if(!snapshot.exists()||snapshot.val().active!==true)throw Error('No membership');
-      window.cathayMember={uid:user.uid,role:snapshot.val().role||'user'};
+      const member=snapshot.exists()?snapshot.val():null;
+      if(!member||member.active!==true||!['user','admin'].includes(member.role))
+        throw Error('No valid membership');
+      window.cathayMember={uid:user.uid,role:member.role};
+      watchMembership(user.uid,member.role);
       completeReady(window.cathayMember);
       const loginMarker='cathay-login-recorded:'+user.uid;
       if(!sessionStorage.getItem(loginMarker)){
