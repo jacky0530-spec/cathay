@@ -18,6 +18,15 @@ const pageFiles=readdirSync('.').filter(f=>f.endsWith('.html'));
 const required=['index.html','client.html','products.html','calc.html','tools.html','system.html','admin.html','sw.js','auth.js','manifest.json','firebase.database.rules.json'];
 for(const name of required)assert(existsSync(name),'missing '+name);
 const product=read('products.html'),client=read('client.html'),auth=read('auth.js'),admin=read('admin.html');
+const vipBackend=read('vip-access/worker/index.mjs');
+const vipManager=read('vip-access/manager.mjs');
+assert(vipBackend.includes("verifyFirebaseJwt(token,env.FIREBASE_PROJECT_ID)"),'Manager operations must verify Firebase tokens server-side');
+assert(vipBackend.includes("env.ADMIN_UIDS.split(','"),'Manager operations must check server-side UID allowlist');
+assert(vipBackend.includes("await requireVip(request,env)"),'VIP sessions must be revalidated by backend');
+assert(vipManager.includes('https://NOT-DEPLOYED.invalid'),'Unconfigured admin frontend must fail closed');
+assert(vipBackend.includes('retry_later'),'VIP guessing protections should be present');
+assert(!vipBackend.includes('localStorage.'),'Backend cannot access browser CRM');
+
 const transition=JSON.parse(read('firebase.transition.rules.json')).rules;
 assert(transition.whitelist['.read']===true && transition.whitelist['.write']===false,'Transitional whitelist must stay compatible');
 assert(transition.users['.write']===true,'Transitional users writes must keep legacy site working until final switch');

@@ -23,6 +23,11 @@ jobs:
         run: node scripts/test-client-merge.mjs
       - name: 驗證 JSON 備份檔校驗工具（純本機／不傳輸）
         run: node scripts/test-backup-verify.mjs
+      - name: 檢查 VIP 管理頁與 Worker JavaScript 語法
+        run: |
+          node --check vip-access/manager.mjs
+          node --check vip-access/worker/index.mjs
+          node --check vip-access/worker/crypto.mjs
       - name: 測試 VIP 授權碼管理後端（不連正式資料庫）
         run: node --test vip-access/test/worker.test.mjs
       - name: 安裝 Firebase 本機模擬器測試套件
