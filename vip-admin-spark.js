@@ -1,6 +1,7 @@
 // Spark-compatible administrator UI. Existing VIP code login remains unchanged.
 // A separate deployment and explicit Firebase rules publish are required.
 import {nextVipStatus} from './vip-admin-spark-toggle.mjs';
+import {normalizeNewVipCode,insertNewVipCodeIfAbsent} from './vip-admin-spark-create.mjs';
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import {initializeAuth,inMemoryPersistence,signInWithEmailAndPassword,signOut}
  from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
@@ -26,6 +27,9 @@ function reportError(error){
  if(error?.message==='authorization_changed')return '授權狀態已被修改，請重新整理清單再試。';
  if(error?.message==='code_missing')return '找不到這組授權碼，請重新整理清單。';
  if(error?.message==='verify_failed')return '資料庫變更後驗證失敗，請重新整理清單確認狀態。';
+ if(error?.message==='duplicate_vip_code')return '這組 VIP 授權碼已存在（包含已停用），請另外輸入一組，不會覆蓋原授權。';
+ if(error?.message==='invalid_vip_code')return '授權碼請填寫 6～32 位英文、數字、底線或連字號。';
+ if(error?.message==='reserved_vip_code')return '這組授權碼為舊版共用碼，不可再分配給新人。';
  if(error?.message==='not_admin')return '登入帳號沒有管理員權限。';
  if(error?.code==='auth/invalid-credential')return '帳號或密碼驗證失敗。';
  return '操作未完成：'+String(error?.code||error?.message||'未知錯誤');
@@ -35,10 +39,6 @@ async function checkAdmin(){
  if(!uid)throw new Error('login_required');
  const m=(await get(ref(db,'members/'+uid))).val();
  if(!m||m.active!==true||m.role!=='admin')throw new Error('not_admin');
-}
-function createRandomCode(){
- const bytes=crypto.getRandomValues(new Uint8Array(18));
- return 'VIP'+Array.from(bytes,x=>x.toString(16).padStart(2,'0')).join('').toUpperCase();
 }
 function clearIssued(){justCreated='';el('issuedValue').textContent='';el('issued').hidden=true;}
 async function refresh(){
@@ -96,21 +96,20 @@ el('createForm').addEventListener('submit',async event=>{
   await checkAdmin();
   const label=el('label').value.trim();
   if(!label||label.length>80)throw new Error('invalid_label');
-  let code='';
-  for(let i=0;i<4;i++){
-   const candidate=createRandomCode();
-   const result=await runTransaction(ref(db,'whitelist/'+candidate),old=>{
-    if(old!==null)return;
-    return true;
-   },{applyLocally:false});
-   if(result.committed){code=candidate;break;}
-  }
-  if(!code)throw new Error('code_generation_failed');
+  const code=normalizeNewVipCode(el('vipCode').value);
+  const codeRef=ref(db,'whitelist/'+code);
+  // Check both enabled and disabled codes; never overwrite/re-enable an existing person.
+  if((await get(codeRef)).exists())throw new Error('duplicate_vip_code');
+  // Firebase transaction retries on concurrent writes to preserve uniqueness.
+  const result=await runTransaction(codeRef,insertNewVipCodeIfAbsent,{applyLocally:false});
+  if(!result.committed)throw new Error('duplicate_vip_code');
+  const confirmed=(await get(codeRef)).val();
+  if(confirmed!==true)throw new Error('verify_failed');
   justCreated=code;el('issuedValue').textContent=code;el('issued').hidden=false;
-  el('label').value='';
+  el('label').value='';el('vipCode').value='';
   try{
    await set(ref(db,'vipProfiles/'+code),label);
-   say('已建立新人授權碼；請透過私密管道交給本人。');
+   say('管理員指定的 VIP 授權碼已建立，請透過私密管道交給本人。');
   }catch(_){say('授權碼已建立，但識別標籤未成功儲存；請先記下畫面上的授權碼。',true);}
   await refresh();
  }catch(error){say(reportError(error),true);}
