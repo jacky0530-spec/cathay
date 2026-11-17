@@ -1,0 +1,30 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "whitelist": {
+      ".read": true,
+      ".write": false,
+      "$code": {
+        ".write": "auth != null && root.child('members').child(auth.uid).child('active').val() === true && root.child('members').child(auth.uid).child('role').val() === 'admin' && $code.matches(/^[A-Z0-9_-]{1,64}$/) && newData.isBoolean()"
+      }
+    },
+    "users": {
+      ".read": false,
+      ".write": true
+    },
+    "members": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": false
+      }
+    },
+    "vipProfiles": {
+      ".read": "auth != null && root.child('members').child(auth.uid).child('active').val() === true && root.child('members').child(auth.uid).child('role').val() === 'admin'",
+      ".write": false,
+      "$code": {
+        ".write": "auth != null && root.child('members').child(auth.uid).child('active').val() === true && root.child('members').child(auth.uid).child('role').val() === 'admin' && $code.matches(/^[A-Z0-9_-]{1,64}$/) && newData.isString() && newData.val().length > 0 && newData.val().length <= 80"
+      }
+    }
+  }
+}
