@@ -21,7 +21,12 @@ try{
  });
  const anon=env.unauthenticatedContext(),admin=env.authenticatedContext('admin');
  const user=env.authenticatedContext('user'),inactive=env.authenticatedContext('inactive');
+ // The exact screenshot baseline must remain intact for all existing paths.
+ assert.equal((await assertSucceeds(get(path(anon,'whitelist')))).val().LEGACY_EXAMPLE,true);
  assert.equal((await assertSucceeds(get(path(anon,'whitelist/LEGACY_EXAMPLE')))).val(),true);
+ await assertSucceeds(get(path(admin,'whitelist')));
+ await assertFails(set(path(user,'whitelist'),{LEGACY_EXAMPLE:false}));
+ await assertFails(set(path(anon,'vipProfiles/SHADOW'),'access denied'));
  await assertFails(set(path(anon,'whitelist/NEW_CODE'),true));
  await assertFails(set(path(user,'whitelist/NEW_CODE'),true));
  await assertFails(set(path(inactive,'whitelist/NEW_CODE'),true));

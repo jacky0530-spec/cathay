@@ -1,5 +1,11 @@
 # 版本更新紀錄
 
+## V1.0 Firebase Spark 現行規則截圖核對 — 2026-11-17（尚未發布）
+- 核對使用者提供的 Firebase Rules 截圖，確認 `whitelist` 匿名讀／禁寫、`users` 匿名寫／禁讀、`members/$uid` 自己可讀／禁寫。
+- 候選版完全保留這三組既有規則；僅新增管理員逐筆修改白名單與私有 `vipProfiles`。
+- 新增截圖對照和 Firebase Rules 模擬工具的具體測試步驟；禁止直接覆蓋未知現行規則。
+- 對 Firebase Rules、GitHub Pages 正式站、客戶 CRM 未做任何發布或資料改動。
+
 ## V1.0 Spark 免費授權後台（開發未部署）— 2026-11-17
 - **最新決定：只用 GitHub Pages＋現有 Firebase Spark 免費方案；不使用 Cloudflare、D1、Blaze 或 Cloud Functions**。
 - 建立獨立 `vip-access/spark/manager.html`／`manager.mjs`，管理員使用 Firebase Authentication 登入、新增隨機 VIP 碼、停用與重新啟用、管理識別標籤。

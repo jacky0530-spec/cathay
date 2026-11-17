@@ -1,7 +1,5 @@
 {
   "rules": {
-    ".read": false,
-    ".write": false,
     "whitelist": {
       ".read": true,
       ".write": false,
