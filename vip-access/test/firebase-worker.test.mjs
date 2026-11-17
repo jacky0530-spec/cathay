@@ -21,6 +21,14 @@ class FakeFirebaseDB {
   }
   async get(path){
     if(records.has(path))return clone(records.get(path));
+    const split=path.lastIndexOf('/');
+    if(split>0){
+      const parent=path.slice(0,split),child=path.slice(split+1);
+      if(records.has(parent)){
+        const value=records.get(parent);
+        if(value&&typeof value==='object')return clone(value[child]);
+      }
+    }
     // Parent-tree paths behave like RTDB.
     const entries=[...records.entries()].filter(([key])=>key.startsWith(path+'/'));
     if(entries.length===0)return null;
@@ -82,7 +90,7 @@ async function call(method,path,{body,token,originHeader=origin,ip='198.51.100.4
  return {status:response.status,body:response.status===204?null:await response.json()};
 }
 test('Firebase RTDB CAS permits first insert but not overwrites',async()=>{
- assert.equal(await createIfAbsent(db,'/vipAccess/test/first',{hello:'one'}),true);
+ assert.equal(await createIfAbsent(db,'/vipAccess/test/first',{hello:'one',version:0}),true);
  assert.equal(await createIfAbsent(db,'/vipAccess/test/first',{hello:'two'}),false);
  assert.equal((await db.get('/vipAccess/test/first')).hello,'one');
  const status=await changeStatus(db,'/vipAccess/test/first',false);assert.equal(status.active,false);assert.equal(status.version,1);
