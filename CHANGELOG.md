@@ -1,5 +1,15 @@
 # 版本更新紀錄
 
+## V1.0 Firebase 授權後端 — 2026-11-17（開發未部署）
+- 改為沿用正式 `cathay-app-5889a` Realtime Database，不新增 Cloudflare D1。
+- 建立獨立 Cloudflare Worker 連接現有 Firebase REST API，以 Google 服務帳號 OAuth2 後端授權。
+- 新授權儲存於 `vipAccess` 私有節點，保留原有 `whitelist`、`users`、`members`。
+- 管理員操作使用 Firebase Authentication JWT 及即時 `members/UID` 權限檢查，可新增、停用、重新啟用、同步既有白名單。
+- ETag 條件式更新防止授權狀態衝突，登入工作階段提供短效與停用後失效機制。
+- 新版管理頁增加「同步原有 VIP 白名單」以及舊站停權尚不生效的警示。
+- 原 D1 Worker 保留為備選，正式 Firebase Rules、GitHub Pages 與客戶本機資料未變更。
+- Firebase Worker 尚未遠端實機部署，新前台 `auth.js` 尚未完成保留 VIP 輸入的整合；PR 不能合併。
+
 ## V1.0 D1 SQL 實測與部署準備 — 2026-11-17（開發草稿）
 - 新增 SQLite 真實 SQL 斷言，測試 Worker 的資料表結構、VIP 授權查詢與停權、IP 限流等。
 - 加入 GitHub Actions 回歸測試，不以純模擬 D1 測試結果冒充正式 Cloudflare 測試。

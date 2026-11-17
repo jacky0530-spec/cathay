@@ -2,9 +2,12 @@
 
 > **草稿分支，尚未正式部署。** 原始程式備份：`backup/pre-v1-20261116`。現有 GitHub Pages 正式站不受此分支修改影響。
 
-## VIP 授權管理後端（2026-11-17 開發草稿）
+## VIP 授權管理後端：Firebase 方案（2026-11-17）
 
-已新增 `vip-access/` 的 Cloudflare Worker + D1 schema、Firebase 管理員 JWT 驗證、產生／匯入授權碼與停用／啟用 API，以及關閉狀態的管理頁 `vip-access/manager.html`。已建立合成資料自動化測試；**沒有部署任何 Worker 或 D1，也沒有替換正式站登入**。後端部署、舊 VIP 碼清點、保留原提示視窗的前端整合及實機驗證都尚未完成。見 `vip-access/README.md`。
+已由使用者選擇沿用現有 Firebase Realtime Database，**不再建立 Cloudflare D1**。開發中的 `vip-access/firebase-worker/` 使用 Cloudflare Worker 作為伺服器端驗證層，資料仍存既有 `cathay-app-5889a`，管理員 Firebase Authentication 與 `members/<UID>` 保留。先前 D1 程式僅留作備選。見 `vip-access/README.md`。
+
+**正式 GitHub Pages 網站沒有修改。** 這個分支 `auth.js` 仍強制全員 Firebase Email/Password，尚未符合保留舊 VIP 登入的需求，不能合併。
+
 
 ## 2026-11-17 新需求：原 VIP 登入不變
 
