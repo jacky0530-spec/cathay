@@ -14,6 +14,9 @@
 
 ## B. 由管理員完成 Firebase 設定
 
+**操作過渡順序與三階段 Rules 請參照 `docs/CUTOVER.md`。** 已實機驗證管理員登入及舊站正常，但尚未確認其餘舊授權碼使用者是否需要轉移。正式切換前不得直接取消 `whitelist`／`users` 舊存取。
+
+
 1. 在原 Firebase 專案的 Authentication 開啟「Email/Password」登入方式，為每人建立唯一帳號。
 2. 記下每個帳號的 Firebase Auth UID。由 Firebase Console 或 Admin SDK 建立 `/members/<UID>`，值為 `{"active":true,"role":"user"}`，有權查詢管理報表者設 `role:"admin"`。
 3. 將 GitHub 的 `firebase.database.rules.json` 用 Firebase Emulator／安全測試專案測試並部署到正式 Realtime Database Rules（**GitHub 內新增規則檔不會自動生效**）。

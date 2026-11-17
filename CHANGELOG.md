@@ -1,5 +1,12 @@
 # 版本更新紀錄
 
+## V1.0 新舊系統相容規則準備 — 2026-11-17（草稿）
+- 使用者已實機確認 Firebase 個人管理員登入、members/UID 讀取以及舊正式網站功能正常。
+- 新增 `firebase.transition.rules.json`，為新舊站並行期間保留既有登入路徑、開放 V1 管理員安全讀取。
+- Firebase Emulator 新增舊白名單／匿名登入紀錄相容性、管理員讀取、停權、跨帳號阻擋測試。
+- 過渡規則**尚未部署**；它保留舊 `whitelist` 公開讀、`users` 公開寫，最終切換時必須撤除。
+- 不執行客戶資料備份、不覆蓋本機 contactRecords、不更動保險試算公式。
+
 ## V1.0 Firebase 動態權限撤銷 — 2026-11-17（草稿）
 - 初次登入僅接受 Firebase active user/admin 角色，登入後持續監測 `members/<UID>`。
 - 帳號停用、角色變更或會員監控權限失效時立即遮蔽並登出；不清除瀏覽器 `contactRecords`。

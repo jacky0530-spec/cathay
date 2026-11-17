@@ -48,6 +48,10 @@
 - Firebase Rules 仍須於正式環境部署與驗證。前端即時登出不能取代資料庫存取控制。
 - **本次依使用者決定不執行客戶資料備份。** 既有 `localStorage.contactRecords` 不清除、不遷移、不自動覆寫；不備份意味著清除網站資料或裝置損壞時可能無法復原。
 
+## 新舊登入切換用過渡規則
+
+新增 `firebase.transition.rules.json`，僅用於模擬器與**短期相容驗收**：保留舊 `whitelist` 公開讀及 `users` 公開寫，同時補上 V1.0 的 admin 與會員授權。這**不能解決**舊系統公開寫入的安全風險；完整版必須待所有需要的舊帳號遷移後改用 `firebase.database.rules.json`。參閱 `docs/CUTOVER.md`。目前未發布過渡規則。
+
 ## 發布門檻
 
 **GitHub 新增 `firebase.database.rules.json` 並不代表已套用到 Firebase。** 必須先按 [Firebase 遷移與驗收手冊](docs/MIGRATION.md) 建立個人帳號／會員權限，並在管理員端實際部署與測試 Rules，確認同一瀏覽器的客戶資料仍可正常讀取後，才能合併此分支。

@@ -18,6 +18,13 @@ const pageFiles=readdirSync('.').filter(f=>f.endsWith('.html'));
 const required=['index.html','client.html','products.html','calc.html','tools.html','system.html','admin.html','sw.js','auth.js','manifest.json','firebase.database.rules.json'];
 for(const name of required)assert(existsSync(name),'missing '+name);
 const product=read('products.html'),client=read('client.html'),auth=read('auth.js'),admin=read('admin.html');
+const transition=JSON.parse(read('firebase.transition.rules.json')).rules;
+assert(transition.whitelist['.read']===true && transition.whitelist['.write']===false,'Transitional whitelist must stay compatible');
+assert(transition.users['.write']===true,'Transitional users writes must keep legacy site working until final switch');
+assert(transition.users['.read']===JSON.parse(read('firebase.database.rules.json')).rules.users['.read'],'Admin report read must mirror final rules');
+assert(transition.members['$uid']['.read']===JSON.parse(read('firebase.database.rules.json')).rules.members['$uid']['.read'],'Membership read differs from production target');
+assert(transition.clientBackups['$uid']['$backupId']['.write']===JSON.parse(read('firebase.database.rules.json')).rules.clientBackups['$uid']['$backupId']['.write'],'Private backup write differs from production target');
+
 // The file-only verifier is deliberately public; its CSP prohibits network exfiltration.
 const protectedPages = pageFiles.filter(p=>!['404.html','backup-verify.html'].includes(p));
 for(const p of protectedPages){
