@@ -1,5 +1,6 @@
 // Spark-compatible administrator UI. Existing VIP code login remains unchanged.
 // A separate deployment and explicit Firebase rules publish are required.
+import {nextVipStatus} from './vip-toggle.mjs';
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import {initializeAuth,inMemoryPersistence,signInWithEmailAndPassword,signOut}
  from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
@@ -22,6 +23,9 @@ function say(message,error=false){el('status').textContent=message;el('status').
 function reportError(error){
  if(error?.code==='PERMISSION_DENIED'||error?.code==='database/permission-denied')
   return '操作遭 Firebase Rules 拒絕。請先確認規則已完成模擬測試及正式發布。';
+ if(error?.message==='authorization_changed')return '授權狀態已被修改，請重新整理清單再試。';
+ if(error?.message==='code_missing')return '找不到這組授權碼，請重新整理清單。';
+ if(error?.message==='verify_failed')return '資料庫變更後驗證失敗，請重新整理清單確認狀態。';
  if(error?.message==='not_admin')return '登入帳號沒有管理員權限。';
  if(error?.code==='auth/invalid-credential')return '帳號或密碼驗證失敗。';
  return '操作未完成：'+String(error?.code||error?.message||'未知錯誤');
@@ -56,12 +60,17 @@ async function refresh(){
    button.disabled=true;
    try{
     await checkAdmin();
-    const update=await runTransaction(ref(db,'whitelist/'+code),old=>{
-     if(typeof old!=='boolean')return;
-     return !enabled;
-    },{applyLocally:false});
+    // Firebase may call the transaction callback with null before this
+    // individual code has been cached. Verify its real value first.
+    const entryRef=ref(db,'whitelist/'+code);
+    const latest=(await get(entryRef)).val();
+    if(typeof latest!=='boolean')throw new Error('code_missing');
+    if(latest!==enabled)throw new Error('authorization_changed');
+    const update=await runTransaction(entryRef,current=>nextVipStatus(current,enabled),{applyLocally:false});
     if(!update.committed)throw new Error('authorization_changed');
-    say('授權狀態已更新。');await refresh();
+    const saved=(await get(entryRef)).val();
+    if(saved!==!enabled)throw new Error('verify_failed');
+    say('授權狀態已更新為'+(saved?'啟用':'停用')+'，已重新確認資料庫。');await refresh();
    }catch(error){say(reportError(error),true);button.disabled=false;}
   });
   actionCell.append(button);row.append(actionCell);tbody.append(row);
