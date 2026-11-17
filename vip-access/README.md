@@ -9,6 +9,10 @@
 - `manager.html`／`manager.mjs`：開發中的管理員介面，採 Firebase 管理員 email/password 登入（僅管理員需要），**預設 API URL 是 invalid，登入與授權按鈕停用**。
 - `test/worker.test.mjs`：只用合成測試資料與模擬 D1，驗證新增、登入、停權、停權後舊工作階段不可再使用、非法管理員拒絕與流量限制。
 
+## Cloudflare D1 建立
+
+請先依照 [Cloudflare 獨立測試環境步驟](SETUP_CLOUDFLARE.md) 建立 **`cathay-vip-auth-staging`** D1。取得資料庫 UUID 後再生成本機 Wrangler 設定並繼續測試，勿直接動到任何既有 D1 或 Firebase。
+
 ## 使用者既定操作不變
 - 既有業務員：同樣的網址、同一個 VIP 授權碼提示。正式前端還沒改成呼叫 Worker，因此目前舊網站會繼續以原方式驗證。
 - 新人：未來由管理員在管理頁新增、由 Worker 產生專屬 VIP 碼並私下傳給本人。

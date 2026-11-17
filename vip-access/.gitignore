@@ -1,0 +1,10 @@
+# Never commit Cloudflare development secrets, D1 local state, or live binding configuration.
+.dev.vars
+.dev.vars.*
+.env
+.env.*
+.wrangler/
+wrangler.toml
+wrangler.json
+wrangler.jsonc
+node_modules/

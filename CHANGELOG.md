@@ -1,5 +1,11 @@
 # 版本更新紀錄
 
+## V1.0 D1 SQL 實測與部署準備 — 2026-11-17（開發草稿）
+- 新增 SQLite 真實 SQL 斷言，測試 Worker 的資料表結構、VIP 授權查詢與停權、IP 限流等。
+- 加入 GitHub Actions 回歸測試，不以純模擬 D1 測試結果冒充正式 Cloudflare 測試。
+- 新增 Cloudflare D1／Worker 獨立測試環境建立說明；尚未建立任何遠端資源。
+- 原有 GitHub Pages、Firebase 會員資料及 VIP 登入不變。
+
 ## V1.0 VIP 管理員授權模組（開發未上線）— 2026-11-17
 - 在 `vip-access/` 建立獨立 Cloudflare Worker + D1 schema 與部署範例；不存 VIP 明文，雜湊用 HMAC 伺服器端秘密。
 - 實作 VIP 驗證、30 分鐘簽章工作階段、登入嘗試限流、帳號停用後即時撤銷已發出的工作階段。
