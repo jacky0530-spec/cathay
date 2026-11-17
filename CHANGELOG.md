@@ -1,5 +1,13 @@
 # 版本更新紀錄
 
+## VIP 管理後台 v0.1.1 停用／啟用修正 — 2026-11-17（已選擇性發布 main）
+- 修正 Firebase Realtime Database `runTransaction()` 在單筆授權沒有本機快取時先得到 `null` 而取消停權／復權。
+- 新流程先讀取白名單最新布林狀態，僅在與畫面狀態一致時交易；交易後再次讀取確認，避免誤顯示成功。
+- 新增回歸測試：初次空快取、停用／復權、畫面狀態過期和非法狀態。
+- `main` 只更新獨立 `vip-admin-spark.html`、`vip-admin-spark.js`、新增 `vip-admin-spark-toggle.mjs`；版本升為 0.1.1，使用新的 JS 查詢版本以避開舊快取。
+- 未修改 Firebase Rules、白名單實際資料、舊 `auth.js`、首頁、客戶資料及保費試算。
+- GitHub Actions 模擬與靜態驗證通過，**但仍需要使用者在真正 Firebase 管理後台測試停用效果**。
+
 ## V1.0 Firebase Spark 現行規則截圖核對 — 2026-11-17（尚未發布）
 - 核對使用者提供的 Firebase Rules 截圖，確認 `whitelist` 匿名讀／禁寫、`users` 匿名寫／禁讀、`members/$uid` 自己可讀／禁寫。
 - 候選版完全保留這三組既有規則；僅新增管理員逐筆修改白名單與私有 `vipProfiles`。
