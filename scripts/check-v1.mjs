@@ -26,7 +26,13 @@ assert(transition.members['$uid']['.read']===JSON.parse(read('firebase.database.
 assert(transition.clientBackups['$uid']['$backupId']['.write']===JSON.parse(read('firebase.database.rules.json')).rules.clientBackups['$uid']['$backupId']['.write'],'Private backup write differs from production target');
 
 // The file-only verifier is deliberately public; its CSP prohibits network exfiltration.
-const protectedPages = pageFiles.filter(p=>!['404.html','backup-verify.html'].includes(p));
+const protectedPages = pageFiles.filter(p=>!['404.html','backup-verify.html'].includes(p) && !/^firebase-login-test(?:-v\\d+)?\\.html$/.test(p));
+// Standalone login diagnostics must never be treated as authenticated website pages.
+for(const p of pageFiles.filter(p=>/^firebase-login-test(?:-v\\d+)?\\.html$/.test(p))){
+  const code=read(p);
+  assert(!code.includes('localStorage.getItem'),p+' must not read customer localStorage');
+  assert(code.includes('Content-Security-Policy'),p+' must have a restrictive CSP');
+}
 for(const p of protectedPages){
   const code=read(p);
   assert(code.includes('auth.js'),p+' lacks Firebase member validation import (chars='+code.length+', utf8First='+code.charCodeAt(0)+', sample='+JSON.stringify(code.slice(160,255))+')');
