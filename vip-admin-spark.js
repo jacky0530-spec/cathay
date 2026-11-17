@@ -48,22 +48,55 @@ function reportError(error){
  if(error?.message==='membership_timeout')return 'Firebase 帳號已驗證，但管理員權限查詢逾時。請檢查資料庫連線及規則。';
  if(error?.message==='list_timeout')return '授權清單讀取逾時；登入身分已通過，請按「重新整理清單」再試。';
  if(error?.message==='login_required')return '登入狀態已失效，請重新登入。';
+ if(error?.message==='db_request_timeout')return '已驗證 Firebase 帳號，但 Realtime Database 讀取逾時，請檢查連線或網路安全軟體。';
+ if(error?.message==='db_network_failed')return '無法連接 Firebase Realtime Database。請檢查網路，或使用瀏覽器無痕模式測試。';
+ if(error?.message==='member_access_denied')return 'Firebase 資料庫拒絕驗證此管理員的會員資料，請確認 members/UID 規則與帳號角色。';
+ if(error?.message?.startsWith('db_http_'))return 'Firebase 資料庫回應錯誤（HTTP '+error.message.slice(8)+'）。';
  if(error?.message==='not_admin')return '登入帳號沒有管理員權限。';
  if(error?.code==='auth/invalid-credential')return '帳號或密碼驗證失敗。';
  return '操作未完成：'+String(error?.code||error?.message||'未知錯誤');
 }
+// Use authenticated REST reads instead of the persistent Realtime Database
+// connection for admin verification and list loading. On some browsers the SDK
+// read can remain pending after Firebase Authentication succeeds.
+// Firebase officially accepts its ID token as the REST "auth" query parameter.
+async function readFirebaseRest(path){
+ if(!auth.currentUser)throw new Error('login_required');
+ const idToken=await auth.currentUser.getIdToken();
+ const ctrl=new AbortController();
+ const timeout=setTimeout(()=>ctrl.abort(),10000);
+ try{
+  const endpoint=new URL(config.databaseURL+'/'+path+'.json');
+  endpoint.searchParams.set('auth',idToken);
+  const response=await fetch(endpoint.toString(),{
+   method:'GET',cache:'no-store',referrerPolicy:'no-referrer',
+   headers:{Accept:'application/json'},signal:ctrl.signal
+  });
+  if(!response.ok){
+   if(response.status===401||response.status===403)throw new Error('member_access_denied');
+   throw new Error('db_http_'+response.status);
+  }
+  return await response.json();
+ }catch(error){
+  if(error?.name==='AbortError')throw new Error('db_request_timeout');
+  if(error?.name==='TypeError')throw new Error('db_network_failed');
+  throw error;
+ }finally{clearTimeout(timeout);}
+}
 async function checkAdmin(){
  const uid=auth.currentUser?.uid;
  if(!uid)throw new Error('login_required');
- const m=(await get(ref(db,'members/'+uid))).val();
+ const m=await readFirebaseRest('members/'+encodeURIComponent(uid));
  if(!m||m.active!==true||m.role!=='admin')throw new Error('not_admin');
 }
 function clearIssued(){justCreated='';el('issuedValue').textContent='';el('issued').hidden=true;}
 async function refresh(){
  await checkAdmin();
- const [whitelist,labels]=await Promise.all([get(ref(db,'whitelist')),get(ref(db,'vipProfiles'))]);
- const entries=Object.entries(whitelist.val()||{}).filter(([code,val])=>codeFormat.test(code)&&typeof val==='boolean');
- const names=labels.val()||{};
+ const [whitelist,labels]=await Promise.all([
+  readFirebaseRest('whitelist'),readFirebaseRest('vipProfiles')
+ ]);
+ const entries=Object.entries(whitelist||{}).filter(([code,val])=>codeFormat.test(code)&&typeof val==='boolean');
+ const names=labels||{};
  const tbody=el('rows');tbody.replaceChildren();
  for(const [code,enabled] of entries.sort((a,b)=>a[0].localeCompare(b[0]))){
   const row=document.createElement('tr');
