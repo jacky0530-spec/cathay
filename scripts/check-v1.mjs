@@ -47,6 +47,12 @@ assert(!product.includes('href="prod_overflow_love.html" class="highlight-pink"'
 assert(!product.includes('class="prod-btn invest-btn"'));
 assert(!/VIP888|CATHAY2025|admin888/.test(auth+admin),'shared password in active code');
 assert(auth.includes('signInWithEmailAndPassword')&&admin.includes("member.role!=='admin'"));
+assert(auth.includes("watchMembership(user.uid,member.role)"),'Firebase membership must be monitored after login');
+assert(auth.includes("info.active!==true||info.role!==initialRole"),'Disabled or changed member must lose access');
+assert(auth.includes("void revokeMembership("),'Permission changes must revoke active sessions');
+assert(auth.includes("window.cathayMember=null"),'Revoked accounts must lose local member state');
+assert(!auth.includes("localStorage.clear("),'Authentication must never clear customer storage');
+
 assert(auth.includes("onDisconnect(session).remove()"),'Presence must queue disconnect cleanup');
 assert(auth.includes("cathay-login-recorded:"),'Login timestamp must not reset on each page navigation');
 assert(admin.includes("connectionCount > 0"),'Admin status must use live connections rather than legacy session strings');
