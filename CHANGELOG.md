@@ -1,5 +1,13 @@
 # 版本更新紀錄
 
+## VIP 管理後台 v0.1.5 — 修正管理員權限讀取卡住 — 2026-11-18（main 已更新）
+- 使用者提供 v0.1.4 截圖，明確停在「步驟 2／3：帳號驗證成功，正在確認管理員權限」，故 Firebase Authentication 本身已成功，卡住的是 Realtime Database `members/<UID>` 讀取。
+- 新增 `readFirebaseRest()`，使用 Firebase Authentication ID Token 以官方 REST API 的 `auth` 參數讀取 `members/<UID>`、`whitelist`、`vipProfiles`，繞開可能卡住的 Realtime Database SDK 長連線。讀取設 10 秒逾時與錯誤提示、`no-store`、`no-referrer`。
+- 確認帳號權限仍由 Firebase Rules 限制，沒有前端管理員硬編碼；VIP 授權寫入／停用保留已通過的 SDK 交易流程。
+- GitHub Actions 執行 #44202017298（靜態回歸、REST 流程檢查、Firebase Emulator）成功。只更新正式 `main` 的 `vip-admin-spark.js` 和 `vip-admin-spark.html`，提交 `f98e8a3a15b8c59b625538a302c7841c6333a4bb`。
+- Firebase Spark 免費方案不變；**未修改** Firebase Rules、實際 VIP 白名單、其他業務員原登入 `auth.js`、客戶本機資料或保費試算。
+- **仍需使用者瀏覽器實測。** 靜態與模擬器通過不等於已證實實際管理員登入完成；如仍失敗，頁面將提供精確錯誤。
+
 ## VIP 管理後台 v0.1.4 — 登入狀態與清單載入分離 — 2026-11-18
 - 使用者提供 v0.1.3 畫面，顯示登入畫面未前進且沒有實際錯誤訊息；無法單憑截圖判斷密碼是否已輸入、Firebase 認證是否成功。
 - 改為登入步驟即時顯示：「驗證 Firebase 管理員帳號」→「確認管理員權限」→「載入 VIP 清單」，並提示驗證／資料庫查詢逾時。
