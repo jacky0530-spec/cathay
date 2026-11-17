@@ -7,7 +7,7 @@ const env=await initializeTestEnvironment({
  database:{host:'127.0.0.1',port:9000,
  rules:readFileSync('firebase.spark-admin.rules.candidate.json','utf8')}
 });
-const path=(ctx,key)=>ref(ctx.database(),key);
+const path=(ctx,key)=>key?ref(ctx.database(),key):ref(ctx.database());
 try{
  await env.clearDatabase();
  await env.withSecurityRulesDisabled(async seed=>{
