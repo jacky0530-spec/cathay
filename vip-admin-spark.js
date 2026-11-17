@@ -1,7 +1,17 @@
 // Spark-compatible administrator UI. Existing VIP code login remains unchanged.
 // A separate deployment and explicit Firebase rules publish are required.
 import {nextVipStatus} from './vip-admin-spark-toggle.mjs';
-import {normalizeNewVipCode,insertNewVipCodeIfAbsent} from './vip-admin-spark-create.mjs';
+// Manual VIP code utilities are embedded so login never depends on loading another module.
+const CODE_FORMAT=/^[A-Z0-9_-]{6,32}$/;
+const RESERVED=new Set(['VIP888','CATHAY2025']);
+function normalizeNewVipCode(value){
+ if(typeof value!=='string')throw new Error('invalid_vip_code');
+ const code=value.trim().toUpperCase();
+ if(!CODE_FORMAT.test(code))throw new Error('invalid_vip_code');
+ if(RESERVED.has(code))throw new Error('reserved_vip_code');
+ return code;
+}
+function insertNewVipCodeIfAbsent(current){return current===null?true:undefined;}
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import {initializeAuth,inMemoryPersistence,signInWithEmailAndPassword,signOut}
  from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
@@ -30,6 +40,11 @@ function reportError(error){
  if(error?.message==='duplicate_vip_code')return '這組 VIP 授權碼已存在（包含已停用），請另外輸入一組，不會覆蓋原授權。';
  if(error?.message==='invalid_vip_code')return '授權碼請填寫 6～32 位英文、數字、底線或連字號。';
  if(error?.message==='reserved_vip_code')return '這組授權碼為舊版共用碼，不可再分配給新人。';
+ if(error?.code==='auth/network-request-failed')return '無法連接 Firebase Authentication，請確認網路後重新整理頁面。';
+ if(error?.code==='auth/too-many-requests')return 'Firebase 暫時限制登入次數，請稍後再試。';
+ if(error?.code==='auth/unauthorized-domain')return '目前網址尚未列入 Firebase Authentication 授權網域。';
+ if(error?.code==='auth/user-disabled')return 'Firebase 管理員帳號已停用，請檢查 Authentication 設定。';
+ if(error?.message==='login_required')return '登入狀態已失效，請重新登入。';
  if(error?.message==='not_admin')return '登入帳號沒有管理員權限。';
  if(error?.code==='auth/invalid-credential')return '帳號或密碼驗證失敗。';
  return '操作未完成：'+String(error?.code||error?.message||'未知錯誤');
