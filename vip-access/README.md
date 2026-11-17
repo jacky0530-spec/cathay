@@ -1,22 +1,18 @@
-# Cathay VIP 管理：Firebase 原生後端，尚未部署
+# Cathay VIP 管理後台：Firebase Spark 免費方案（開發草稿）
 
-## 目前選定
-- 網站：原 GitHub Pages `https://jacky0530-spec.github.io/cathay/`。
-- 同事登入：**原 VIP 碼、原輸入提示**，不要求每人註冊電子郵件。
-- 資料：只用既有 `cathay-app-5889a` Firebase Authentication＋Realtime Database。
-- 伺服器：**Cloud Functions for Firebase**（Firebase 原生產品）；**不用 Cloudflare、Worker 或 D1**。
-- 管理員：沿用已測試成功的 Firebase Authentication 登入；由後端確認 `members/<UID>` 已啟用且為 admin。
-- 舊資料：`whitelist`、`users`、`members` 都不修改，客戶資料 `localStorage.contactRecords` 不清理、不匯出、不搬移。
+**使用者決定：不升級 Blaze、不使用 Cloudflare、Cloud Functions 或 D1。**
 
-## 程式碼
-- `firebase-native/functions/core.js`：VIP 授權碼格式與 HMAC，簽發 UID、建立管理紀錄的純函式。
-- `firebase-native/functions/index.js`：Firebase callable Functions：
-  `vipAuthenticate`、`vipCheck`、`vipCreate`、`vipList`、`vipSetActive`、`vipSyncLegacy`。
-- `firebase-native/functions/core.test.js`：合成測試，無正式 Firebase 存取。
-- `firebase-native/firebase.json`：只列 Functions，**不包含正式 Realtime Database Rules 部署**。
-- [Firebase 原生部署門檻](firebase-native/README.md)
+## 功能
+- `spark/manager.html` 與 `spark/manager.mjs`：管理員登入、隨機新增 VIP 授權碼、查看白名單、個別停用／啟用，識別名稱另外存放在私有的 `vipProfiles`。
+- `../firebase.spark-admin.rules.candidate.json`：保留目前已知舊站 `whitelist` 匿名讀、`users` 匿名寫、`members` 會員讀取的候選 Rules，新增 admin 才能寫入 VIP 布林值與名稱。
+- `../scripts/test-spark-rules.mjs`：Firebase Emulator 的權限整合測試，不接觸真實資料庫。
 
-## 重要限制
-Firebase Cloud Functions 需要專案處於 **Blaze 計費方案**。Blaze 是用量計費，有免費額度但不保證零費用；使用者目前只要求停用 Cloudflare，**尚未同意變更 Firebase 計費**。因此目前沒有部署、沒有變更 Firebase 設定、沒有使用任何真實授權碼。
+## 部署狀態
+- 只在 `feature/v1-structure-security` PR 草稿；正式 GitHub Pages、Firebase Rules 均**未**修改。
+- 須先核對實際 Firebase Rules、模擬測試及 Playground，再有意識地發布合併後的管理權限規則。
+- 因整個 V1.0 草稿 `auth.js` 還會改掉業務員舊登入，**不可合併整個 PR**，應待此功能單獨驗收後才挑選獨立管理頁進正式站。
 
-現有 V1.0 草稿 `auth.js` 仍需重寫成「VIP 輸入→callable→Custom Token」，並測試新 Rules 真正限制停權身分。完成前不得合併草稿 PR。
+## 重要風險
+公開讀取的 Firebase `whitelist` 使所有 VIP 碼不具保密性；舊 `auth.js` 已有公開的通用碼可跳過白名單，不能透過本管理頁停用。原 `users` 匿名寫入仍不安全。**Spark 管理頁只解決授權操作的便利性與授權修改權限，不能聲稱完成真正的伺服器端身分驗證。**
+
+原有 `localStorage.contactRecords`、保費試算、商品頁均保持原狀。使用者已決定不執行客戶資料備份。

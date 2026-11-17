@@ -1,5 +1,7 @@
 # V1.0 Firebase 安全切換與客戶資料保護
 
+> **最新決策（2026-11-17）**：使用 Firebase **Spark 免費方案**，保留所有業務員原 VIP 授權碼與輸入畫面，不要求其他人建立 Firebase Email 帳號。以下原 V1.0 全員 Email 遷移程序**已暫停、不能照做**。請以 [Spark 上線清單](CUTOVER.md) 為準；禁止直接發布舊版 `firebase.database.rules.json`。
+
 > **此分支尚未上線。請勿在 Firebase Auth 使用者與 Realtime Database Rules 完成前合併到正式 main。**
 
 ## A. 原有客戶資料保留（本次選擇不進行備份）

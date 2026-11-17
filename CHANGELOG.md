@@ -1,5 +1,13 @@
 # 版本更新紀錄
 
+## V1.0 Spark 免費授權後台（開發未部署）— 2026-11-17
+- **最新決定：只用 GitHub Pages＋現有 Firebase Spark 免費方案；不使用 Cloudflare、D1、Blaze 或 Cloud Functions**。
+- 建立獨立 `vip-access/spark/manager.html`／`manager.mjs`，管理員使用 Firebase Authentication 登入、新增隨機 VIP 碼、停用與重新啟用、管理識別標籤。
+- 新增 `firebase.spark-admin.rules.candidate.json`；僅管理員可以修改單筆 `whitelist` 布林值和私有 `vipProfiles`，舊匿名白名單讀取與登入紀錄寫入仍保留。
+- 新增 Firebase Emulator 權限測試，覆蓋匿名讀寫、一般帳號、已停權管理員、管理員新增／停用、私有標籤與禁止整份白名單覆寫。
+- 刪除先前不適用 Spark 的 Cloud Functions 原型與部署檔；保留 Git 版本記錄供歷史參考。
+- 正式網站與 Firebase Rules 尚未發布任何修改；公開白名單、硬編碼共用通行碼與舊匿名寫入均尚未消除，不能宣稱已完成全面安全改善。
+
 ## V1.0 不使用 Cloudflare：改為 Firebase 原生服務 — 2026-11-17（草稿）
 - 使用者明確要求完全不要 Cloudflare；**停止 Cloudflare Worker、D1、Wrangler 部署流程**，已由開發分支移除相關使用中的檔案。
 - 採 GitHub Pages＋現有 Firebase Authentication、Realtime Database＋Cloud Functions for Firebase；保留 VIP 授權碼及同事原本登入步驟。

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "test:static": "node scripts/check-v1.mjs",
-    "test:rules": "firebase emulators:exec --only database --project demo-cathay-v1 \"node scripts/test-database-rules.mjs && node scripts/test-transition-rules.mjs\""
+    "test:rules": "firebase emulators:exec --only database --project demo-cathay-v1 \"node scripts/test-database-rules.mjs && node scripts/test-transition-rules.mjs && node scripts/test-spark-rules.mjs\""
   },
   "devDependencies": {
     "firebase": "13.3.0",

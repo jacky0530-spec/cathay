@@ -2,11 +2,15 @@
 
 > **草稿分支，尚未正式部署。** 原始程式備份：`backup/pre-v1-20261116`。現有 GitHub Pages 正式站不受此分支修改影響。
 
-## VIP 授權管理：僅使用 GitHub Pages＋Firebase（2026-11-17）
+## V1.0 Spark 免費方案（2026-11-17）
 
-**使用者明確要求完全不使用 Cloudflare，先前 Cloudflare Worker、D1、Wrangler 等部署方案已停用。**
+**已依使用者確認採用 Firebase Spark 免費方案，不使用 Cloudflare、Blaze 或 Cloud Functions。**
 
-V1.0 新方案：保留 GitHub Pages 正式網址與原有 VIP 授權碼輸入步驟，以 Firebase **Cloud Functions for Firebase（原生）** 驗證授權碼並讓管理員新增／停用人員。仍使用現有 Firebase Authentication 及 Realtime Database `cathay-app-5889a`；不建立第二套資料庫。Firebase Cloud Functions 必須使用 Blaze 計費方案，**目前僅開發分支原型，沒有升級計費、部署、修改資料庫 Rules 或切換正式網站**。請先檢查計費接受度，再決定是否進入實際部署。見 [Firebase 原生設計與部署門檻](vip-access/README.md)。
+本版不改 GitHub Pages 正式站的 VIP 授權碼輸入方式。另以 Firebase Authentication 管理員帳號進入 `vip-access/spark/manager.html`，使用 Realtime Database Security Rules 控制誰可在 `whitelist/<code>` 新增／停用／啟用授權，並在僅管理員可讀的 `vipProfiles` 存放識別標籤。需先通過 Firebase 模擬器測試並核對現行 Rules 才能發布。詳見 [Spark 管理員方案](vip-access/README.md)。
+
+**安全限制**：維持舊版登入必須保留 `whitelist` 公開讀取，且正式站 `auth.js` 仍有公開的共用通行碼、僅依瀏覽器本機會話控制頁面，這不是完整的伺服器端安全驗證；不能宣稱停用所有共用碼或保護公開靜態資源。原 `users` 匿名寫入也仍是安全風險。這些限制需要後續另行改善。
+
+**目前只修改開發分支**；正式 `main`、Firebase Rules、其他業務員登入、客戶本機資料與保費試算沒有變動。V1.0 原本的強制 Firebase Email/Password 版本不符合既有 VIP 要求，不能直接合併。
 
 ## 2026-11-17 新需求：原 VIP 登入不變
 

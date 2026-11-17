@@ -1,20 +1,25 @@
-# Cathay V1.0：保留既有 VIP 登入的安全切換清單
+# V1.0 Spark 免費方案：授權管理安全切換
 
-**現行正式站繼續使用原 VIP 登入，其他同事正常。現在不能合併 V1.0，也不能直接發布最終 Firebase Rules。**
+**目前正式 GitHub Pages 網站與 Firebase Rules 均未變動。** 其他業務員仍用原 VIP 授權碼登入。
 
-## 方案
-- GitHub Pages 原網址 + 既有 Firebase Authentication、Realtime Database。
-- Firebase Cloud Functions 驗證 VIP 碼並核發 Custom Token；使用者畫面與授權碼不變。
-- Firebase 管理員後台將實作新增、停用、重啟、同步舊授權碼。完全不使用 Cloudflare 或 D1。
-- 此方案在正式部署前需 Blaze 計費方案，現階段未經核准不改計費。
+## 改動範圍
+- 新增獨立 Spark 管理員頁（Firebase Authentication Email/Password 僅管理員需要）。
+- 使用 Realtime Database Security Rules 在 `whitelist/<code>` 允許管理員新增／停權／復權，但原匿名讀取仍需保留供舊站使用。
+- 新增 `vipProfiles/<code>` 私有識別標籤，不搬動原會員、登入紀錄與客戶本機資料。
+- **不使用 Cloud Functions、Cloudflare、D1 或 Blaze。**
 
-## 安全切換順序
-1. 先在開發分支完成 Functions／管理台／VIP 登入整合與 Emulator 測試；不更動正式網站。
-2. 原 `whitelist`、`users`、`members` 保留；逐一核對仍需使用的舊 VIP 碼。已公開共用通行碼要有安全更換計畫。
-3. 經使用者明確同意 Blaze 計費與部署後，才設定 Firebase Functions 所需的伺服器端 Secret 並測試。
-4. 在 Firebase Emulator 驗證新 `vipAccess` 只有 Admin SDK 寫入且一般帳號不能讀取私有內容，停用帳號立即失去受保護的資料權限。
-5. 維持原網站網址及 VIP 輸入方式；完成新版 `auth.js` 和 `signInWithCustomToken`，測試多位舊用戶、新人、停權、復權、手機與 PWA。
-6. 所有必要使用者已驗收後再同步發布新版前端與保護性 Rules，撤除匿名讀 `whitelist`、匿名寫 `users`。
-7. `localStorage.contactRecords` 不清除、不搬移、不覆寫；依使用者決定不執行備份。注意未備份的瀏覽器資料遺失風險。
+## 安全切換前檢查
+1. 先執行 `npm run test:rules`（含 Spark 候選規則 Emulator）。
+2. 由管理員核對 Firebase Console **實際正在生效的 Rules**；`firebase.spark-admin.rules.candidate.json` 只是以已知過渡規則為基礎的候選版，不能整份直接覆蓋未知新設定。
+3. 只合併需要的 `whitelist/$code` 管理員布林值寫入授權及 `vipProfiles` 管理員讀寫規則；不要更動原 `users`、`members` 或其他已存在節點。
+4. 在 Firebase Console Rules Playground 先確認未登入／一般 user 不可修改、admin 可新增及停用；符合後再由有權限的管理員決定發布。
+5. 等候選規則正式發布並驗證後，才能從開發分支挑選獨立管理頁部署於既有 GitHub Pages；不合併整個 V1.0 PR，因為原 `auth.js` 還會強制全員電子郵件登入。
+6. 實測既有 VIP 登入／新人登入／停用復權，以及原保費試算、手機 PWA 與 CRM 資料仍正常。
 
-**注意：** `firebase.database.rules.json` 目前是先前全員 Firebase Email 登入的草稿規則，尚不符合此 VIP 架構；不能直接套用。原先 D1／Worker 部署檔已停止使用。
+## 已知且尚未解決的安全問題
+- `whitelist` 為公開讀取，VIP 碼不保密。
+- 舊 `auth.js` 內的共用通行碼可繞過白名單停權。
+- `users` 仍有匿名寫入，原網站登入會話放在客戶端；GitHub Pages 靜態內容本身為公開。
+- 本方案改善管理效率與白名單個別修改權限，但**不能當作安全驗證後端的替代品**。
+
+**客戶 CRM `localStorage.contactRecords` 不清理、不搬移、不備份。**
