@@ -42,7 +42,7 @@ if(pageFiles.includes('vip-admin-spark.html')) {
   const page=read('vip-admin-spark.html');
   const code=read('vip-admin-spark.js');
   assert(page.includes('vip-admin-spark.js'),'Standalone Spark admin must import its own authentication script');
-  assert(code.includes('signInWithEmailAndPassword') && code.includes("members/'+uid"),'Standalone Spark admin must authenticate and verify administrator membership');
+  assert(code.includes('signInWithEmailAndPassword') && code.includes("readFirebaseRest('members/'+encodeURIComponent(uid))"),'Standalone Spark admin must authenticate and verify administrator membership');
   assert(!code.includes('localStorage.clear('),'Spark admin must never clear customer localStorage');
 }
 // Standalone login diagnostics must never be treated as authenticated website pages.
