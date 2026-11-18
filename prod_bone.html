@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <title>新金骨力(XJ2) 內部試算</title>
+    <title>新金骨力(XJ2) 精細試算｜響應式理賠比較</title>
     <script type="module" src="auth.js"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -37,6 +37,37 @@
         /* 動畫 */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .card-anim { animation: fadeIn 0.3s ease-out forwards; }
+
+        /* XJ2 v1.1：手機上下排列；平板及電腦骨骼圖在左、理賠清單在右 */
+        .xj2-app{min-height:100dvh;width:100%;overflow:visible}
+        .xj2-main{width:100%;min-width:0}
+        .xj2-workspace{width:min(100%,1320px);margin:0 auto;padding:20px 18px 145px;display:grid;grid-template-columns:minmax(0,1fr);gap:20px;align-items:start}
+        .xj2-anatomy-pane{position:relative;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start}
+        .xj2-results-pane{min-width:0;width:100%;display:flex;flex-direction:column;gap:14px}
+        .xj2-result-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+        .xj2-results-list{min-width:0;width:100%}
+        .xj2-results-list>div{min-width:0}
+        .xj2-reset{position:fixed;left:0;right:0;bottom:calc(80px + env(safe-area-inset-bottom));display:flex;justify-content:center;z-index:30;pointer-events:none}
+        @media(min-width:768px){
+          .xj2-workspace{grid-template-columns:minmax(305px,.8fr) minmax(0,1.2fr);gap:24px}
+          .xj2-anatomy-pane{position:sticky;top:18px;background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:18px 12px;box-shadow:0 5px 18px rgba(15,23,42,.05)}
+          .xj2-reset{bottom:105px}
+        }
+        @media(min-width:1024px){
+          .xj2-workspace{grid-template-columns:minmax(340px,.83fr) minmax(0,1.35fr);gap:28px}
+          .xj2-anatomy-pane{top:105px}
+          .xj2-reset{bottom:20px}
+        }
+        @media(min-width:1200px){
+          .xj2-results-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
+          .xj2-results-list>div{height:100%}
+          .xj2-results-list>:not([hidden])~:not([hidden]){margin-top:0}
+        }
+        @media(max-width:767px){
+          .xj2-workspace{padding:16px 13px 145px;gap:13px}
+          .xj2-results-pane{max-width:480px;margin-inline:auto}
+        }
+        @media(prefers-reduced-motion:reduce){.card-anim{animation:none}}
     </style>
 </head>
 <body class="bg-slate-100 text-slate-800">
@@ -83,16 +114,18 @@
     function App() {
         const [insuranceAmount, setInsuranceAmount] = useState(1000000); // 預設 100 萬
         const [selectedItems, setSelectedItems] = useState([]);
-        const scrollRef = useRef(null);
+        const resultListRef = useRef(null);
 
         const toggleItem = (item) => {
             setSelectedItems(prev => {
                 const exists = prev.find(i => i.id === item.id);
                 if (exists) return prev.filter(i => i.id !== item.id);
                 
-                // 新增項目時自動捲動到底部
+                // 手機新增後捲到最新卡片，平板及電腦保持人體圖位置。
                 setTimeout(() => {
-                    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+                    if (window.matchMedia('(max-width: 767px)').matches) {
+                        resultListRef.current?.lastElementChild?.scrollIntoView({behavior:'smooth',block:'nearest'});
+                    }
                 }, 100);
                 return [...prev, item];
             });
@@ -101,7 +134,7 @@
         const formatCurrency = (val) => new Intl.NumberFormat('zh-TW').format(Math.round(val));
 
         return (
-            <div className="h-screen flex flex-col bg-slate-50 overflow-hidden">
+            <div className="xj2-app flex flex-col bg-slate-50">
                 {/* Header */}
                 <div className="bg-white shadow-sm p-3 z-10 text-center">
                     <h1 className="text-lg font-bold text-teal-700">新金骨力(XJ2) 精細試算</h1>
@@ -118,11 +151,11 @@
                 </div>
 
                 {/* Main Content */}
-                <div className="flex-1 overflow-y-auto relative" ref={scrollRef}>
-                    <div className="p-4 flex flex-col items-center pb-32">
+                <main className="xj2-main flex-1 relative">
+                    <div className="xj2-workspace">
                         
                         {/* 骨骼圖互動區 */}
-                        <div className="relative mb-6">
+                        <section className="xj2-anatomy-pane" aria-label="互動人體骨骼圖">
                             <div className="absolute top-0 right-0 bg-white/80 p-2 rounded text-xs text-gray-400 shadow backdrop-blur-sm pointer-events-none">
                                 <div><span className="inline-block w-2 h-2 bg-green-400 rounded-full mr-1"></span>頭部</div>
                                 <div><span className="inline-block w-2 h-2 bg-red-400 rounded-full mr-1"></span>軀幹</div>
@@ -146,13 +179,18 @@
                                 <text x="220" y="530" fontSize="10" fill="#94a3b8">趾</text>
                             </svg>
                             <p className="text-center text-xs text-gray-400 mt-2">點擊細部骨骼加入清單</p>
-                        </div>
+                        </section>
 
-                        {/* 結果列表 */}
-                        <div className="w-full max-w-md space-y-3">
+                        {/* 已選理賠項目：平板與電腦置右，手機置下 */}
+                        <section className="xj2-results-pane" aria-label="已選理賠項目">
+                            <div className="xj2-result-heading">
+                                <h2 className="font-bold text-teal-800 text-lg">已選理賠項目</h2>
+                                <span className="text-xs text-slate-500">{selectedItems.length} 個部位</span>
+                            </div>
+                            <div className="xj2-results-list space-y-3" ref={resultListRef}>
                             {selectedItems.length === 0 ? (
                                 <div className="text-center p-6 border-2 border-dashed border-gray-200 rounded-xl text-gray-400">
-                                    尚未選擇部位<br/>請點擊上方人體圖
+                                    尚未選擇部位<br/>請點選左側人體圖（手機為上方）
                                 </div>
                             ) : (
                                 selectedItems.map((item) => (
@@ -200,20 +238,21 @@
                                     </div>
                                 ))
                             )}
-                        </div>
+                            </div>
 
-                        {/* 警語區塊 (新增) */}
-                        <div className="w-full text-center mt-8 px-4">
-                            <p className="text-red-500 font-bold text-sm bg-red-50 border border-red-200 rounded p-2">
-                                ※ 本試算畫面僅供內部教育訓練，實際理賠數值 請按照保單條款為準。
-                            </p>
-                        </div>
+                            {/* 警語區塊 */}
+                            <div className="w-full text-center mt-4">
+                                <p className="text-red-500 font-bold text-sm bg-red-50 border border-red-200 rounded p-2">
+                                    ※ 本試算畫面僅供內部教育訓練，實際理賠數值 請按照保單條款為準。
+                                </p>
+                            </div>
+                        </section>
                     </div>
-                </div>
+                </main>
 
                 {/* 底部重置按鈕 */}
                 {selectedItems.length > 0 && (
-                    <div className="absolute bottom-5 left-0 right-0 flex justify-center z-20 pointer-events-none">
+                    <div className="xj2-reset">
                         <button 
                             onClick={() => setSelectedItems([])}
                             className="pointer-events-auto bg-slate-800 text-white px-6 py-3 rounded-full shadow-lg font-bold hover:bg-slate-700 active:scale-95 transition-all flex items-center gap-2"
