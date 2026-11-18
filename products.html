@@ -1,206 +1,80 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>精選商品</title>
-    
-    <link rel="manifest" href="manifest.json">
-    <script type="module" src="auth.js"></script>
-
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 20px;
-            padding-bottom: 90px; /* 預留底部選單空間 */
-        }
-
-        /* 分類標題樣式 */
-        .section-title {
-            color: #333;
-            margin: 25px 0 15px 0;
-            font-size: 20px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            border-left: 4px solid #00A651; /* 綠色標記 */
-            padding-left: 10px;
-        }
-        .section-title:first-child { margin-top: 0; }
-
-        /* 格狀佈局 (兩欄) */
-        .grid-menu {
-            display: grid;
-            grid-template-columns: 1fr 1fr; 
-            gap: 12px;
-        }
-
-        /* 一般按鈕樣式 (小方塊) */
-        .prod-btn {
-            background: white;
-            border-radius: 12px;
-            padding: 15px 10px;
-            text-align: center;
-            text-decoration: none;
-            color: #444;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            transition: transform 0.1s;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 90px;
-        }
-        .prod-btn:active { transform: scale(0.96); background-color: #fafafa; }
-        
-        .icon { font-size: 28px; margin-bottom: 8px; }
-        .name { font-size: 15px; font-weight: bold; line-height: 1.3; }
-
-        /* 🔥 粉色醒目按鈕 (橫跨兩欄) */
-        .highlight-pink {
-            grid-column: span 2; /* 橫跨兩欄 */
-            background: linear-gradient(135deg, #FFF0F5 0%, #FFE4E1 100%); /* 淺粉紅漸層 */
-            border: 1px solid #FFB6C1;
-            color: #C2185B; /* 深粉紅文字 */
-            height: auto;
-            padding: 15px 20px;
-            display: flex;
-            flex-direction: row; /* 橫向排列 */
-            align-items: center;
-            justify-content: space-between; /* 左右撐開 */
-            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-            text-decoration: none;
-        }
-        
-        .highlight-pink .icon-circle { 
-            background: rgba(255,255,255,0.6);
-            color: #E91E63;
-            width: 45px; height: 45px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            margin-right: 15px;
-            font-size: 24px;
-        }
-        .highlight-pink .name { font-size: 18px; text-align: left; margin-bottom: 0; color: #C2185B; }
-        .highlight-pink .sub-text { font-size: 12px; opacity: 0.8; font-weight: normal; margin-top: 2px; color: #D81B60; }
-        .highlight-pink .arrow { font-size: 20px; font-weight: bold; color: #E91E63; }
-
-        /* 標籤 (熱銷/推薦) */
-        .badge {
-            background: #FF5252; color: white;
-            font-size: 10px; padding: 2px 8px; border-radius: 10px;
-            margin-left: 8px; vertical-align: middle;
-        }
-
-        /* 投資型按鈕微調 */
-        .invest-btn .icon { filter: hue-rotate(45deg); }
-
-    @media (min-width: 900px) { .comparison-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
-</style>
-<style id="v1-stopped">
-.stop-section {margin:24px 0 16px;background:#ebedef;border-radius:14px;padding:8px 10px 14px;}
-.stop-intro {font-size:13px;color:#555;margin:4px 10px 12px;line-height:1.6;}
-.stop-item {display:flex;align-items:center;gap:12px;margin:7px 0;padding:10px 14px;border-radius:10px;background:#fafafa;border:1px solid #d2d5d9;color:#333;text-decoration:none;min-height:46px;font-weight:700;}
-.stop-item:hover,.stop-item:focus-visible {outline:2px solid #00a651;}
-.stop-icon {font-size:24px;min-width:36px;text-align:center;}
-.stop-badge {font-size:12px;background:#da3a45;color:white;border-radius:14px;padding:3px 9px;display:inline-block;margin-left:7px;}
-.stop-arrow {margin-left:auto;font-size:24px;color:#888;}
-.stop-foot {color:#6d7277;font-size:12px;text-align:center;padding:8px;}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#087b48">
+  <title>商品試算與保障工具｜國泰雲端學習站</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="hub-ui.css">
+  <script type="module" src="auth.js"></script>
 </head>
-<body>
-
-    <div class="section-title">🏥 醫療保障系列</div>
-    <div class="grid-menu">
-        
-        
-
-        <a href="prod_lifetime_medical.html" class="highlight-pink">
-            <div style="display:flex; align-items:center;">
-                <div class="icon-circle">🧩</div>
-                <div>
-                    <div class="name">終身醫療自由配 <span class="badge" style="background:#4CAF50">自選</span></div>
-                    <div class="sub-text">可自由選擇終身住院和手術搭配</div>
-                </div>
-            </div>
-            <div class="arrow">➜</div>
-        </a>
-
-        <a href="prod_good_health.html" class="highlight-pink">
-            <div style="display:flex; align-items:center;">
-                <div class="icon-circle">💎</div>
-                <div>
-                    <div class="name">豪好康愛 <span class="badge" style="background:#2196F3">強檔</span></div>
-                    <div class="sub-text">專為男女分別設計防癌商品</div>
-                </div>
-            </div>
-            <div class="arrow">➜</div>
-        </a>
-
-        <a href="prod_cancer_protect.html" class="highlight-pink">
-            <div style="display:flex; align-items:center;">
-                <div class="icon-circle">🛡️</div>
-                <div>
-                    <div class="name">防癌保障 <span class="badge" style="background:#9C27B0">推薦</span></div>
-                    <div class="sub-text">防癌保障最全面</div>
-                </div>
-            </div>
-            <div class="arrow">➜</div>
-        </a>
-
-        </div>
-
-
-
-<div class="grid-menu comparison-grid">
-        <a href="prod_accident.html" class="prod-btn">
-            <div class="icon">🚑</div>
-            <div class="name">意外險<br>比較</div>
-        </a>
-
-        <a href="prod_rider.html" class="prod-btn">
-            <div class="icon">➕</div>
-            <div class="name">醫療附約<br>比較</div>
-        </a>
-
-        <a href="prod_surgery.html" class="prod-btn">
-            <div class="icon">🔪</div>
-            <div class="name">手術險<br>比較</div>
-        </a>
-
-        <a href="prod_bone.html" class="prod-btn">
-            <div class="icon">🦴</div>
-            <div class="name">金骨力<br>理賠</div>
-        </a>
+<body class="hub-page">
+  <main class="hub-shell">
+    <div class="hub-topbar">
+      <div class="hub-brand"><span class="hub-brand-mark"><img src="icon-192.png" alt=""></span><div class="hub-brand-text"><strong>商品試算與保障工具</strong><span>國泰雲端學習站</span></div></div>
+      <a class="hub-logout" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">⌂ 返回首頁</a>
     </div>
+    <section class="hub-hero hub-hero--small" aria-labelledby="products-heading">
+      <div class="hub-kicker">PRODUCT LIBRARY</div><h1 id="products-heading">商品與保障試算</h1>
+      <p>醫療保障、商品比較與投資型試算分區整理；已停售商品另行歸檔，便於查找而不會與其他商品混淆。</p>
+    </section>
 
-    
-<div class="section-title">📈 投資型商品試算</div>
-<div class="grid-menu" style="margin-bottom:24px;">
-    <a href="prod_invest_enjoy.html" class="prod-btn" style="grid-column:1 / -1;min-height:92px;border:1px solid #b6e0c5;">
-        <span class="icon">💵</span>
-        <span class="name">月月(享)溢</span>
-        <span style="font-size:12px;color:#666;margin-top:5px;">施羅德基金預設｜美金匯率 33｜保費費用與配息示範</span>
-    </a>
-    <a href="prod_invest_taifu.html" class="prod-btn" style="grid-column:1 / -1;min-height:92px;border:1px solid #b6e0c5;">
-        <span class="icon">🌱</span>
-        <span class="name">月月泰富</span>
-        <span style="font-size:12px;color:#666;margin-top:5px;">泰優利組合預設｜美金匯率 33｜撥回及保單行政費試算</span>
-    </a>
-</div>
+    <section class="hub-section" aria-labelledby="medical-heading">
+      <div class="hub-section-heading"><div><div class="hub-section-kicker">HEALTH PROTECTION</div><h2 id="medical-heading">🏥 醫療保障系列</h2><p>各類醫療與防癌保障試算</p></div></div>
+      <div class="hub-grid">
+        <a href="prod_lifetime_medical.html" class="hub-card">
+          <span class="hub-card-icon" aria-hidden="true">🧩</span><span class="hub-card-title">終身醫療自由配</span>
+          <span class="hub-card-desc">自由組合終身住院與手術保障</span><span class="hub-pill">自選搭配</span><span class="hub-card-arrow" aria-hidden="true">↗</span>
+        </a>
+        <a href="prod_good_health.html" class="hub-card hub-card--warm">
+          <span class="hub-card-icon" aria-hidden="true">💎</span><span class="hub-card-title">豪好康愛</span>
+          <span class="hub-card-desc">依男女性別分析癌症保障</span><span class="hub-card-arrow" aria-hidden="true">↗</span>
+        </a>
+        <a href="prod_cancer_protect.html" class="hub-card hub-card--blue">
+          <span class="hub-card-icon" aria-hidden="true">🛡️</span><span class="hub-card-title">防癌保障整合試算</span>
+          <span class="hub-card-desc">比較及整合防癌商品保障</span><span class="hub-card-arrow" aria-hidden="true">↗</span>
+        </a>
+      </div>
+    </section>
 
-<section class="stop-section" aria-label="停售商品區"><h2 class="section-title" style="border-color:#cf4147">📁 已停售商品區</h2><p class="stop-intro">以下三項商品已停售，僅保留試算頁供既有保單查閱與教育訓練使用，不代表目前可投保。</p>
-<a class="stop-item" href="prod_invest_forever.html"><span class="stop-icon">♾️</span><span>月月永溢 <span class="stop-badge">已停售</span></span><span class="stop-arrow">›</span></a>
-<a class="stop-item" href="prod_invest_full.html"><span class="stop-icon">🟢</span><span>月月滿溢 <span class="stop-badge">已停售</span></span><span class="stop-arrow">›</span></a>
-<a class="stop-item" href="prod_overflow_love.html"><span class="stop-icon">💖</span><span>滿溢康愛 <span class="stop-badge">已停售</span></span><span class="stop-arrow">›</span></a></section>
+    <section class="hub-section" aria-labelledby="compare-heading">
+      <div class="hub-section-heading"><div><div class="hub-section-kicker">COMPARISON</div><h2 id="compare-heading">📋 保障比較工具</h2><p>按照保障類別選擇比較項目</p></div></div>
+      <div class="hub-grid hub-grid--four">
+        <a href="prod_accident.html" class="hub-card"><span class="hub-card-icon" aria-hidden="true">🚑</span><span class="hub-card-title">意外險比較</span><span class="hub-card-desc">意外保障內容</span><span class="hub-card-arrow" aria-hidden="true">↗</span></a>
+        <a href="prod_rider.html" class="hub-card hub-card--blue"><span class="hub-card-icon" aria-hidden="true">➕</span><span class="hub-card-title">醫療附約比較</span><span class="hub-card-desc">各類醫療附約</span><span class="hub-card-arrow" aria-hidden="true">↗</span></a>
+        <a href="prod_surgery.html" class="hub-card hub-card--warm"><span class="hub-card-icon" aria-hidden="true">🩺</span><span class="hub-card-title">手術險比較</span><span class="hub-card-desc">手術保障內容</span><span class="hub-card-arrow" aria-hidden="true">↗</span></a>
+        <a href="prod_bone.html" class="hub-card hub-card--purple"><span class="hub-card-icon" aria-hidden="true">🦴</span><span class="hub-card-title">金骨力理賠</span><span class="hub-card-desc">骨科保障參考</span><span class="hub-card-arrow" aria-hidden="true">↗</span></a>
+      </div>
+    </section>
 
-<p class="stop-foot">商品頁 v1.4｜2026-11-18 · 停售商品僅供歷史資料參考；保障與費率依保單條款及官方公告為準。</p>
-<script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js');
-        }
-    </script>
+    <section class="hub-section" aria-labelledby="invest-heading">
+      <div class="hub-section-heading"><div><div class="hub-section-kicker">INVESTMENT INSURANCE</div><h2 id="invest-heading">📈 投資型商品試算</h2><p>兩項商品獨立試算，費用規則各自適用</p></div></div>
+      <div class="hub-grid hub-grid--two">
+        <a href="prod_invest_enjoy.html" class="hub-card hub-card--featured">
+          <span class="hub-card-icon" aria-hidden="true">💵</span><span class="hub-card-title">月月(享)溢</span>
+          <span class="hub-card-desc">施羅德基金預設 · 美元匯率 33 · 保費費用試算</span><span class="hub-card-arrow" aria-hidden="true">↗</span>
+        </a>
+        <a href="prod_invest_taifu.html" class="hub-card">
+          <span class="hub-card-icon" aria-hidden="true">🌱</span><span class="hub-card-title">月月泰富</span>
+          <span class="hub-card-desc">泰優利組合預設 · 美元匯率 33 · 月度行政費試算</span><span class="hub-card-arrow" aria-hidden="true">↗</span>
+        </a>
+      </div>
+    </section>
 
+    <section class="hub-section hub-archive" aria-labelledby="stopped-heading">
+      <div class="hub-section-heading">
+        <div><div class="hub-section-kicker" style="color:#62766b">ARCHIVED</div><h2 id="stopped-heading">📁 已停售商品區</h2>
+        <p>以下三項商品已停售，僅保留歷史試算供既有保單查閱及教育訓練，不代表目前可投保。</p></div>
+      </div>
+      <div class="hub-archive-links">
+        <a class="hub-archive-link" href="prod_invest_forever.html"><span class="hub-archive-name">月月永溢</span><span class="hub-stopped">已停售</span></a>
+        <a class="hub-archive-link" href="prod_invest_full.html"><span class="hub-archive-name">月月滿溢</span><span class="hub-stopped">已停售</span></a>
+        <a class="hub-archive-link" href="prod_overflow_love.html"><span class="hub-archive-name">滿溢康愛</span><span class="hub-stopped">已停售</span></a>
+      </div>
+    </section>
+    <footer class="hub-footer">商品頁 v1.5 · UI v2.0｜僅供教育訓練使用；保障、費用與費率依條款及官方公告為準。</footer>
+  </main>
+  <script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');</script>
 </body>
 </html>
