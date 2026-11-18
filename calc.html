@@ -1,140 +1,41 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>試算工具</title>
-    
-    <link rel="manifest" href="manifest.json">
-    <script type="module" src="auth.js"></script>
-
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 20px;
-        }
-
-        h2 { color: #333; margin-bottom: 20px; font-size: 22px; font-weight: 700; }
-
-        /* 格狀佈局：兩欄 */
-        .grid-menu {
-            display: grid;
-            grid-template-columns: 1fr 1fr; /* 左右各一半 */
-            gap: 15px; /* 間距 */
-            padding-bottom: 90px; /* 預留底部選單空間 */
-        }
-
-        /* 一般白色按鈕樣式 */
-        .calc-btn {
-            background: white;
-            border-radius: 16px;
-            padding: 20px 10px;
-            text-align: center;
-            text-decoration: none;
-            color: #444;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            transition: transform 0.1s;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 110px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .calc-btn:active { transform: scale(0.96); }
-        .icon { font-size: 36px; margin-bottom: 8px; }
-        .title { font-size: 15px; font-weight: bold; line-height: 1.4; }
-
-        /* 🔥 重點按鈕樣式 (遺產稅規劃) */
-        .highlight-btn {
-            grid-column: span 2; /* 佔滿整行 */
-            flex-direction: row; /* 改成橫向排列 */
-            height: auto;
-            padding: 25px 20px;
-            /* 國泰綠漸層背景 */
-            background: linear-gradient(135deg, #00A651 0%, #008c44 100%);
-            color: white;
-            box-shadow: 0 8px 20px rgba(0, 166, 81, 0.3); /* 綠色光暈陰影 */
-            border: 1px solid #007a3b;
-        }
-
-        .highlight-btn:active { transform: scale(0.98); }
-
-        /* 重點按鈕的圖示 */
-        .highlight-btn .icon {
-            font-size: 32px;
-            margin-bottom: 0;
-            margin-right: 18px;
-            background: rgba(255,255,255,0.2); /* 半透明圓底 */
-            width: 60px;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-        }
-
-        /* 重點按鈕的文字區塊 */
-        .highlight-text {
-            text-align: left;
-            flex: 1;
-        }
-        .highlight-btn .title {
-            font-size: 19px; /* 字體加大 */
-            color: white;
-            margin-bottom: 4px;
-        }
-        .subtitle {
-            font-size: 12px;
-            color: #e8f5e9; /* 淺綠色文字 */
-            opacity: 0.9;
-        }
-        
-        .arrow { font-size: 20px; color: rgba(255,255,255,0.8); font-weight: bold; }
-
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#087b48">
+  <title>財務試算工具｜國泰雲端學習站</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="hub-ui.css">
+  <script type="module" src="auth.js"></script>
 </head>
-<body>
-
-    <h2>🧮 財務試算工具</h2>
-
-    <div class="grid-menu">
-        
-        <a href="calc_labor.html" class="calc-btn">
-            <div class="icon">👷</div>
-            <div class="title">勞保年金<br>試算</div>
-        </a>
-
-        <a href="calc_combo.html" class="calc-btn">
-            <div class="icon">🤝</div>
-            <div class="title">勞保+國保<br>雙年金</div>
-        </a>
-
-        <a href="calc_retire.html" class="calc-btn">
-            <div class="icon">🎯</div>
-            <div class="title">退休儲蓄<br>目標設定</div>
-        </a>
-
-        <a href="calc_plan.html" class="calc-btn highlight-btn">
-            <div class="icon">💰</div>
-            <div class="highlight-text">
-                <div class="title">進階功能：遺產稅預先規劃</div>
-                <div class="subtitle">資產傳承 • 預留稅源 • 節稅策略</div>
-            </div>
-            <span class="arrow">➜</span>
-        </a>
-
+<body class="hub-page">
+  <main class="hub-shell">
+    <div class="hub-topbar">
+      <div class="hub-brand"><span class="hub-brand-mark"><img src="icon-192.png" alt=""></span><div class="hub-brand-text"><strong>財務試算工具</strong><span>國泰雲端學習站</span></div></div>
+      <a class="hub-logout" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">⌂ 返回首頁</a>
     </div>
-
-    <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js');
-        }
-    </script>
-
+    <section class="hub-hero hub-hero--small" aria-labelledby="calc-heading">
+      <div class="hub-kicker">CALCULATION TOOLS</div>
+      <h1 id="calc-heading">試算工具中心</h1>
+      <p>年金規劃、退休準備與資產傳承，按照主題挑選工具；原有試算資料和計算公式保持不變。</p>
+    </section>
+    <section class="hub-section" aria-labelledby="calc-savings">
+      <div class="hub-section-heading"><div><div class="hub-section-kicker">PLANNING</div><h2 id="calc-savings">退休與年金規劃</h2><p>快速進入各種試算表</p></div></div>
+      <div class="hub-grid">
+        <a class="hub-card" href="calc_labor.html"><span class="hub-card-icon" aria-hidden="true">👷</span><span class="hub-card-title">勞保年金試算</span><span class="hub-card-desc">試算勞工保險老年給付</span><span class="hub-card-arrow" aria-hidden="true">↗</span></a>
+        <a class="hub-card hub-card--blue" href="calc_combo.html"><span class="hub-card-icon" aria-hidden="true">🤝</span><span class="hub-card-title">勞保＋國保雙年金</span><span class="hub-card-desc">整合兩種年金給付情境</span><span class="hub-card-arrow" aria-hidden="true">↗</span></a>
+        <a class="hub-card hub-card--warm" href="calc_retire.html"><span class="hub-card-icon" aria-hidden="true">🎯</span><span class="hub-card-title">退休儲蓄目標設定</span><span class="hub-card-desc">估算退休財務準備目標</span><span class="hub-card-arrow" aria-hidden="true">↗</span></a>
+      </div>
+    </section>
+    <section class="hub-section" aria-labelledby="calc-estate">
+      <div class="hub-section-heading"><div><div class="hub-section-kicker">ADVANCED</div><h2 id="calc-estate">資產傳承規劃</h2><p>適合較完整的財務情境分析</p></div></div>
+      <div class="hub-grid hub-grid--two">
+        <a class="hub-card hub-card--featured" href="calc_plan.html"><span class="hub-card-icon" aria-hidden="true">💰</span><span class="hub-card-title">進階功能：遺產稅預先規劃</span><span class="hub-card-desc">資產傳承 · 預留稅源 · 節稅策略</span><span class="hub-pill">進階試算</span><span class="hub-card-arrow" aria-hidden="true">↗</span></a>
+      </div>
+    </section>
+    <footer class="hub-footer">財務試算工具 · UI v2.0｜僅供內部教育訓練使用</footer>
+  </main>
+  <script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');</script>
 </body>
 </html>
