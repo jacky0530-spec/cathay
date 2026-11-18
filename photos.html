@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#087b48">
+<title>照片資料專區｜國泰雲端學習站</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="hub-ui.css">
+<link rel="stylesheet" href="photos.css">
+<script type="module" src="auth.js"></script>
+<script defer src="photos.js"></script>
+</head>
+<body class="hub-page">
+<main class="hub-shell photo-shell">
+ <header class="hub-topbar">
+  <div class="hub-brand">
+   <span class="hub-brand-mark"><img src="icon-192.png" alt=""></span>
+   <div class="hub-brand-text"><strong>照片資料專區</strong><span>國泰雲端學習站 · 圖像素材整理</span></div>
+  </div>
+  <a class="hub-logout" href="index.html" style="display:inline-flex;align-items:center;text-decoration:none">⌂ 返回首頁</a>
+ </header>
+ <section class="hub-hero hub-hero--small" aria-labelledby="gallery-title">
+  <div class="hub-kicker">PHOTO RESOURCE LIBRARY</div>
+  <h1 id="gallery-title">圖片收藏與主題資料庫</h1>
+  <p>新聞剪報、癌症議題、醫療收據三大分類；上傳後可補充主題與說明，點圖放大查看，將喜愛照片設為置頂。</p>
+ </section>
+ <div class="photo-banner">
+  <div><strong>📷 我的照片庫</strong><p>圖片依分類整理；每個分類內「★ 已置頂」優先顯示，其次依最新上傳排序。</p></div>
+  <div class="photo-actions">
+   <button id="addPhoto" class="photo-btn primary" type="button">＋ 上傳照片</button>
+   <button id="exportPhotos" class="photo-btn" type="button">↓ 匯出備份</button>
+   <button id="importPhotos" class="photo-btn" type="button">↑ 匯入備份</button>
+   <input id="backupInput" type="file" accept=".json,application/json" hidden>
+  </div>
+ </div>
+ <div class="photo-note">
+  <strong>儲存及隱私提醒：</strong>本版使用瀏覽器本機儲存（IndexedDB），<strong>不會將照片上傳 Firebase 或公開到 GitHub</strong>；不同裝置、不同瀏覽器不會自動同步，清除網站資料可能導致照片遺失。請定期匯出備份；匯出的 JSON 含完整照片，務必妥善保管。醫療收據、病歷等照片上傳前，建議遮蔽姓名、身分證字號、病歷號與其他個資。
+ </div>
+ <div id="galleryStatus" class="photo-status" role="status" aria-live="polite">正在開啟本機照片庫…</div>
+ <div class="photo-controls">
+  <div class="photo-tabs" role="group" aria-label="照片分類篩選">
+   <button type="button" class="photo-tab" data-filter="all" aria-pressed="true">全部 <small id="count-all">0</small></button>
+   <button type="button" class="photo-tab" data-filter="news" aria-pressed="false">📰 新聞剪報 <small id="count-news">0</small></button>
+   <button type="button" class="photo-tab" data-filter="cancer" aria-pressed="false">🎗️ 癌症議題 <small id="count-cancer">0</small></button>
+   <button type="button" class="photo-tab" data-filter="receipt" aria-pressed="false">🧾 醫療收據 <small id="count-receipt">0</small></button>
+  </div>
+  <input type="search" id="photoSearch" class="photo-search" placeholder="搜尋主題、圖片名稱或內容說明" aria-label="搜尋圖片標題與說明">
+ </div>
+
+ <div id="gallerySections">
+  <section class="photo-category" data-section="news" aria-labelledby="title-news">
+   <div class="photo-category-head"><div><h2 id="title-news">📰 新聞剪報</h2><p>新聞報導、政策資訊與重要剪報</p></div><span id="section-count-news" class="hub-pill">0 張</span></div>
+   <div id="grid-news" class="photo-gallery"><div class="photo-empty"><span class="emoji">📰</span>目前沒有照片，可點選上方「上傳照片」。</div></div>
+  </section>
+  <section class="photo-category" data-section="cancer" aria-labelledby="title-cancer">
+   <div class="photo-category-head"><div><h2 id="title-cancer">🎗️ 癌症議題</h2><p>癌症治療、新療法、衛教與保障觀念</p></div><span id="section-count-cancer" class="hub-pill">0 張</span></div>
+   <div id="grid-cancer" class="photo-gallery"><div class="photo-empty"><span class="emoji">🎗️</span>目前沒有照片，可點選上方「上傳照片」。</div></div>
+  </section>
+  <section class="photo-category" data-section="receipt" aria-labelledby="title-receipt">
+   <div class="photo-category-head"><div><h2 id="title-receipt">🧾 醫療收據</h2><p>醫療費用與自費項目的圖片資料（請先遮蔽個資）</p></div><span id="section-count-receipt" class="hub-pill">0 張</span></div>
+   <div id="grid-receipt" class="photo-gallery"><div class="photo-empty"><span class="emoji">🧾</span>目前沒有照片，可點選上方「上傳照片」。</div></div>
+  </section>
+ </div>
+ <footer class="hub-footer">照片資料專區 V1.0｜本機照片庫，不具跨裝置即時同步功能｜教育訓練與素材整理用途</footer>
+</main>
+
+<dialog id="photoEditor" class="photo-dialog" aria-labelledby="editorTitle">
+ <div class="photo-dialog-head"><h2 id="editorTitle">上傳照片</h2><button type="button" id="closeEditor" class="photo-close" aria-label="關閉">×</button></div>
+ <form id="photoForm" class="photo-form">
+  <input type="hidden" id="editPhotoId">
+  <div class="photo-field" id="uploadFileField">
+   <label for="photoFiles">選擇照片（可一次多選）</label>
+   <input type="file" id="photoFiles" accept="image/jpeg,image/png,image/webp,image/gif" multiple>
+   <p class="photo-form-tip">支援 JPG、PNG、WebP、GIF，單張上限 20 MB。保留圖片原始內容供放大檢視；多張照片會共用本次選定分類與文字。HEIC 建議先轉 JPG。</p>
+  </div>
+  <div class="photo-field"><label for="photoCategory">分類</label><select id="photoCategory" required>
+   <option value="news">📰 新聞剪報</option>
+   <option value="cancer">🎗️ 癌症議題</option>
+   <option value="receipt">🧾 醫療收據</option>
+  </select></div>
+  <div class="photo-field"><label for="photoTitle">主題／標題（選填）</label><input type="text" id="photoTitle" maxlength="120" placeholder="例如：癌症治療新趨勢；不填則使用檔案名稱"></div>
+  <div class="photo-field"><label for="photoDescription">內容說明（選填）</label><textarea id="photoDescription" maxlength="1500" rows="4" placeholder="可記錄報導來源、費用重點、備註或閱讀心得"></textarea></div>
+  <label class="photo-field" style="display:flex;align-items:center;gap:9px;font-size:.89rem;color:#345642"><input type="checkbox" id="photoPinned" style="width:19px;height:19px;accent-color:#0a7b49"> ★ 設為最喜愛的照片並置頂</label>
+  <div class="photo-form-actions">
+   <button id="cancelEditor" class="photo-btn" type="button">取消</button>
+   <button id="savePhotos" class="photo-btn primary" type="submit">儲存照片</button>
+  </div>
+ </form>
+</dialog>
+
+<dialog id="photoViewer" class="photo-viewer" aria-label="放大觀看照片">
+ <div class="photo-viewer-wrap">
+  <div class="photo-viewer-head"><span id="viewerTitle" class="photo-viewer-title">圖片預覽</span><button id="closeViewer" class="photo-close" type="button" aria-label="關閉放大圖片">×</button></div>
+  <div class="photo-viewer-main">
+   <button class="photo-viewer-switch prev" id="viewerPrev" type="button" aria-label="上一張">‹</button>
+   <img id="viewerImage" class="photo-viewer-img" alt="放大圖片">
+   <button class="photo-viewer-switch next" id="viewerNext" type="button" aria-label="下一張">›</button>
+  </div>
+  <div id="viewerCaption" class="photo-viewer-caption"></div>
+ </div>
+</dialog>
+<script>if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');</script>
+</body>
+</html>
