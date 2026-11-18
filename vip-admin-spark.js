@@ -12,6 +12,13 @@ function normalizeNewVipCode(value){
  return code;
 }
 function insertNewVipCodeIfAbsent(current){return current===null?true:undefined;}
+function normalizeVipLabel(value){
+ if(typeof value!=='string')throw new Error('invalid_vip_label');
+ const cleaned=value.trim();
+ if(cleaned.length<1||cleaned.length>80)throw new Error('invalid_vip_label');
+ return cleaned;
+}
+
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import {initializeAuth,inMemoryPersistence,signInWithEmailAndPassword,signOut}
  from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
@@ -44,6 +51,11 @@ function reportError(error){
  if(error?.message==='verify_failed')return '資料庫變更後驗證失敗，請重新整理清單確認狀態。';
  if(error?.message==='duplicate_vip_code')return '這組 VIP 授權碼已存在（包含已停用），請另外輸入一組，不會覆蓋原授權。';
  if(error?.message==='retired_vip_code')return '這組授權碼曾經永久刪除，禁止重新發行，請另外設定一組。';
+ if(error?.message==='invalid_vip_label')return '識別標籤不可空白，最多 80 個字元。';
+ if(error?.message==='label_verify_failed')return '標籤已嘗試更新，但重新讀取的值不一致；請按「重新整理清單」確認。';
+ if(error?.message==='label_timeout')return '修改標籤逾時，請先重新整理清單確認是否已儲存，避免重複操作。';
+ if(error?.message==='label_retired')return '該授權碼已永久註銷，不能修改識別標籤。';
+
  if(error?.message==='invalid_vip_code')return '授權碼請填寫 6～32 位英文、數字、底線或連字號。';
  if(error?.message==='reserved_vip_code')return '這組授權碼為舊版共用碼，不可再分配給新人。';
  if(error?.code==='auth/network-request-failed')return '無法連接 Firebase Authentication，請確認網路後重新整理頁面。';
@@ -97,6 +109,18 @@ async function checkAdmin(){
  if(!m||m.active!==true||m.role!=='admin')throw new Error('not_admin');
 }
 function clearIssued(){justCreated='';el('issuedValue').textContent='';el('issued').hidden=true;}
+let accountRows=[];
+function applyAccountFilter(){
+ const search=el('accountFilter').value.trim().toUpperCase();
+ let visible=0;
+ for(const item of accountRows){
+  const show=!search||item.code.includes(search)||item.label.toUpperCase().includes(search);
+  item.row.hidden=!show;
+  if(show)visible++;
+ }
+ el('accountCount').textContent='顯示 '+visible+' / '+accountRows.length+' 筆授權';
+}
+
 async function refresh(){
  await checkAdmin();
  const [whitelist,labels,retirementEnabled]=await Promise.all([
@@ -108,9 +132,17 @@ async function refresh(){
  const entries=Object.entries(whitelist||{}).filter(([code,val])=>codeFormat.test(code)&&typeof val==='boolean');
  const names=labels||{};
  const tbody=el('rows');tbody.replaceChildren();
+ const newRows=[];
  for(const [code,enabled] of entries.sort((a,b)=>a[0].localeCompare(b[0]))){
   const row=document.createElement('tr');
-  for(const value of [names[code]||'既有授權','••••'+code.slice(-4),enabled?'啟用':'停用']){
+  const storedLabel=typeof names[code]==='string'?names[code]:'';
+  const searchItem={row,code,label:storedLabel};
+  const nameCell=document.createElement('td');
+  const nameText=document.createElement('span');
+  nameText.textContent=storedLabel||'既有授權';
+  nameCell.append(nameText);
+  row.append(nameCell);
+  for(const value of ['••••'+code.slice(-4),enabled?'啟用':'停用']){
    const cell=document.createElement('td');cell.textContent=value;row.append(cell);
   }
   const actionCell=document.createElement('td'),button=document.createElement('button');
@@ -135,6 +167,52 @@ async function refresh(){
    }catch(error){say(reportError(error),true);button.disabled=false;}
   });
   actionCell.append(button);
+  const edit=document.createElement('button');
+  edit.type='button';edit.className='secondary';edit.textContent='修改標籤';
+  edit.style.marginLeft='8px';
+  edit.addEventListener('click',()=>{
+   if(edit.disabled)return;
+   edit.disabled=true;
+   const editor=document.createElement('div');editor.className='label-editor';
+   const input=document.createElement('input');
+   input.type='text';input.maxLength=80;
+   input.value=searchItem.label;
+   input.setAttribute('aria-label','識別標籤，授權碼末四碼 '+code.slice(-4));
+   const save=document.createElement('button');save.type='button';save.textContent='儲存';
+   const cancel=document.createElement('button');
+   cancel.type='button';cancel.className='secondary';cancel.textContent='取消';
+   const close=()=>{editor.remove();edit.disabled=false;};
+   cancel.addEventListener('click',close);
+   save.addEventListener('click',async()=>{
+    save.disabled=true;cancel.disabled=true;
+    try{
+     const updatedLabel=normalizeVipLabel(input.value);
+     if(updatedLabel===searchItem.label){
+      close();say('識別標籤沒有變更，不需儲存。');return;
+     }
+     await withDeadline(checkAdmin(),15000,'membership');
+     const liveStatus=await readFirebaseRest('whitelist/'+encodeURIComponent(code));
+     if(typeof liveStatus!=='boolean')throw new Error('code_missing');
+     const retired=await readFirebaseRest('vipRetired/'+encodeURIComponent(code));
+     if(retired===true)throw new Error('label_retired');
+     // Keep the VIP key and active status unchanged; write only the private label.
+     await withDeadline(set(ref(db,'vipProfiles/'+code),updatedLabel),15000,'label');
+     if(await readFirebaseRest('vipProfiles/'+encodeURIComponent(code))!==updatedLabel)
+      throw new Error('label_verify_failed');
+     searchItem.label=updatedLabel;
+     nameText.textContent=updatedLabel;
+     close();
+     applyAccountFilter();
+     say('已儲存「'+updatedLabel+'」的識別標籤。授權碼與啟用狀態完全不變。');
+    }catch(error){say(reportError(error),true);save.disabled=false;cancel.disabled=false;}
+   });
+   input.addEventListener('keydown',event=>{
+    if(event.key==='Escape'){event.preventDefault();cancel.click();}
+    else if(event.key==='Enter'){event.preventDefault();save.click();}
+   });
+   editor.append(input,save,cancel);nameCell.append(editor);input.focus();
+  });
+  actionCell.append(edit);
   if(!enabled && !RESERVED.has(code) && retirementEnabled){
    const del=document.createElement('button');
    del.type='button';del.className='danger';del.textContent='永久刪除';
@@ -178,8 +256,10 @@ async function refresh(){
    });
    actionCell.append(del);
   }
-  row.append(actionCell);tbody.append(row);
+  row.append(actionCell);tbody.append(row);newRows.push(searchItem);
  }
+ accountRows=newRows;
+ applyAccountFilter();
 }
 // Keep Firebase Authentication, membership validation and list loading separate.
 // A slow or denied list read must never make a successful login look stuck.
@@ -250,6 +330,7 @@ el('createForm').addEventListener('submit',async event=>{
  }catch(error){say(reportError(error),true);}
  finally{el('createButton').disabled=false;}
 });
+el('accountFilter').addEventListener('input',applyAccountFilter);
 el('refresh').addEventListener('click',()=>refresh().catch(e=>say(reportError(e),true)));
 el('hideCode').addEventListener('click',clearIssued);
 el('copy').addEventListener('click',async()=>{
@@ -259,5 +340,6 @@ el('copy').addEventListener('click',async()=>{
 });
 el('logout').addEventListener('click',async()=>{
  clearIssued();el('rows').replaceChildren();
+ accountRows=[];el('accountFilter').value='';applyAccountFilter();
  await signOut(auth);el('manageArea').hidden=true;el('loginArea').hidden=false;say('已安全登出。');
 });
