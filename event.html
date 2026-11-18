@@ -1,127 +1,55 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>獎金與競賽專區</title>
-    
-    <link rel="manifest" href="manifest.json">
-    <script type="module" src="auth.js"></script>
-
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 20px;
-            padding-bottom: 90px;
-        }
-
-        h2 { color: #333; margin-bottom: 20px; font-weight: 700; }
-
-        .grid-menu {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 15px;
-        }
-
-        .event-btn {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            text-align: left;
-            text-decoration: none;
-            color: #444;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.08);
-            display: flex;
-            align-items: center;
-            transition: transform 0.1s;
-            position: relative;
-            overflow: hidden;
-        }
-        .event-btn:active { transform: scale(0.98); }
-
-        .icon-box {
-            width: 50px; height: 50px;
-            background: #f0fdf4;
-            color: #00A651;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 24px;
-            margin-right: 15px;
-            flex-shrink: 0;
-        }
-
-        .text-box h3 { margin: 0 0 5px 0; font-size: 18px; }
-        .text-box p { margin: 0; font-size: 13px; color: #888; }
-        .arrow { margin-left: auto; color: #ccc; font-weight: bold; }
-
-        /* 高峰辦法 (金色強調) */
-        .highlight-gold {
-            background: linear-gradient(135deg, #FFD700 0%, #FDB931 100%);
-            color: #8a5a00;
-            border: 1px solid #eec900;
-        }
-        .highlight-gold .icon-box { background: rgba(255,255,255,0.4); color: #5c3a00; }
-        .highlight-gold .text-box h3 { color: #5c3a00; font-weight: 800; font-size: 20px; }
-        .highlight-gold .text-box p { color: #7a5e20; font-weight: 500; }
-        .highlight-gold .arrow { color: rgba(0,0,0,0.3); }
-
-        /* 試算類按鈕 (藍色系) */
-        .calc-style .icon-box { background: #e3f2fd; color: #1976d2; }
-        
-        /* 業務獎金按鈕 (紫色系) */
-        .bonus-style .icon-box { background: #f3e5f5; color: #8e24aa; }
-
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#087b48">
+<title>116年日本東北高峰會｜獎金與競賽專區</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="hub-ui.css">
+<script type="module" src="auth.js"></script>
+<style>
+.event-cover{overflow:hidden;position:relative;border-radius:23px;margin-bottom:24px;min-height:265px;background:linear-gradient(125deg,#143e4a,#217e79);color:white}
+.event-cover img{display:block;width:100%;height:clamp(250px,34vw,385px);object-fit:cover;object-position:center 53%}
+.event-cover-shade{position:absolute;inset:0;background:linear-gradient(90deg,rgba(6,42,47,.86) 0%,rgba(9,56,57,.57) 48%,rgba(4,39,54,.08) 100%)}
+.event-cover-content{position:absolute;inset:0;display:flex;justify-content:center;flex-direction:column;padding:clamp(24px,4vw,52px)}
+.event-cover h1{margin:7px 0 9px;font-size:clamp(1.55rem,3.6vw,2.65rem);line-height:1.24;letter-spacing:.02em;max-width:660px}
+.event-cover p{margin:0;max-width:600px;color:#e3f4f2;font-size:clamp(.88rem,1.7vw,1.03rem)}
+.event-label{font-size:.78rem;font-weight:760;letter-spacing:.12em;color:#c8f1e0}
+.event-meta{display:flex;flex-wrap:wrap;gap:9px;margin-top:17px}
+.event-meta span{border:1px solid rgba(255,255,255,.34);background:rgba(8,53,54,.4);border-radius:40px;padding:6px 13px;font-size:.81rem}
+.event-note{font-size:.72rem;color:#64786d;margin:-13px 0 20px;text-align:right}
+.event-alert{padding:13px 17px;background:#fff8ed;border:1px solid #f2ddb9;border-radius:13px;color:#785326;font-size:.86rem;margin:16px 0 23px}
+@media(max-width:600px){.event-cover{min-height:310px}.event-cover img{height:310px}.event-cover-shade{background:linear-gradient(90deg,rgba(4,43,49,.86),rgba(4,43,49,.40))}.event-cover-content{padding:22px}.event-meta{gap:6px}.event-meta span{font-size:.73rem}}
+</style>
 </head>
-<body>
-
-    <h2>💰 獎金與競賽專區</h2>
-
-    <div class="grid-menu">
-        
-        <a href="event_rules.html" class="event-btn highlight-gold">
-            <div class="icon-box">🇯🇵</div>
-            <div class="text-box">
-                <h3>2025 高峰辦法</h3>
-                <p>九州之旅 • 競賽規則 • 獎勵資格</p>
-            </div>
-            <span class="arrow">➜</span>
-        </a>
-
-        <a href="calc_ah.html" class="event-btn calc-style">
-            <div class="icon-box">🔢</div>
-            <div class="text-box">
-                <h3>A&H 獎金試算</h3>
-                <p>輸入業績預估獎金 • 衝刺目標</p>
-            </div>
-            <span class="arrow">➜</span>
-        </a>
-
-        <a href="calc_business.html" class="event-btn bonus-style">
-            <div class="icon-box">💵</div>
-            <div class="text-box">
-                <h3>業務獎金試算</h3>
-                <p>輸入FYC • 預估各項津貼</p>
-            </div>
-            <span class="arrow">➜</span>
-        </a>
-
-        <div style="margin-top:20px; text-align:center;">
-            <img src="kyushu.jpg" 
-                 style="width:100%; border-radius:12px; opacity:0.9; box-shadow:0 4px 10px rgba(0,0,0,0.1); object-fit: cover; min-height: 200px;"
-                 alt="九州風景"
-                 onerror="this.style.display='none'; document.getElementById('placeholder').style.display='block';">
-            
-            <div id="placeholder" style="display:none; width:100%; height:200px; background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%); border-radius:12px; color:white; line-height:200px; font-weight:bold; font-size: 20px;">
-                九州福岡・熊本
-            </div>
-            
-            <p style="font-size:12px; color:#999; margin-top:5px;">目標：福岡/熊本</p>
-        </div>
-
-    </div>
-
-</body>
-</html>
+<body class="hub-page">
+<main class="hub-shell">
+ <div class="hub-topbar">
+  <div class="hub-brand"><span class="hub-brand-mark"><img src="icon-192.png" alt=""></span><div class="hub-brand-text"><strong>獎金與競賽專區</strong><span>國泰雲端學習站</span></div></div>
+  <a class="hub-logout" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">⌂ 返回首頁</a>
+ </div>
+ <section class="event-cover" aria-label="2027 日本東北高峰會">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/8/89/Matsushima_Bay_-_Matsushima6233.jpg/1280px-Matsushima_Bay_-_Matsushima6233.jpg" alt="日本東北宮城縣松島灣松林島嶼風景" loading="eager" onerror="this.style.opacity='0'">
+  <div class="event-cover-shade"></div>
+  <div class="event-cover-content">
+   <span class="event-label">2027 TOHOKU SUMMIT · 116 年</span>
+   <h1>116 年日本東北<br>高峰會競賽</h1>
+   <p>更新 116 年活動規則、A&amp;H 加計與獎金試算，朝下一個高峰前進。</p>
+   <div class="event-meta"><span>115/12/03–116/03/24</span><span>個人組 1,350 名</span><span>A&amp;H 滿 24P 門檻</span></div>
+  </div>
+ </section>
+ <p class="event-note">圖片：日本宮城縣松島灣／<a href="https://commons.wikimedia.org/wiki/File:Matsushima_Bay_-_Matsushima6233.jpg" target="_blank" rel="noopener noreferrer">lumoplank，Wikimedia Commons（CC0）</a>，僅作日本東北主題示意，非官方活動指定行程</p>
+ <div class="event-alert" role="note">📌 已依《116 年日本東北高峰會活動辦法》更新。試算為內部估算，正式入選與獎勵依公司核實、排名及公告為準。</div>
+ <section class="hub-section" aria-labelledby="event-functions">
+  <div class="hub-section-heading"><div><div class="hub-section-kicker">SUMMIT &amp; BONUS</div><h2 id="event-functions">競賽與獎金工具</h2><p>選擇查看新年度規則或進行試算</p></div></div>
+  <div class="hub-grid">
+   <a href="event_rules.html" class="hub-card hub-card--featured"><span class="hub-card-icon" aria-hidden="true">🏔️</span><span class="hub-card-title">116 年日本東北高峰會辦法</span><span class="hub-card-desc">個人組、主管組、繼續率與獎勵標準</span><span class="hub-pill">116 年新制</span><span class="hub-card-arrow" aria-hidden="true">↗</span></a>
+   <a href="calc_ah.html" class="hub-card hub-card--blue"><span class="hub-card-icon" aria-hidden="true">🧮</span><span class="hub-card-title">116 年 A&amp;H 獎金試算</span><span class="hub-card-desc">3 倍／2 倍加計、FYP 門檻與每 P 1,000 元獎金</span><span class="hub-card-arrow" aria-hidden="true">↗</span></a>
+   <a href="calc_business.html" class="hub-card hub-card--warm"><span class="hub-card-icon" aria-hidden="true">💰</span><span class="hub-card-title">業務獎金試算</span><span class="hub-card-desc">原有 FYC 與獎金試算功能保留</span><span class="hub-card-arrow" aria-hidden="true">↗</span></a>
+  </div>
+ </section>
+ <footer class="hub-footer">116 年日本東北高峰會 · 獎金競賽專區 v2.0｜內部教育訓練專用</footer>
+</main>
+<script>if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');</script>
+</body></html>
