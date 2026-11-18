@@ -88,7 +88,7 @@
    <div class="ah-result"><small>A&amp;H 原始實績（不含加計）</small><strong id="ahBaseTotal">0.00 P</strong></div>
    <div class="ah-result"><small>A&amp;H 競賽額外加計 P</small><strong id="bonusExtraP">0.00 P</strong></div>
    <div class="ah-result"><small>採計後個人組基本 FYP（不含證券／加計）</small><strong id="baseEligibleP">0.00 P</strong></div>
-   <div class="ah-result"><small>高峰會排名用 FYP（含 A&amp;H 加計、證券 P 限額）</small><strong id="rankingP">0.00 P</strong></div>
+   <div class="ah-result"><small>個人組排名用 FYP（含 A&amp;H 加計、證券 P 限額）</small><strong id="rankingP">0.00 P</strong></div>
    <div class="ah-result ah-result--gold"><small>公式上的 A&amp;H 獎金（未檢核資格）</small><strong id="formulaBonus">0 元</strong></div>
    <div class="ah-result ah-result--gold"><small>綜合條件後預估可核發 A&amp;H 獎金</small><strong id="payableBonus">—</strong></div>
   </div>
@@ -151,7 +151,7 @@ function calculate(){
  get('ahBaseTotal').textContent=pText(ah);
  get('bonusExtraP').textContent=pText(extra);
  get('baseEligibleP').textContent=pText(eligibleBase);
- get('rankingP').textContent=pText(ranking);
+ get('rankingP').textContent=individual?pText(ranking):"不適用（個人組限定）";
  get('formulaBonus').textContent=money(theoretical);
  get('payableBonus').textContent=certainPass?money(theoretical):'尚未符合／待審核';
  const messages=[];
