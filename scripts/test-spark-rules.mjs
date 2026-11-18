@@ -53,7 +53,8 @@ try{
  await assertSucceeds(set(path(admin,'vipProfiles/LEGACY_EXAMPLE'),'舊帳號王小姐'));
  await assertSucceeds(set(path(admin,'vipProfiles/NEW_CODE'),'既有帳號更新名稱'));
  assert.equal((await assertSucceeds(get(path(admin,'vipProfiles/NEW_CODE')))).val(),'既有帳號更新名稱');
- assert.equal((await assertSucceeds(get(path(anon,'whitelist/NEW_CODE')))).val(),false);
+ // Editing the name must never change the currently enabled VIP value.
+ assert.equal((await assertSucceeds(get(path(anon,'whitelist/NEW_CODE')))).val(),true);
  await assertFails(set(path(anon,'vipProfiles/LEGACY_EXAMPLE'),'冒用'));
  await assertFails(set(path(user,'vipProfiles/LEGACY_EXAMPLE'),'冒用'));
  await assertFails(set(path(inactive,'vipProfiles/LEGACY_EXAMPLE'),'冒用'));
