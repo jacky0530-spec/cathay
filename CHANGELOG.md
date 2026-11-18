@@ -1,5 +1,14 @@
 # 版本更新紀錄
 
+## VIP 管理後台 v0.1.6 — 刪除已停用 VIP 授權（需更新 Rules）— 2026-11-18
+- 使用者提出舊帳號刪除需求；本次只針對 Firebase Realtime Database **VIP whitelist 授權碼**，不刪除 Firebase Authentication 管理員、登入歷史 `users`、客戶資料 `contactRecords` 或保費試算。
+- 獨立後台新增「永久刪除」功能，**只在已停用、非前端硬編碼共用碼且新 Rules 支援時**顯示；執行前要求警告確認及輸入 `刪除-末四碼`。
+- 新增受管理員規則限制的 `vipRetired/<CODE>=true` 墓碑，先留永久停用記號，再刪除已停用的 `whitelist/<CODE>`，最後清理 `vipProfiles/<CODE>` 私有名稱；墓碑不可修改或刪除，阻擋代碼重新發行。
+- `firebase.spark-admin.rules.candidate.json` 新增管理員只能在 `data.val() === false` 且墓碑存在時刪除單筆碼，私有標籤也只能於白名單刪除後清除；維持舊匿名白名單讀取及 `users` 相容，禁止整份覆寫。
+- Firebase Emulator 已驗證匿名／一般會員無法刪除、管理員不能刪除啟用碼、停用碼沒有墓碑不可刪、墓碑成立後才能刪且不可重新發行。CI #44204800126 全部通過。
+- 已選擇性更新正式 `main` 兩個獨立管理頁檔案至 v0.1.6，提交 `46b00ba961e675436b47305a79bc24e18c68b3ac`。**正式 Firebase 新 Rules 尚未發布，所以永久刪除按鈕暫不會顯示，也未實際刪除任何 VIP**。
+- 仍有舊版前端共用碼、公開讀取白名單與已登入工作階段無法即時撤銷等限制；新版按鈕不會刪除使用者本機資料或歷史紀錄。
+
 ## VIP 管理後台 v0.1.5 — 修正管理員權限讀取卡住 — 2026-11-18（main 已更新）
 - 使用者提供 v0.1.4 截圖，明確停在「步驟 2／3：帳號驗證成功，正在確認管理員權限」，故 Firebase Authentication 本身已成功，卡住的是 Realtime Database `members/<UID>` 讀取。
 - 新增 `readFirebaseRest()`，使用 Firebase Authentication ID Token 以官方 REST API 的 `auth` 參數讀取 `members/<UID>`、`whitelist`、`vipProfiles`，繞開可能卡住的 Realtime Database SDK 長連線。讀取設 10 秒逾時與錯誤提示、`no-store`、`no-referrer`。
