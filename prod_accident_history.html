@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#087b48">
+<title>國泰人壽意外險歷代商品比較表｜國泰雲端學習站</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="hub-ui.css">
+<script type="module" src="auth.js"></script>
+<style>
+.comparison-intro{color:#567265;font-size:.91rem;line-height:1.78;margin:0 0 20px}
+.notice{border:1px solid #eacfa1;border-radius:14px;background:#fff9ed;padding:14px 17px;color:#805b21;font-size:.84rem;line-height:1.75;margin:0 0 22px}
+.legend{display:flex;gap:9px;flex-wrap:wrap;margin:8px 0 18px}
+.legend span{font-size:.76rem;padding:6px 10px;border-radius:10px;background:#eaf5ec;color:#176b46}
+.data-section{background:#fff;border:1px solid #d9e7dd;border-radius:20px;padding:clamp(13px,2.5vw,25px);box-shadow:0 10px 25px rgba(22,70,44,.055);margin-bottom:23px}
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:15px}
+.toolbar h2{font-size:1.13rem;color:#134f36;margin:0}
+.toolbar-btn{border:1px solid #b6d8c4;border-radius:10px;padding:10px 13px;background:#eaf7ef;color:#096e41;min-height:42px;font:inherit;font-size:.81rem;font-weight:700;cursor:pointer}
+.toolbar-btn:hover{background:#d9efdf}
+.filters{margin:5px 0 18px;padding:12px;border:1px solid #dce7df;border-radius:14px;background:#f8fbf9}
+.filters summary{font-size:.9rem;font-weight:700;color:#196d48;cursor:pointer}
+.filter-options{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 5px}
+.filter-pill{display:inline-flex;align-items:center;gap:7px;min-height:38px;padding:5px 10px;border-radius:9px;background:white;border:1px solid #d1dfd7;color:#355646;font-size:.8rem;cursor:pointer}
+.filter-pill input{accent-color:#087b48;width:17px;height:17px}
+.table-scroll{overflow-x:auto;border-radius:13px;border:1px solid #d6e4dc;overscroll-behavior-x:contain;scrollbar-width:thin}
+.matrix{border-collapse:separate;border-spacing:0;min-width:1110px;width:100%;font-size:.86rem;color:#294537}
+.matrix th,.matrix td{border-right:1px solid #e2ebe4;border-bottom:1px solid #e2ebe4;padding:13px 11px;vertical-align:middle}
+.matrix th:last-child,.matrix td:last-child{border-right:none}
+.matrix thead th{position:sticky;top:0;z-index:3;background:#0a6b44;color:#fff;font-size:.89rem;min-width:150px;text-align:center;line-height:1.5}
+.matrix thead .row-label{z-index:5;left:0;min-width:197px;text-align:left}
+.matrix th.row-label{position:sticky;left:0;z-index:2;background:#f2f9f4;text-align:left;font-size:.88rem;font-weight:750;min-width:197px;max-width:250px;box-shadow:3px 0 8px rgba(18,67,39,.04)}
+.matrix .row-label small{display:block;font-size:.73rem;font-weight:450;line-height:1.45;margin-top:7px;color:#627a68}
+.matrix td{text-align:center;min-width:145px;line-height:1.55;font-weight:625;white-space:normal}
+.matrix tr:not(.section-row):nth-child(even) td{background:#fbfdfb}
+.matrix tr:hover td{background:#f1f8f2}
+.matrix .section-row th{position:static;background:#d8eadd;text-align:left;font-size:.91rem;color:#175c3c;letter-spacing:.02em;padding:11px 13px;border-right:0}
+.matrix .section-row th:first-child{position:sticky;left:0;z-index:2}
+.matrix .none{color:#899b91;font-weight:450}
+.matrix .uncertain{font-size:.78rem;color:#a34a31;font-weight:650}
+.matrix [data-product="5"]{background:#f3fbf5;font-weight:740}
+.matrix thead [data-product="5"]{background:#085136}
+.matrix .product-col.is-hidden{display:none}
+.matrix thead th.is-hidden{display:none}
+.matrix .name-small{display:block;font-weight:450;font-size:.72rem;color:#d3f2e0;margin-top:2px}
+.hint{font-size:.8rem;color:#5a7666;line-height:1.75;margin:10px 0}
+.note-panel{background:#f4f8f5;border:1px solid #dfebe3;border-radius:15px;padding:17px 19px;font-size:.86rem;line-height:1.85;color:#435f4e}
+.note-panel strong{color:#0a6a41}
+a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid #e6ab50;outline-offset:3px}
+@media(max-width:700px){
+.data-section{padding:13px}
+.matrix{font-size:.81rem}
+.matrix th.row-label,.matrix thead .row-label{min-width:145px;max-width:160px;padding:11px 8px}
+.matrix td,.matrix thead th{min-width:138px;padding:11px 8px}
+.comparison-intro{font-size:.87rem}
+}
+@media print{.site-nav,.toolbar-btn,.filters,.hub-topbar{display:none!important}body{background:#fff!important}.hub-shell{max-width:none;padding:0}.table-scroll{overflow:visible}.matrix{min-width:0;font-size:9px}.matrix td,.matrix th{min-width:0!important;padding:5px}.matrix .row-label{position:static!important}.matrix .section-row th{position:static!important}.data-section{box-shadow:none;border:0} }
+</style>
+</head>
+<body class="hub-page">
+<main class="hub-shell">
+<div class="hub-topbar">
+ <div class="hub-brand"><span class="hub-brand-mark"><img src="icon-192.png" alt=""></span><div class="hub-brand-text"><strong>意外險歷代商品比較</strong><span>國泰雲端學習站</span></div></div>
+ <a class="hub-logout" href="products.html" style="display:inline-flex;align-items:center;text-decoration:none">⌂ 返回商品選單</a>
+</div>
+<section class="hub-hero hub-hero--small" aria-labelledby="comparison-title">
+ <div class="hub-kicker">ACCIDENT INSURANCE · HISTORY COMPARISON</div>
+ <h1 id="comparison-title">國泰人壽意外型商品<br>六款保障比較表</h1>
+ <p>依提供的「國泰人壽意外型商品彙整表」圖片，整理歷代六款商品的身故失能、傷害醫療、年齡與保費示例。</p>
+</section>
+<div class="notice" role="note"><strong>資料性質：</strong>本表是使用者提供的歷史教材圖片重製，不代表現行銷售或正式契約權益。圖片右上角標明：以個人型 100 萬／日額 1,000 元／限額 3～5 萬、職業類別第一類為例。遇圖片遮擋、雙數值或未註明的條件均保留標記，請以商品條款、投保規則與正式費率核對。</div>
+<div class="data-section">
+ <div class="toolbar"><h2>六款商品橫向對照</h2><button type="button" class="toolbar-btn" onclick="resetProducts()">顯示全部商品</button></div>
+ <details class="filters"><summary>選擇顯示的商品（可自訂比較欄位）</summary><div class="filter-options"><label class="filter-pill"><input type="checkbox" data-toggle-col="0" checked><span>新－傷害給付</span></label><label class="filter-pill"><input type="checkbox" data-toggle-col="1" checked><span>金－平安附約</span></label><label class="filter-pill"><input type="checkbox" data-toggle-col="2" checked><span>全方位</span></label><label class="filter-pill"><input type="checkbox" data-toggle-col="3" checked><span>新全方位</span></label><label class="filter-pill"><input type="checkbox" data-toggle-col="4" checked><span>真／好全方位</span></label><label class="filter-pill"><input type="checkbox" data-toggle-col="5" checked><span>超全方位</span></label></div><p class="hint">至少保留一款；手機或平板可左右滑動表格，最左側「給付項目」會固定，便於逐項比較。</p></details>
+ <div class="table-scroll" role="region" aria-label="六款意外險商品保障比較表（可橫向捲動）" tabindex="0">
+ <table class="matrix"><caption style="text-align:left;padding:12px;color:#537061;font-size:.8rem">圖片來源：國泰人壽意外型商品彙整表（使用者提供截圖）｜金額及保障內容依圖片呈現</caption>
+ <thead><tr><th scope="col" class="row-label">保障與給付項目</th><th scope="col" data-product="0">新－傷害給付<span class="name-small">57.09～84.07</span></th><th scope="col" data-product="1">金－平安附約<span class="name-small">84.07～93.12</span></th><th scope="col" data-product="2">全方位<span class="name-small">93.12～101.02</span></th><th scope="col" data-product="3">新全方位<span class="name-small">101.02～105.12</span></th><th scope="col" data-product="4">真／好全方位<span class="name-small">106.01～113.08</span></th><th scope="col" data-product="5">超全方位<span class="name-small">113.08～（原圖標示）</span></th></tr></thead>
+ <tbody>
+<tr class="section-row"><th scope="rowgroup" colspan="7">銷售期間</th></tr>
+<tr><th scope="row" class="row-label">銷售期間</th><td class="product-col" data-product="0">57.09～84.07</td>
+<td class="product-col" data-product="1">84.07～93.12</td>
+<td class="product-col" data-product="2">93.12～101.02</td>
+<td class="product-col" data-product="3">101.02～105.12</td>
+<td class="product-col" data-product="4">106.01～113.08</td>
+<td class="product-col" data-product="5">113.08～（原圖標示）</td></tr>
+
+<tr class="section-row"><th scope="rowgroup" colspan="7">意外身故與失能</th></tr>
+<tr><th scope="row" class="row-label">一般意外</th><td class="product-col" data-product="0">5萬～100萬</td>
+<td class="product-col" data-product="1">5萬～100萬</td>
+<td class="product-col" data-product="2">5萬～100萬</td>
+<td class="product-col" data-product="3">5萬～100萬</td>
+<td class="product-col" data-product="4">5萬～100萬</td>
+<td class="product-col" data-product="5">5萬～100萬</td></tr>
+<tr><th scope="row" class="row-label">火災意外</th><td class="product-col" data-product="0">5萬～200萬</td>
+<td class="product-col" data-product="1">5萬～200萬</td>
+<td class="product-col" data-product="2">5萬～200萬</td>
+<td class="product-col" data-product="3">5萬～200萬</td>
+<td class="product-col" data-product="4">5萬～200萬</td>
+<td class="product-col" data-product="5">5萬～200萬</td></tr>
+<tr><th scope="row" class="row-label">水陸交通意外</th><td class="product-col" data-product="0">5萬～300萬</td>
+<td class="product-col" data-product="1">5萬～300萬</td>
+<td class="product-col" data-product="2">5萬～300萬</td>
+<td class="product-col" data-product="3">5萬～300萬</td>
+<td class="product-col" data-product="4">5萬～300萬</td>
+<td class="product-col" data-product="5">5萬～300萬</td></tr>
+<tr><th scope="row" class="row-label">航空意外</th><td class="product-col" data-product="0">5萬～100萬</td>
+<td class="product-col" data-product="1">5萬～100萬</td>
+<td class="product-col" data-product="2">15萬～300萬</td>
+<td class="product-col" data-product="3">15萬～300萬</td>
+<td class="product-col" data-product="4">20萬～400萬</td>
+<td class="product-col" data-product="5">20萬～400萬</td></tr>
+
+<tr class="section-row"><th scope="rowgroup" colspan="7">失能與燒燙傷給付</th></tr>
+<tr><th scope="row" class="row-label">每月生活補助<small>1～6級失能；圖片標示最高給付120個月</small></th><td class="product-col" data-product="0"><span class="none">—</span></td>
+<td class="product-col" data-product="1"><span class="none">—</span></td>
+<td class="product-col" data-product="2">5,000～10,000元／月</td>
+<td class="product-col" data-product="3">5,000～10,000元／月</td>
+<td class="product-col" data-product="4">10,000～20,000元／月</td>
+<td class="product-col" data-product="5">10,000～20,000元／月</td></tr>
+<tr><th scope="row" class="row-label">燒燙傷給付</th><td class="product-col" data-product="0">一級100萬</td>
+<td class="product-col" data-product="1">一級100萬</td>
+<td class="product-col" data-product="2">一級140萬；二級10萬</td>
+<td class="product-col" data-product="3">50萬</td>
+<td class="product-col" data-product="4">50萬</td>
+<td class="product-col" data-product="5">50萬</td></tr>
+
+<tr class="section-row"><th scope="rowgroup" colspan="7">傷害醫療與住院</th></tr>
+<tr><th scope="row" class="row-label">傷害住院日額</th><td class="product-col" data-product="0">2,000元／日</td>
+<td class="product-col" data-product="1">1,000元／日</td>
+<td class="product-col" data-product="2">1,000元／日</td>
+<td class="product-col" data-product="3">1,000元／日</td>
+<td class="product-col" data-product="4">1,000元／日</td>
+<td class="product-col" data-product="5">1,000元／日</td></tr>
+<tr><th scope="row" class="row-label">日數給付限制</th><td class="product-col" data-product="0">上限90日</td>
+<td class="product-col" data-product="1">上限90日</td>
+<td class="product-col" data-product="2">上限365日</td>
+<td class="product-col" data-product="3">上限365日</td>
+<td class="product-col" data-product="4">上限365日</td>
+<td class="product-col" data-product="5">上限365日</td></tr>
+<tr><th scope="row" class="row-label">傷害門診日額</th><td class="product-col" data-product="0">1,000元／日</td>
+<td class="product-col" data-product="1"><span class="none">—</span></td>
+<td class="product-col" data-product="2"><span class="none">—</span></td>
+<td class="product-col" data-product="3"><span class="none">—</span></td>
+<td class="product-col" data-product="4"><span class="none">—</span></td>
+<td class="product-col" data-product="5"><span class="none">—</span></td></tr>
+<tr><th scope="row" class="row-label">加護／燒燙傷病房</th><td class="product-col" data-product="0"><span class="uncertain">原圖遮擋，待核對</span></td>
+<td class="product-col" data-product="1"><span class="none">—</span></td>
+<td class="product-col" data-product="2">2,000元／日</td>
+<td class="product-col" data-product="3">2,000元／日</td>
+<td class="product-col" data-product="4">2,000元／日</td>
+<td class="product-col" data-product="5">2,000元／日</td></tr>
+<tr><th scope="row" class="row-label">出院療養</th><td class="product-col" data-product="0"><span class="uncertain">原圖遮擋，待核對</span></td>
+<td class="product-col" data-product="1"><span class="none">—</span></td>
+<td class="product-col" data-product="2">500元／日</td>
+<td class="product-col" data-product="3">500元／日</td>
+<td class="product-col" data-product="4">500元／日</td>
+<td class="product-col" data-product="5">500元／日</td></tr>
+<tr><th scope="row" class="row-label">住院生活補助</th><td class="product-col" data-product="0"><span class="none">—</span></td>
+<td class="product-col" data-product="1"><span class="none">—</span></td>
+<td class="product-col" data-product="2">第8～30日：500元／日；第31日起：1,000元／日</td>
+<td class="product-col" data-product="3">第8～30日：500元／日；第31日起：1,000元／日</td>
+<td class="product-col" data-product="4">第8～30日：500元／日；第31日起：1,000元／日</td>
+<td class="product-col" data-product="5">第8～30日：500元／日；第31日起：1,000元／日</td></tr>
+
+<tr class="section-row"><th scope="rowgroup" colspan="7">投保資訊與保費示例</th></tr>
+<tr><th scope="row" class="row-label">傷害限額</th><td class="product-col" data-product="0"><span class="none">—</span></td>
+<td class="product-col" data-product="1">3萬元／次</td>
+<td class="product-col" data-product="2">3萬元／次</td>
+<td class="product-col" data-product="3">5萬元／次</td>
+<td class="product-col" data-product="4">5萬元／次</td>
+<td class="product-col" data-product="5">5萬元／次（原圖註：3年無理賠＋30%）</td></tr>
+<tr><th scope="row" class="row-label">承保年齡</th><td class="product-col" data-product="0">0～70歲</td>
+<td class="product-col" data-product="1">0～70歲</td>
+<td class="product-col" data-product="2">15～75歲</td>
+<td class="product-col" data-product="3">15～75歲</td>
+<td class="product-col" data-product="4">0～75歲</td>
+<td class="product-col" data-product="5">0～75歲</td></tr>
+<tr><th scope="row" class="row-label">第一類職業保費<small>原圖註：個人型100萬、住院日額1,000元、傷害限額3～5萬；實際費率應依投保條件及正式資料核對</small></th><td class="product-col" data-product="0"><span class="uncertain">原圖標示「？」</span></td>
+<td class="product-col" data-product="1">2,107元／2,093元</td>
+<td class="product-col" data-product="2">2,520元</td>
+<td class="product-col" data-product="3">2,740元</td>
+<td class="product-col" data-product="4">2,905元</td>
+<td class="product-col" data-product="5">2,900元</td></tr></tbody></table></div>
+ <p class="hint">「—」表示原圖片標示無此項或未列；「原圖遮擋，待核對」表示原始截圖文字被註記遮住，沒有推估數值。圖片中的銷售期間為歷史標示，不可用來判斷目前是否停售或可投保。</p>
+</div>
+<section class="note-panel">
+ <strong>閱讀提醒</strong>
+ <div>本頁僅做原圖資料對照，不對各商品額度作相同承保條件的保證。例如第一類保費可能受保額、性別、職業類別、年齡或附約選擇影響；保障實際給付、等待期間、給付上限及事故定義，均以原保單條款及核保結果為準。</div>
+ <div style="margin-top:10px"><a href="prod_accident.html">前往原有「意外險動態試算」</a>（功能與公式保留）</div>
+</section>
+<footer class="hub-footer">意外險歷代商品比較表 v1.0｜2026-11-18｜僅供教育訓練及歷史保障查閱。</footer>
+</main>
+<script>
+function visibleProductCount(){return document.querySelectorAll('input[data-toggle-col]:checked').length;}
+function setProductColumn(index,show){
+ document.querySelectorAll('[data-product="'+index+'"]').forEach(el=>el.classList.toggle('is-hidden',!show));
+}
+document.querySelectorAll('input[data-toggle-col]').forEach(input=>{
+ input.addEventListener('change',()=>{
+  if(!input.checked&&visibleProductCount()===0){input.checked=true;return;}
+  setProductColumn(input.getAttribute('data-toggle-col'),input.checked);
+ });
+});
+function resetProducts(){
+ document.querySelectorAll('input[data-toggle-col]').forEach(input=>{
+  input.checked=true;setProductColumn(input.getAttribute('data-toggle-col'),true);
+ });
+}
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
+</script>
+</body></html>
