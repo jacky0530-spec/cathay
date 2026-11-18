@@ -138,6 +138,7 @@ function buildNavigation() {
         : page === 'client.html' ? 'client'
         : (page === 'calc.html' || page.startsWith('calc_')) ? 'calc'
         : (page === 'products.html' || page.startsWith('prod_')) ? 'products'
+        : page === 'photos.html' ? 'photos'
         : (page === 'event.html' || page.startsWith('event_')) ? 'event'
         : '';
     const items = [
@@ -145,6 +146,7 @@ function buildNavigation() {
         ['client', 'client.html', '👥', '客戶'],
         ['calc', 'calc.html', '🧮', '試算'],
         ['products', 'products.html', '🛡️', '商品'],
+        ['photos', 'photos.html', '🖼️', '照片'],
         ['event', 'event.html', '🏆', '高峰會']
     ];
     const markup = items.map(([key, href, emoji, label]) =>
