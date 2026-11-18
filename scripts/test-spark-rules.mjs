@@ -65,6 +65,7 @@ try{
  await assertFails(set(path(admin,'vipRetired/NEW_CODE'),true));
  // Step 1 must disable the code first.
  await assertSucceeds(set(path(admin,'whitelist/NEW_CODE'),false));
+ await assertFails(set(path(admin,'whitelist/NEW_CODE'),null));
  // Step 2 is an admin-only, irreversible tombstone.
  await assertSucceeds(set(path(admin,'vipRetired/NEW_CODE'),true));
  assert.equal((await assertSucceeds(get(path(admin,'vipRetired/NEW_CODE')))).val(),true);

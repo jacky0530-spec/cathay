@@ -19,7 +19,8 @@ assert(js.includes("await set(ref(db,'vipRetired/'+code),true)"));
 assert(js.includes("await remove(ref(db,'whitelist/'+code))"));
 assert(js.includes("await remove(ref(db,'vipProfiles/'+code))"));
 assert(js.includes("if(enabled)continue")===false); // Retired actions cannot hide the original toggle.
-assert(js.includes('if(enabled){'));
+assert(js.includes('if(!enabled && !RESERVED.has(code) && retirementEnabled)'));
+assert(js.includes("if(current!==false)throw new Error('delete_requires_disabled')"));
 assert(js.includes('confirm('));
 assert(js.includes('prompt('));
 assert(!js.includes('localStorage.clear('));
