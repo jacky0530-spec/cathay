@@ -96,38 +96,25 @@
         /* 投資型按鈕微調 */
         .invest-btn .icon { filter: hue-rotate(45deg); }
 
-    </style>
+    @media (min-width: 900px) { .comparison-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+</style>
+<style id="v1-stopped">
+.stop-section {margin:24px 0 16px;background:#ebedef;border-radius:14px;padding:8px 10px 14px;}
+.stop-intro {font-size:13px;color:#555;margin:4px 10px 12px;line-height:1.6;}
+.stop-item {display:flex;align-items:center;gap:12px;margin:7px 0;padding:10px 14px;border-radius:10px;background:#fafafa;border:1px solid #d2d5d9;color:#333;text-decoration:none;min-height:46px;font-weight:700;}
+.stop-item:hover,.stop-item:focus-visible {outline:2px solid #00a651;}
+.stop-icon {font-size:24px;min-width:36px;text-align:center;}
+.stop-badge {font-size:12px;background:#da3a45;color:white;border-radius:14px;padding:3px 9px;display:inline-block;margin-left:7px;}
+.stop-arrow {margin-left:auto;font-size:24px;color:#888;}
+.stop-foot {color:#6d7277;font-size:12px;text-align:center;padding:8px;}
+</style>
 </head>
 <body>
-
-    <div class="section-title">📈 投資型理財</div>
-    <div class="grid-menu">
-        
-        <a href="prod_invest_forever.html" class="prod-btn invest-btn">
-            <div class="icon">♾️</div>
-            <div class="name">月月(永)溢</div>
-        </a>
-
-        <a href="prod_invest_full.html" class="prod-btn invest-btn">
-            <div class="icon">🌕</div>
-            <div class="name">月月(滿)溢</div>
-        </a>
-
-    </div>
 
     <div class="section-title">🏥 醫療保障系列</div>
     <div class="grid-menu">
         
-        <a href="prod_overflow_love.html" class="highlight-pink">
-            <div style="display:flex; align-items:center;">
-                <div class="icon-circle">💖</div>
-                <div>
-                    <div class="name">滿溢康愛 <span class="badge">熱銷</span></div>
-                    <div class="sub-text">全方位醫療照護首選</div>
-                </div>
-            </div>
-            <div class="arrow">➜</div>
-        </a>
+        
 
         <a href="prod_lifetime_medical.html" class="highlight-pink">
             <div style="display:flex; align-items:center;">
@@ -162,6 +149,11 @@
             <div class="arrow">➜</div>
         </a>
 
+        </div>
+
+
+
+<div class="grid-menu comparison-grid">
         <a href="prod_accident.html" class="prod-btn">
             <div class="icon">🚑</div>
             <div class="name">意外險<br>比較</div>
@@ -183,7 +175,14 @@
         </a>
     </div>
 
-    <script>
+    
+<section class="stop-section" aria-label="停售商品區"><h2 class="section-title" style="border-color:#cf4147">📁 已停售商品區</h2><p class="stop-intro">以下三項商品已停售，僅保留試算頁供既有保單查閱與教育訓練使用，不代表目前可投保。</p>
+<a class="stop-item" href="prod_invest_forever.html"><span class="stop-icon">♾️</span><span>月月(永)溢 <span class="stop-badge">已停售</span></span><span class="stop-arrow">›</span></a>
+<a class="stop-item" href="prod_invest_full.html"><span class="stop-icon">🟢</span><span>月月(滿)溢 <span class="stop-badge">已停售</span></span><span class="stop-arrow">›</span></a>
+<a class="stop-item" href="prod_overflow_love.html"><span class="stop-icon">💖</span><span>滿溢康愛 <span class="stop-badge">已停售</span></span><span class="stop-arrow">›</span></a></section>
+
+<p class="stop-foot">商品頁 v1.1｜2026-11-18 · 停售商品僅供歷史資料參考；保障與費率依保單條款及官方公告為準。</p>
+<script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js');
         }
