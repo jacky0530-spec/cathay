@@ -1,333 +1,112 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>115年九州高峰會競賽辦法</title>
-    <script type="module" src="auth.js"></script>
-    <style>
-        :root {
-            --primary-color: #d32f2f; /* 國泰紅風格 */
-            --secondary-color: #f44336;
-            --bg-color: #f5f5f5;
-            --text-color: #333;
-            --light-bg: #fff;
-            --highlight-bg: #fff3cd;
-            --border-color: #ddd;
-        }
-
-        body {
-            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 960px;
-            margin: 0 auto;
-        }
-
-        /* Header */
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-            background: var(--primary-color);
-            color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        header h1 {
-            margin: 0;
-            font-size: 2em;
-        }
-
-        header p {
-            margin: 10px 0 0;
-            opacity: 0.9;
-        }
-
-        /* Card Style */
-        .card {
-            background: var(--light-bg);
-            border-radius: 8px;
-            padding: 25px;
-            margin-bottom: 25px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            border-top: 5px solid var(--primary-color);
-        }
-
-        .card h2 {
-            color: var(--primary-color);
-            border-bottom: 2px solid var(--bg-color);
-            padding-bottom: 10px;
-            margin-top: 0;
-        }
-
-        .card h3 {
-            color: #444;
-            background-color: #eee;
-            padding: 8px 12px;
-            border-left: 4px solid var(--secondary-color);
-            margin-top: 20px;
-        }
-
-        /* Lists */
-        ul, ol {
-            padding-left: 20px;
-        }
-        
-        li {
-            margin-bottom: 8px;
-        }
-
-        .highlight {
-            color: var(--primary-color);
-            font-weight: bold;
-        }
-
-        .note {
-            font-size: 0.9em;
-            color: #666;
-            background-color: #f9f9f9;
-            padding: 10px;
-            border-radius: 4px;
-            margin-top: 10px;
-        }
-
-        .warning-box {
-            background-color: var(--highlight-bg);
-            border: 1px solid #ffeeba;
-            padding: 15px;
-            border-radius: 5px;
-            margin: 15px 0;
-            font-weight: bold;
-            color: #856404;
-        }
-
-        /* Tables */
-        .table-container {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 15px 0;
-            font-size: 0.95em;
-        }
-
-        th, td {
-            border: 1px solid var(--border-color);
-            padding: 12px;
-            text-align: center;
-        }
-
-        th {
-            background-color: var(--primary-color);
-            color: white;
-            font-weight: normal;
-        }
-
-        tr:nth-child(even) {
-            background-color: #fcfcfc;
-        }
-
-        tr:hover {
-            background-color: #f0f0f0;
-        }
-
-        /* Example Box */
-        .example-box {
-            border: 2px dashed var(--secondary-color);
-            padding: 15px;
-            border-radius: 8px;
-            background-color: #fffaf0;
-        }
-
-        /* Footer */
-        footer {
-            text-align: center;
-            font-size: 0.85em;
-            color: #777;
-            margin-top: 40px;
-            border-top: 1px solid #ddd;
-            padding-top: 20px;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 600px) {
-            header h1 { font-size: 1.5em; }
-            .card { padding: 15px; }
-            th, td { padding: 8px; font-size: 0.9em; }
-        }
-    </style>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#087b48">
+<title>116年日本東北高峰會辦法｜獎金競賽專區</title>
+<link rel="stylesheet" href="hub-ui.css"><script type="module" src="auth.js"></script>
+<style>
+.rules-main{width:min(100%,1100px);margin:auto;padding:clamp(15px,3vw,32px)}
+.rules-hero{background:linear-gradient(115deg,#0c7951,#154b45);color:#fff;padding:clamp(24px,4vw,42px);border-radius:23px;margin-bottom:22px}
+.rules-hero small{letter-spacing:.15em;color:#b7eed2;font-weight:750}
+.rules-hero h1{font-size:clamp(1.6rem,3.5vw,2.4rem);line-height:1.3;margin:10px 0}
+.rules-hero p{margin:0;color:#dcf5e6;line-height:1.7}
+.rules-nav{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 24px}
+.rules-nav a{background:#e7f3eb;color:#0b6743;border-radius:100px;border:1px solid #cfdfd4;padding:8px 13px;text-decoration:none;font-size:.85rem;font-weight:700}
+.rule-card{background:#fff;border:1px solid #dbe8df;border-radius:18px;padding:clamp(17px,3vw,28px);margin-bottom:19px;scroll-margin-top:102px;box-shadow:0 7px 22px rgba(12,74,48,.04)}
+.rule-card h2{color:#0c7046;margin:0 0 15px;font-size:1.25rem}
+.rule-card h3{color:#244c3a;margin:19px 0 8px;font-size:1.03rem}
+.rule-card p,.rule-card li{font-size:.91rem;line-height:1.85;color:#354b3f}
+.rule-card li{margin:6px 0}.rule-card ul,.rule-card ol{padding-left:24px}
+.rule-table-box{overflow-x:auto;border:1px solid #dbe7df;border-radius:12px;margin:13px 0}
+.rule-table{border-collapse:collapse;width:100%;min-width:610px;font-size:.85rem}
+.rule-table th,.rule-table td{padding:11px 13px;text-align:left;vertical-align:top;border-bottom:1px solid #e3ebe6}
+.rule-table th{background:#e5f3e9;color:#0a6540;font-weight:800}
+.rule-table tr:last-child td{border-bottom:0}
+.rule-alert{background:#fff8e9;border:1px solid #f1ddac;border-radius:12px;padding:13px 16px;color:#79571e;font-size:.89rem;line-height:1.8}
+.rule-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:22px}
+.rule-facts div{background:#fff;border:1px solid #dbe8df;border-radius:16px;padding:20px}
+.rule-facts b{display:block;font-size:1.5rem;color:#0d7547}
+.rule-facts small{color:#647b6c;font-size:.8rem}
+.rules-footer{font-size:.78rem;color:#607668;line-height:1.8;padding:18px 4px}
+@media(max-width:660px){.rule-facts{grid-template-columns:1fr}.rule-facts div{padding:14px}.rule-card{scroll-margin-top:15px}}
+</style>
 </head>
-<body>
-
-<div class="container">
-    <header>
-        <h1>115年九州高峰會辦法</h1>
-        <p>競賽標準 & A&H獎金規範</p>
-    </header>
-
-    <div class="card">
-        <h2>個人組競賽標準</h2>
-        
-        <div class="warning-box">
-            入選名額：依累計業績 FYP (含證券 P 及 A&H 競賽加計) 取前 1,350 名
-        </div>
-
-        <h3>1. 業績 FYP 門檻</h3>
-        <ol>
-            <li><strong>100P + 13工作責任額</strong> (不含證券業 P 及 A&H 競賽加計)。</li>
-            <li>12工作業績須達成責任額，未達成部分須於競賽期間補足；超出責任額部分 (不含證券業 P) 可選擇計入高峰會競賽。</li>
-            <li>競賽期間因替換契約符合經手人件條件而免列之新契約，<span class="highlight">不予計入競賽成績</span>。</li>
-        </ol>
-
-        <h3>2. 其他門檻</h3>
-        <ul>
-            <li>累計 A&H 商品業績 FYP (不含 A&H 競賽加計) <span class="highlight">≥ 24P</span>。</li>
-            <li>累計一年第13個月繼續率 <span class="highlight">≥ 89%</span> 且 第25個月繼續率 <span class="highlight">≥ 83%</span>。</li>
-        </ul>
-
-        <h3>3. 競賽期間調整項</h3>
-        <div class="table-container">
-            <table>
-                <tr>
-                    <th rowspan="2">A&H 商品<br>競賽加計</th>
-                    <td><strong>計績 3 倍</strong> (不含附約)</td>
-                    <td>滿溢康愛(FSE)、真康順(L66)、新鍾心滿福(ZCN)</td>
-                </tr>
-                <tr>
-                    <td><strong>計績 2 倍</strong></td>
-                    <td>其他 A&H 商品</td>
-                </tr>
-                <tr>
-                    <th>證券共銷</th>
-                    <td colspan="2">114年13工 ~ 115年3工，證券業 P 每人採計 <span class="highlight">30P 為上限</span>，超額部分將予以扣除。</td>
-                </tr>
-            </table>
-        </div>
-    </div>
-
-    <div class="card">
-        <h2>繼續率計算與觀察月規範</h2>
-        <p>累計一年第13個月繼續率 <span class="highlight">≥ 89%</span>，且累計一年第25個月繼續率 <span class="highlight">≥ 83%</span>。</p>
-        
-        <div class="note">
-            註：若累計一年第13個月繼續率達標而第25個月未達標者，可入選參加高峰會，惟不得列入首席團且須自付2.5萬元團費。
-        </div>
-
-        <h3>計算時點與規則</h3>
-        <p>4個觀察月中，<strong>至少出現3個觀察月繼續率才採計該指標</strong>，出現繼續率之觀察月中，<strong>任1個月達成即可</strong>。</p>
-
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>觀察月 (曆月)</th>
-                        <th>第13個月繼續率<br>發單月範圍</th>
-                        <th>第25個月繼續率<br>發單月範圍</th>
-                        <th>停效件復效辦理<br>成功截止時間點</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>114/11</strong></td>
-                        <td>112/10 ~ 113/09</td>
-                        <td>111/10 ~ 112/09</td>
-                        <td><span class="highlight">114/11 前</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>114/12</strong></td>
-                        <td>112/11 ~ 113/10</td>
-                        <td>111/11 ~ 112/10</td>
-                        <td><span class="highlight">114/12 前</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>115/01</strong></td>
-                        <td>112/12 ~ 113/11</td>
-                        <td>111/12 ~ 112/11</td>
-                        <td><span class="highlight">115/01 前</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>115/02</strong></td>
-                        <td>113/01 ~ 113/12</td>
-                        <td>112/01 ~ 112/12</td>
-                        <td><span class="highlight">115/02 前</span></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        <div class="warning-box" style="font-size: 0.9em; text-align: center;">
-            ★★ 辦理復效且繳費完成，並確認系統復效生效日於該月以前，以上條件皆須滿足才會納入該月繼續率計算。 ★★
-        </div>
-    </div>
-
-    <div class="card">
-        <h2>A&H 獎金辦法</h2>
-        <p style="text-align: center; color: var(--primary-color); font-weight: bold;">僅【個人組】核發 A&H 獎金</p>
-
-        <h3>核發條件 (須皆達標)</h3>
-        <ol>
-            <li>符合法令遵循限制條件。</li>
-            <li>業績 FYP (不含證券業 P 及 A&H 競賽加計) ≥ 100P + 114年第13工作月職級責任額。</li>
-            <li>累計 A&H 商品業績 FYP (不含 A&H 競賽加計) ≥ 24P。</li>
-            <li>累計一年第13個月繼續率 ≥ 89%。</li>
-        </ol>
-
-        <h3>核發方式與級距</h3>
-        <p>針對 A&H 業績 FYP (不含 A&H 競賽加計) <strong>超過 24P 部分</strong>，依下表核發獎金，未滿 1P 不計。</p>
-
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>超過 24P 後總 P 數級距</th>
-                        <th>A&H 獎金計算</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>1 ≤ P < 25</td>
-                        <td>每 1P 核發 <strong>800 元</strong></td>
-                    </tr>
-                    <tr>
-                        <td>25 ≤ P < 100</td>
-                        <td>每 1P 核發 <strong>1,000 元</strong></td>
-                    </tr>
-                    <tr>
-                        <td>P ≥ 100</td>
-                        <td>每 1P 核發 <strong>1,200 元</strong></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <h3>計算範例</h3>
-        <div class="example-box">
-            <p><strong>【情境】小明 A&H 業績 FYP 為 180.5P</strong></p>
-            <p><strong>Step 1 (計算超額 P 數)：</strong><br>
-            180.5P - 24P = 156.5P <span style="font-size:0.8em; color:#888;">(未滿 1P 不計，取 156P)</span></p>
-            
-            <p><strong>Step 2 (計算獎金)：</strong><br>
-            因為 156P 屬於 P ≥ 100 的級距 (每 P 1,200元)<br>
-            獎金 = 156P × 1,200元 = <span class="highlight" style="font-size: 1.2em;">187,200 元</span></p>
-        </div>
-    </div>
-
-    <footer>
-        <p>※ 詳細內容請以發文為準，務必詳閱文號 #050060011400346<br>
-        高峰會相關資訊可至【獎勵平台 > 最新消息 > 115年高峰會相關資訊】查詢</p>
-        <p>聯絡窗口：業發科 陳建笙 (02)2755-1399 #2169</p>
-        <p style="font-size: 0.8em; margin-top: 20px;">Generated by AI Helper - Last Updated: 2025.12.20</p>
-    </footer>
-</div>
-
-</body>
-</html>
+<body class="hub-page">
+<main class="rules-main">
+ <div class="hub-topbar"><div class="hub-brand"><span class="hub-brand-mark"><img src="icon-192.png" alt=""></span><div class="hub-brand-text"><strong>116 年日本東北高峰會</strong><span>獎金競賽辦法</span></div></div><a href="event.html" class="hub-logout" style="text-decoration:none">⌂ 返回專區</a></div>
+ <header class="rules-hero"><small>2027 TOHOKU SUMMIT</small><h1>116 年日本東北高峰會<br>活動辦法重點整理</h1><p>115 年第 13 工作月～116 年第 3 工作月（115/12/03～116/03/24）。依上傳的 13 頁活動辦法更新；正式成績、入選與核發以公司核實結果為準。</p></header>
+ <div class="rule-facts"><div><b>1,350 名</b><small>個人組排名入選名額</small></div><div><b>24P</b><small>A&amp;H 商品 FYP 最低門檻</small></div><div><b>1,000 元／P</b><small>超過 24P 的整數 P 現金獎金</small></div></div>
+ <nav class="rules-nav" aria-label="內容導覽"><a href="#personal">個人組</a><a href="#manager">主管組</a><a href="#retention">繼續率</a><a href="#award">獎金與獎勵</a><a href="#other">注意事項</a><a href="calc_ah.html">A&amp;H 試算 ↗</a></nav>
+ <section class="rule-card" id="personal">
+  <h2>一、個人組競賽標準（原辦法 P2）</h2>
+  <p>參加對象：全體同仁，含行專、CA 人員，<strong>不含業專</strong>。符合基本門檻後依累計 FYP（含證券業 P 及 A&amp;H 競賽加計）排名，取前 <strong>1,350 名</strong>。</p>
+  <div class="rule-table-box"><table class="rule-table"><thead><tr><th>項目</th><th>116 年標準</th></tr></thead><tbody>
+   <tr><td>基本 FYP</td><td>≥ <strong>100P＋115 年第 13 工作月職級責任額</strong>（不含證券業 P、A&amp;H 競賽加計）</td></tr>
+   <tr><td>A&amp;H 實績</td><td>≥ <strong>24P</strong>（不含 A&amp;H 競賽加計）</td></tr>
+   <tr><td>繼續率</td><td>13 個月 ≥89% 且 25 個月 ≥83%，特殊情形見下方</td></tr>
+   <tr><td>115 年 12 工責任額</td><td>未達部分於競賽期間補足；超額部分（不含證券 P）得依規定選擇移轉計入</td></tr>
+  </tbody></table></div>
+  <h3>A&amp;H 商品競賽加計倍數</h3>
+  <div class="rule-table-box"><table class="rule-table"><thead><tr><th>計績</th><th>商品（險別代號）</th><th>限制</th></tr></thead><tbody>
+   <tr><td><strong>3 倍</strong></td><td>點實成金住院醫療終身保險（外溢型）：FPA、FPC<br>睛智守護特定疾病定期保險（外溢型）：LDA、LDB</td><td><strong>不含附約</strong></td></tr>
+   <tr><td><strong>2 倍</strong></td><td>其他 A&amp;H 商品</td><td>依公司公告的健康及傷害險商品定義</td></tr>
+  </tbody></table></div>
+  <p>競賽期間投資型商品業 P 每人最多採計 <strong>50P</strong>，證券共銷業 P 每人最多採計 <strong>30P</strong>。超過上限之部分扣除。A&amp;H 加計僅供本競賽計算，不計入薪津核發。</p>
+  <div class="rule-alert">116 年指定 3 倍商品為 FPA／FPC、LDA／LDB；舊 115 年商品名單不得沿用。</div>
+ </section>
+ <section class="rule-card" id="manager">
+  <h2>二、主管組（原辦法 P3–P4）</h2>
+  <h3>推展處組（推展處長）</h3>
+  <ul>
+   <li>累計業績 FYP（含拆處回計）≥<strong>350P＋115 年第 13 工作月推展處責任額</strong>。</li>
+   <li>累計 FYP 達成率（不含拆處回計）≥100%；A&amp;H 商品業績達成率 ≥100%，或 A&amp;H 商品職級達成率 ≥40%。</li>
+   <li>國泰大聯盟職級達成率 ≥60%；13／25 個月繼續率分別 ≥89%／≥83%。</li>
+   <li>入選 <strong>200 名</strong>，依累計業績 FYP（含拆處回計）排名。</li>
+  </ul>
+  <h3>經理組（通訊處經理）</h3>
+  <ul>
+   <li>累計業績 FYP ≥<strong>900P</strong>；業績 FYP 達成率 ≥100%，多元制通訊處需 ≥120%。</li>
+   <li>A&amp;H 商品業績達成率 ≥100%，或 A&amp;H 商品職級達成率 ≥40%；國泰大聯盟職達率 ≥60%。</li>
+   <li>13／25 個月繼續率分別 ≥89%／≥83%；組織責任額入選率 ≥6%。</li>
+   <li>依累計 FYP 達成率排名，名額與遞補等詳原辦法 P3–P4。</li>
+  </ul>
+  <p>主管組證券共銷業績不納入計算；主管組達成率原則上不含個人組 A&amp;H 競賽加計。</p>
+ </section>
+ <section class="rule-card" id="retention">
+  <h2>三、繼續率標準（原辦法 P1）</h2>
+  <p>累計一年第 13 個月繼續率 <strong>≥89%</strong>，第 25 個月繼續率 <strong>≥83%</strong>。個人組採自招、主管組採從人繼續率。</p>
+  <div class="rule-alert">13 個月達標而 25 個月未達標者仍可入選出團，但不得列首席團，且須自費 <strong>25,000 元</strong> 團費。若無該項繼續率資料，不計該項考核。</div>
+  <p>四個觀察月中，至少出現三個觀察月的繼續率，才採計該指標；出現數值的月份中任一月達成即符合。</p>
+  <div class="rule-table-box"><table class="rule-table"><thead><tr><th>觀察月</th><th>13 個月發單月</th><th>25 個月發單月</th><th>復效截止</th></tr></thead><tbody>
+   <tr><td>115/11</td><td>113/10～114/09</td><td>112/10～113/09</td><td>115/11 前</td></tr>
+   <tr><td>115/12</td><td>113/11～114/10</td><td>112/11～113/10</td><td>115/12 前</td></tr>
+   <tr><td>116/01</td><td>113/12～114/11</td><td>112/12～113/11</td><td>116/01 前</td></tr>
+   <tr><td>116/02</td><td>114/01～114/12</td><td>113/01～113/12</td><td>116/02 前</td></tr>
+  </tbody></table></div>
+  <p>停效件須完成復效及繳費，且系統復效生效日期於觀察月以前，方納入計算；復效為繳費隔日生效。</p>
+ </section>
+ <section class="rule-card" id="award">
+  <h2>四、獎勵與 A&amp;H 獎金（原辦法 P5–P6）</h2>
+  <p>個人組、推展處組、經理組達成競賽標準且入選出國者，團費全部由公司負擔；達成獎金與國內 2027 高峰大會表揚，依原辦法各組條件及名額辦理。</p>
+  <h3>只有【個人組】核發 A&amp;H 現金獎金</h3>
+  <p>需同時符合：法令遵循條件；基本 FYP（排除證券業 P 與 A&amp;H 競賽加計）≥100P＋115 年 13 工責任額；A&amp;H 實績 ≥24P；累計一年第 13 個月繼續率 ≥89%。無續期率資料者依原辦法考核規定認定。</p>
+  <div class="rule-alert"><strong>A&amp;H 獎金＝⌊max(A&amp;H 實績 P－24，0)⌋ × 1,000 元。</strong>不滿 1P 不計；A&amp;H 競賽加計不列入獎金基數。例：30.8P－24P＝6.8P，採 6P，預估獎金為 6,000 元。</div>
+  <p><a href="calc_ah.html">前往新版 A&amp;H 獎金試算</a></p>
+  <p>首席團資格、國內高峰大會、個人組 600P 限制及表揚名次等細節詳原辦法 P6。</p>
+ </section>
+ <section class="rule-card" id="other">
+  <h2>五、法令遵循及業績認列（原辦法 P1、P7–P12）</h2>
+  <ul>
+   <li>競賽期間受記過懲戒者不得列首席團，須自費團費 25,000 元；受記大過者取消入選與獲獎資格。</li>
+   <li>獎勵活動不當行為將依規定記點，達 4 點等相關情形會限制出團；詳細依原辦法紀律規範。</li>
+   <li>免列替換契約的新契約業績不計入競賽；契撤、替換、縮短年期等須按規範扣減成績。</li>
+   <li>增購保額／附約、繳別變更、年期變更、經手人比例等異動須於 <strong>116/03/24</strong> 依規定完成；電子簽收於當日 <strong>23:59</strong> 前完成。</li>
+   <li>結算至 116 年第 3 工作月底，業績核實日預計 116/04/02，實際依公告。</li>
+   <li>入選者自成績計算至出國期間皆須在職，否則取消出國資格與 A&amp;H 獎金。</li>
+  </ul>
+  <div class="rule-alert">本頁係 13 頁活動辦法之重點整理，並非完整條款。主管組名額遞補、超額業績、替換契約、紀律申覆及特殊資格，仍以公司正式辦法與最新公告為準。</div>
+ </section>
+ <footer class="rules-footer">116 年日本東北高峰會辦法 v2.0｜依使用者上傳《116 年日本東北高峰會活動辦法》（13 頁）整理｜2026-11-18</footer>
+</main>
+</body></html>
