@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <title>新金骨力(XJ2) 精細試算｜響應式理賠比較</title>
+    <title>新金骨力(XJ2) 精細骨骼試算｜V1.2</title>
     <script type="module" src="auth.js"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -11,29 +11,34 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: "Microsoft JhengHei", -apple-system, sans-serif; touch-action: manipulation; }
-        /* 骨骼互動樣式 */
-        .bone-part { 
-            transition: all 0.2s; 
-            cursor: pointer; 
-            fill-opacity: 0.1; 
-            stroke-opacity: 0.7;
+        /* 互動熱區與精細骨骼底圖分層：底圖不接收點擊，避免遮擋選取 */
+        .xj2-skeleton-svg{display:block;width:min(100%,325px);height:auto;margin-inline:auto;overflow:visible;filter:drop-shadow(0 6px 11px rgba(51,65,85,.08))}
+        .skeleton-art{pointer-events:none}
+        .skeleton-art .bone-outline{fill:url(#xj2-ivory);stroke:#77879a;stroke-width:1.55;stroke-linecap:round;stroke-linejoin:round}
+        .skeleton-art .bone-engrave{fill:none;stroke:#99a6b3;stroke-width:1.05;stroke-linecap:round;stroke-linejoin:round}
+        .skeleton-art .bone-soft{fill:#e7edf0;stroke:#91a0ae;stroke-width:1.1;stroke-linecap:round;stroke-linejoin:round}
+        .bone-part{
+            fill:transparent;stroke:transparent;stroke-width:1.65;cursor:pointer;
+            pointer-events:all;transition:fill .17s,fill-opacity .17s,stroke .17s,stroke-width .17s;
+            -webkit-tap-highlight-color:transparent;
         }
-        .bone-part:hover { 
-            fill-opacity: 0.4; 
-            stroke-width: 3;
+        .bone-green{--bone-select:#059669}
+        .bone-red{--bone-select:#dc4646}
+        .bone-blue{--bone-select:#2563eb}
+        .bone-part:hover,.bone-part:focus-visible{
+            fill:var(--bone-select);fill-opacity:.15;stroke:var(--bone-select);stroke-width:2.5;
+            outline:none;filter:drop-shadow(0 0 2px rgba(30,64,110,.28));
         }
-        .selected { 
-            fill-opacity: 0.8 !important; 
-            stroke-width: 3px !important; 
-            stroke-opacity: 1 !important; 
-            filter: drop-shadow(0 0 4px rgba(0,0,0,0.3)); 
+        .bone-part.selected{
+            fill:var(--bone-select);fill-opacity:.30;stroke:var(--bone-select);stroke-opacity:1;stroke-width:2.8;
+            filter:drop-shadow(0 0 3px rgba(17,24,39,.28));
         }
+        .bone-part.selected:hover,.bone-part.selected:focus-visible{fill-opacity:.39}
+        @media(max-width:767px){
+            .xj2-skeleton-svg{width:min(100%,270px)}
+        }
+        @media(prefers-reduced-motion:reduce){.bone-part{transition:none}}
         
-        /* 顏色定義 */
-        .bone-green { stroke: #059669; fill: #34d399; } /* 頭部 */
-        .bone-red { stroke: #dc2626; fill: #f87171; }   /* 軀幹 */
-        .bone-blue { stroke: #2563eb; fill: #60a5fa; }  /* 四肢 */
-
         /* 動畫 */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .card-anim { animation: fadeIn 0.3s ease-out forwards; }
@@ -111,6 +116,117 @@
         { id: 'fingers', label: '指骨', pct: 3, type: 'blue', note: '項次1: 指骨', path: 'M20 282 L15 300 L60 300 L55 282 Z M240 282 L245 300 L200 300 L205 282 Z' },
     ];
 
+    // 精細解剖風格的 SVG 示意底圖，獨立於 BONE_DATA 互動熱區；左右骨骼鏡射繪製。
+    // 本圖用於定位給付部位，不取代解剖學圖譜或保單條款。
+    function DetailedSkeleton() {
+        const ribLevels = [0, 1, 2, 3, 4, 5, 6, 7];
+        const spineLevels = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        const fingerBones = [0, 1, 2, 3, 4];
+        return (
+            <g className="skeleton-art" aria-hidden="true" pointerEvents="none">
+                <defs>
+                    <linearGradient id="xj2-ivory" x1="0" x2="1" y1="0" y2="1">
+                        <stop offset="0%" stopColor="#ffffff"/>
+                        <stop offset="52%" stopColor="#f2f5f5"/>
+                        <stop offset="100%" stopColor="#dce5e9"/>
+                    </linearGradient>
+                </defs>
+
+                {/* 頭蓋骨：顱頂、顳部、眼眶、鼻骨及下顎 */}
+                <g className="bone-outline">
+                    <path d="M130 18 C100 18 87 38 87 61 Q86 80 98 92 L98 104 Q102 112 110 117 L116 128 Q130 136 144 128 L150 117 Q158 112 162 104 L162 92 Q174 80 173 61 C173 38 160 18 130 18 Z"/>
+                    <path d="M99 107 Q109 115 119 113 L130 111 L141 113 Q151 115 161 107 L158 124 Q145 139 130 137 Q115 139 102 124 Z"/>
+                    <path d="M119 98 L130 86 L141 98 L138 108 L130 104 L122 108 Z"/>
+                </g>
+                <g className="bone-engrave">
+                    <path d="M130 21 Q125 38 132 52 Q127 61 129 70"/>
+                    <path d="M104 49 Q113 44 122 49 M138 49 Q148 44 156 49"/>
+                    <path d="M100 82 Q112 88 121 85 M139 85 Q150 88 160 82"/>
+                    <path d="M103 106 L113 108 L119 106 M141 106 L147 108 L157 106"/>
+                    <path d="M110 119 Q130 124 150 119 M118 125 L118 131 M124 124 L124 134 M130 123 L130 134 M136 124 L136 134 M142 125 L142 131"/>
+                </g>
+                <g className="bone-soft">
+                    <ellipse cx="112" cy="73" rx="17" ry="14"/>
+                    <ellipse cx="148" cy="73" rx="17" ry="14"/>
+                    <path d="M98 94 Q109 91 117 101 Q110 110 102 108 Z"/>
+                    <path d="M162 94 Q151 91 143 101 Q150 110 158 108 Z"/>
+                </g>
+                <g className="bone-engrave"><ellipse cx="112" cy="73" rx="10" ry="9"/><ellipse cx="148" cy="73" rx="10" ry="9"/></g>
+
+                {/* 頸椎與胸椎骨節：逐節描繪，底圖不可點擊 */}
+                <g className="bone-outline">
+                    {spineLevels.map(i => (
+                        <path key={'spine'+i} d={'M' + (125-i*.08) + ' ' + (139+i*9) + ' l10 0 l2 5 l-2 4 l-10 0 l-2 -4 Z'}/>
+                    ))}
+                </g>
+                <path className="bone-outline" d="M124 238 Q130 233 136 238 L140 268 Q130 280 120 268 Z"/>
+                <path className="bone-engrave" d="M130 142 L130 238 M126 249 Q130 254 134 249 M126 260 Q130 265 134 260"/>
+
+                {/* 左右鎖骨、肩胛、肋骨、上臂、前臂、手掌與手指 */}
+                {[0,1].map(side => (
+                    <g key={'upper-side'+side} transform={side ? 'translate(260 0) scale(-1 1)' : undefined}>
+                        <g className="bone-outline">
+                            <path d="M125 139 Q107 136 94 142 Q75 145 65 136 Q62 139 67 147 Q88 156 106 145 Q118 143 125 147 Z"/>
+                            <path d="M77 151 Q59 150 54 172 L59 194 Q70 186 87 164 Z"/>
+                            <path d="M68 154 Q58 173 54 192 L43 203 Q38 203 37 194 L49 166 Q55 148 65 147 Z"/>
+                            <path d="M43 203 Q40 208 40 214 L31 246 Q33 253 39 251 L49 222 L54 207 Z"/>
+                            <path d="M52 207 L47 208 L36 247 Q38 252 43 250 L57 218 Z"/>
+                            <path d="M30 252 L26 263 L44 268 L48 252 Z"/>
+                            <path d="M26 264 Q19 271 22 285 L32 292 L48 281 L43 267 Z"/>
+                            {/* 大拇指與四指指節 */}
+                            <path d="M44 274 L56 287 L55 299 L48 298 L43 289 L37 282 Z"/>
+                            {fingerBones.map(i => (
+                                <path key={'finger'+side+'-'+i} d={'M' + (22+i*5) + ' 281 l-2 11 l2 9 l4 0 l1 -9 l0 -11 Z'}/>
+                            ))}
+                            {/* 左側胸廓：8 條弧形肋骨 */}
+                            {ribLevels.map(i => {
+                                const y=154+i*8;
+                                const flare=i>4?(i-4)*1.8:0;
+                                return <path key={'rib'+side+'-'+i} d={'M125 '+y+' Q'+(99-i*1.1)+' '+(y-11)+' '+(85-flare)+' '+(y-3)+' Q'+(78-flare)+' '+(y+9)+' '+(108-i*.3)+' '+(y+10)+' L125 '+(y+5)+' Z'}/>;
+                            })}
+                        </g>
+                        <g className="bone-engrave">
+                            <path d="M65 147 Q66 165 58 180 M61 154 Q74 164 77 171"/>
+                            <path d="M47 200 L54 183 M45 214 L39 239 M51 217 L43 244"/>
+                            <path d="M31 255 L40 258 M25 278 L39 282 M27 288 L43 289"/>
+                        </g>
+                    </g>
+                ))}
+                {/* 胸骨與肋軟骨中線 */}
+                <path className="bone-outline" d="M125 148 L135 148 L138 172 L136 207 L131 216 L124 207 L122 172 Z"/>
+                <g className="bone-engrave">
+                    <path d="M126 158 L134 158 M125 171 L135 171 M126 182 L135 182 M126 192 L135 192"/>
+                    <path d="M90 212 Q107 227 126 224 M170 212 Q153 227 134 224"/>
+                </g>
+
+                {/* 左右骨盆、大腿骨、膝蓋骨、脛腓骨、足根與趾骨 */}
+                {[0,1].map(side => (
+                    <g key={'lower-side'+side} transform={side ? 'translate(260 0) scale(-1 1)' : undefined}>
+                        <g className="bone-outline">
+                            <path d="M121 235 Q103 230 86 239 Q76 242 80 258 Q85 269 105 277 L120 271 L123 261 Q101 264 94 251 Q102 243 122 252 Z"/>
+                            <path d="M103 267 Q91 267 83 272 Q73 279 74 290 L80 296 Q87 282 102 284 Z"/>
+                            <path d="M76 289 Q65 291 67 309 L68 350 L67 364 L85 364 L83 342 L91 302 Q92 290 83 287 Z"/>
+                            <path d="M67 370 Q66 379 72 385 L83 385 Q90 375 83 368 Z"/>
+                            <path d="M67 392 Q62 406 63 427 L60 466 L72 471 L81 447 L81 407 L78 391 Z"/>
+                            <path d="M83 395 Q82 422 82 440 L77 466 L85 470 L93 438 L89 400 Z"/>
+                            <path d="M61 471 L58 481 Q58 488 68 490 L82 488 L83 473 Z"/>
+                            <path d="M60 490 Q49 499 48 513 L93 513 Q92 500 84 489 Z"/>
+                            {fingerBones.map(i => (
+                                <path key={'toe'+side+'-'+i} d={'M'+(50+i*9)+' 513 l-3 9 l7 3 l6 -3 l-2 -9 Z'}/>
+                            ))}
+                        </g>
+                        <g className="bone-engrave">
+                            <path d="M84 249 Q96 256 106 253 M91 265 Q103 270 114 266"/>
+                            <path d="M76 299 Q78 327 76 356 M74 397 L70 452 M85 409 L82 461"/>
+                            <path d="M70 374 Q77 370 83 376 M58 478 L76 484"/>
+                            <path d="M59 498 Q73 504 86 497 M52 513 L89 513"/>
+                        </g>
+                    </g>
+                ))}
+            </g>
+        );
+    }
+
     function App() {
         const [insuranceAmount, setInsuranceAmount] = useState(1000000); // 預設 100 萬
         const [selectedItems, setSelectedItems] = useState([]);
@@ -161,7 +277,10 @@
                                 <div><span className="inline-block w-2 h-2 bg-red-400 rounded-full mr-1"></span>軀幹</div>
                                 <div><span className="inline-block w-2 h-2 bg-blue-400 rounded-full mr-1"></span>四肢</div>
                             </div>
-                            <svg viewBox="0 0 260 540" className="w-64 drop-shadow-lg touch-none select-none">
+                            <svg viewBox="0 0 260 540" className="xj2-skeleton-svg touch-none select-none" aria-label="可點選各骨骼部位的正面骨架示意圖">
+                                <title>新金骨力 XJ2 骨骼部位選擇</title>
+                                <desc>頭骨、肩胛、肋骨、脊椎、骨盆及四肢骨骼線稿。點擊有顏色邊框的骨骼部位以加入或移除試算。</desc>
+                                <DetailedSkeleton />
                                 {BONE_DATA.map((bone) => {
                                     const isSelected = selectedItems.find(i => i.id === bone.id);
                                     return (
@@ -169,8 +288,18 @@
                                             key={bone.id}
                                             d={bone.path}
                                             className={`bone-part bone-${bone.type} ${isSelected ? 'selected' : ''}`}
+                                            role="button"
+                                            tabIndex={0}
+                                            aria-label={`選擇${bone.label}，完全骨折比例 ${bone.pct}%`}
+                                            aria-pressed={Boolean(isSelected)}
                                             onClick={() => toggleItem(bone)}
-                                            strokeWidth="1.5"
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter' || e.key === ' ') {
+                                                    e.preventDefault();
+                                                    toggleItem(bone);
+                                                }
+                                            }}
+                                            strokeWidth="1.65"
                                         />
                                     );
                                 })}
@@ -178,7 +307,7 @@
                                 <text x="245" y="300" fontSize="10" fill="#94a3b8">指</text>
                                 <text x="220" y="530" fontSize="10" fill="#94a3b8">趾</text>
                             </svg>
-                            <p className="text-center text-xs text-gray-400 mt-2">點擊細部骨骼加入清單</p>
+                            <p className="text-center text-xs text-gray-400 mt-2">點選骨骼區域可新增／取消理賠項目（示意圖，非精確解剖圖）</p>
                         </section>
 
                         {/* 已選理賠項目：平板與電腦置右，手機置下 */}
