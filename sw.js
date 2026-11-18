@@ -1,39 +1,60 @@
-// V1.0 security: NEVER serve cached authentication, customer, or HTML pages.
-// Firebase authentication requires an online connection; do not fall back to stale offline pages.
-const CACHE_NAME='cathay-app-v1.0.1';
-const ASSETS=[
-  'assets/css/section.css','manifest.json','icon-192.png','icon-512.png'
+const CACHE_NAME = 'cathay-app-v31';
+const urlsToCache = [
+  './',
+  'index.html',
+  'client.html',
+  'auth.js',
+  'manifest.json',
+  'icon-192.png',
+  'icon-512.png',
+  'calc_labor.html',  // 新增
+  'calc_combo.html',  // 新增
+  'calc_retire.html', // 新增
+  'products.html',
+  'prod_overflow_love.html',   // 新增
+  'prod_accident.html', 
+  'prod_rider.html', 
+  'prod_surgery.html', 
+  'prod_bone.html', 
+  'prod_invest_forever.html', 
+  'prod_invest_full.html', 
+  'event.html',
+  'event_rules.html', // 新增
+  'calc_ah.html',     // 新增
+  'kyushu.jpg',
 ];
-self.addEventListener('install',event=>{
-  event.waitUntil((async()=>{
-    const cache=await caches.open(CACHE_NAME);
-    await Promise.allSettled(ASSETS.map(path=>cache.add(new Request(path,{cache:'reload'}))));
-    await self.skipWaiting();
-  })());
+
+// 安裝 Service Worker
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(urlsToCache))
+      .then(() => self.skipWaiting())
+  );
 });
-self.addEventListener('activate',event=>{
-  event.waitUntil((async()=>{
-    const all=await caches.keys();
-    await Promise.all(all.filter(k=>k.startsWith('cathay-app-')&&k!==CACHE_NAME).map(k=>caches.delete(k)));
-    await self.clients.claim();
-  })());
+
+// 攔截網路請求：有快取就用快取，沒快取就上網抓
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(keys => Promise.all(keys.filter(key => key.startsWith('cathay-app-v') && key !== CACHE_NAME)
+      .map(key => caches.delete(key)))).then(() => self.clients.claim())
+  );
 });
-self.addEventListener('fetch',event=>{
-  const request=event.request, url=new URL(request.url);
-  if(request.method!=='GET'||url.origin!==self.location.origin)return;
-  // A stale auth.js could silently restore insecure login; always request the current code.
-  const needsFreshNetwork=request.mode==='navigate' ||
-    /\/$|\.(?:html?|js|mjs)$/i.test(url.pathname);
-  if(needsFreshNetwork){
-    event.respondWith(fetch(request,{cache:'no-store'}));
+self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') return;
+  const url = new URL(event.request.url);
+  if (url.origin === self.location.origin && url.pathname.endsWith('/products.html')) {
+    event.respondWith(fetch(event.request).then(response => {
+      if (response.ok) {
+        const copy = response.clone();
+        event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.put(event.request,copy)));
+      }
+      return response;
+    }).catch(() => caches.match(event.request)));
     return;
   }
-  event.respondWith((async()=>{
-    const cache=await caches.open(CACHE_NAME);
-    const saved=await cache.match(request);
-    if(saved)return saved;
-    const response=await fetch(request);
-    if(response.ok)cache.put(request,response.clone());
-    return response;
-  })());
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => response || fetch(event.request))
+  );
 });
