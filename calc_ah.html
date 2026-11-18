@@ -50,21 +50,22 @@
  <section class="ah-panel" aria-labelledby="fyp-input">
   <h2 id="fyp-input">① 基礎業績與責任額</h2>
   <p>下列 FYP 請填入<strong>公司業績換算後的 P 數</strong>，而非直接輸入保費金額。基礎業績須已包含下方 3 倍與 2 倍商品的<strong>原始 FYP</strong>，但不含 A&amp;H 競賽加計及證券共銷 P。</p>
+  <p style="color:#087b48;font-weight:650">數字欄位可直接輸入，灰色的「0」只是提示；未填的 P 數自動視為 0。職級責任額仍需另外輸入才能判斷獎金資格。</p>
   <div class="ah-form">
-   <div class="ah-control"><label for="baseFyp">本競賽期間基礎 FYP（P）</label><input id="baseFyp" type="number" min="0" step="0.01" value="0"><small>包含 A&amp;H 原始 FYP、投資型 P；不含證券 P 與加計 P</small></div>
+   <div class="ah-control"><label for="baseFyp">本競賽期間基礎 FYP（P）</label><input id="baseFyp" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0"><small>包含 A&amp;H 原始 FYP、投資型 P；不含證券 P 與加計 P</small></div>
    <div class="ah-control"><label for="dutyP">115 年第 13 工作月職級責任額（P）</label><input id="dutyP" type="number" min="0" step="0.01" placeholder="依職級輸入"><small>個人組基本門檻：100P＋本欄責任額</small></div>
-   <div class="ah-control"><label for="investmentP">上述基礎 FYP 內的投資型 P</label><input id="investmentP" type="number" min="0" step="0.01" value="0"><small>個人組累計採計上限 50P</small></div>
-   <div class="ah-control"><label for="priorOverP">115 年 12 工已核可移轉的超額業績（P）</label><input id="priorOverP" type="number" min="0" step="0.01" value="0"><small>限依規定勾選、確定計入本競賽之部分；不含 A&amp;H 加計</small></div>
-   <div class="ah-control"><label for="priorDeficitP">115 年 12 工未達責任額須補足（P）</label><input id="priorDeficitP" type="number" min="0" step="0.01" value="0"><small>與前項分開填寫，不得重複計算</small></div>
-   <div class="ah-control"><label for="securitiesP">證券業共銷 P（另外輸入）</label><input id="securitiesP" type="number" min="0" step="0.01" value="0"><small>只參與排名調整，不納入 100P＋責任額門檻；上限 30P</small></div>
+   <div class="ah-control"><label for="investmentP">上述基礎 FYP 內的投資型 P</label><input id="investmentP" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0"><small>個人組累計採計上限 50P</small></div>
+   <div class="ah-control"><label for="priorOverP">115 年 12 工已核可移轉的超額業績（P）</label><input id="priorOverP" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0"><small>限依規定勾選、確定計入本競賽之部分；不含 A&amp;H 加計</small></div>
+   <div class="ah-control"><label for="priorDeficitP">115 年 12 工未達責任額須補足（P）</label><input id="priorDeficitP" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0"><small>與前項分開填寫，不得重複計算</small></div>
+   <div class="ah-control"><label for="securitiesP">證券業共銷 P（另外輸入）</label><input id="securitiesP" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0"><small>只參與排名調整，不納入 100P＋責任額門檻；上限 30P</small></div>
   </div>
  </section>
  <section class="ah-panel" aria-labelledby="ah-fyp">
   <h2 id="ah-fyp">② A&amp;H 商品實績（P）</h2>
   <p>以下為基礎 FYP 的組成部分，請<strong>勿重複加入第①區</strong>。116 年 3 倍名單不包含舊制的 FSE、L66、ZCN；商品 FYP 必須依實際舉績認定。</p>
   <div class="ah-form">
-   <div class="ah-control"><label for="ah3xP">3 倍指定商品原始 FYP（P）</label><input id="ah3xP" type="number" min="0" step="0.01" value="0"><small>FPA／FPC、LDA／LDB，皆不含附約</small></div>
-   <div class="ah-control"><label for="ah2xP">其他 A&amp;H 商品原始 FYP（P）</label><input id="ah2xP" type="number" min="0" step="0.01" value="0"><small>依公司當年度公告之 A&amp;H 定義，競賽計績 2 倍</small></div>
+   <div class="ah-control"><label for="ah3xP">3 倍指定商品原始 FYP（P）</label><input id="ah3xP" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0"><small>FPA／FPC、LDA／LDB，皆不含附約</small></div>
+   <div class="ah-control"><label for="ah2xP">其他 A&amp;H 商品原始 FYP（P）</label><input id="ah2xP" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0"><small>依公司當年度公告之 A&amp;H 定義，競賽計績 2 倍</small></div>
    <div class="ah-control"><label>A&amp;H 實績計算方式</label><div style="border:1px solid #d9e6dd;border-radius:10px;background:#f5faf7;padding:13px;min-height:46px;color:#41634f;font-size:.91rem">原始 P＝3 倍商品 P＋其他 A&amp;H P<br>排名額外加計＝2×3 倍商品 P＋1×其他 A&amp;H P</div></div>
   </div>
  </section>
@@ -100,7 +101,7 @@
    <p><a class="ah-row-link" href="event_rules.html">閱讀 116 年日本東北高峰會完整重點整理</a></p>
   </div>
  </section>
- <footer class="hub-footer">116 年 A&amp;H 獎金試算 v2.0｜依上傳 116 年東北高峰會活動辦法 P1、P2、P5、P8 製作｜僅供內部教育訓練</footer>
+ <footer class="hub-footer">116 年 A&amp;H 獎金試算 v2.1｜依上傳 116 年東北高峰會活動辦法 P1、P2、P5、P8 製作｜僅供內部教育訓練</footer>
 </main>
 <script>
 const get = id => document.getElementById(id);
@@ -109,11 +110,11 @@ function money(v){return Math.round(v).toLocaleString('zh-TW')+' 元';}
 function pText(v){return v.toLocaleString('zh-TW',{minimumFractionDigits:2,maximumFractionDigits:2})+' P';}
 function calculate(){
  const ids=['baseFyp','investmentP','priorOverP','priorDeficitP','securitiesP','ah3xP','ah2xP'];
- const values=ids.map(id=>get(id).value.trim()===''?NaN:valueP(id));
+ const values=ids.map(id=>get(id).value.trim()===''?0:valueP(id));
  const dutyEmpty=get('dutyP').value.trim()==='';
  const duty=dutyEmpty?null:valueP('dutyP');
  const error=[];
- ids.forEach((id,i)=>{if(!Number.isFinite(values[i])||values[i]<0)error.push('輸入 P 數不得為空白、負數或無效數值');});
+ ids.forEach((id,i)=>{if(!Number.isFinite(values[i])||values[i]<0)error.push('輸入 P 數不得為負數或無效數值');});
  if(duty!==null&&(!Number.isFinite(duty)||duty<0))error.push('職級責任額必須為有效的非負 P 數');
  const [base,investment,priorOver,priorDeficit,securities,ah3,ah2]=values;
  if(!error.length && investment>base+1e-7)error.push('投資型 P 是基礎 FYP 的一部分，不可大於本競賽期間基礎 FYP');
@@ -174,6 +175,10 @@ function calculate(){
  eligibility.className='ah-status '+(certainPass?'pass':'warn');
  eligibility.textContent=(certainPass?'輸入條件已達 A&H 現金獎金試算門檻，實際核發仍待公司審核。':'A&H 現金獎金尚未確認可核發：')+messages.join('；')+'。高峰會是否入選仍須符合名額及排名。';
 }
+document.querySelectorAll('.ah-control input[type="number"]').forEach(el=>{
+  // If a browser restores an explicit zero, typing a new number can overwrite it directly.
+  el.addEventListener('focus',()=>{if(el.value==='0' && typeof el.select==='function')el.select();});
+});
 document.querySelectorAll('.ah-control input,.ah-control select,.ah-check input').forEach(el=>{
  el.addEventListener('input',calculate);el.addEventListener('change',calculate);
 });
