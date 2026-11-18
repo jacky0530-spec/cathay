@@ -1,7 +1,9 @@
-const CACHE_NAME = 'cathay-app-v36';
+const CACHE_NAME = 'cathay-app-v37';
 const urlsToCache = [
   './',
   'index.html',
+  'hub-ui.css',
+  'calc.html',
   'client.html',
   'auth.js',
   'manifest.json',
