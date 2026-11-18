@@ -15,9 +15,9 @@ assert(rules.users['.write']===true);
 assert(rules.members.$uid['.read']==='auth != null && auth.uid === $uid');
 const js=readFileSync('vip-access/spark/manager.mjs','utf8');
 assert(js.includes("readFirebaseRest('vipRetired/'+encodeURIComponent(code))"));
-assert(js.includes("await set(ref(db,'vipRetired/'+code),true)"));
-assert(js.includes("await remove(ref(db,'whitelist/'+code))"));
-assert(js.includes("await remove(ref(db,'vipProfiles/'+code))"));
+assert(js.includes("await withDeadline(set(ref(db,'vipRetired/'+code),true)"));
+assert(js.includes("await withDeadline(remove(ref(db,'whitelist/'+code))"));
+assert(js.includes("await withDeadline(remove(ref(db,'vipProfiles/'+code))"));
 assert(js.includes("if(enabled)continue")===false); // Retired actions cannot hide the original toggle.
 assert(js.includes('if(!enabled && !RESERVED.has(code) && retirementEnabled)'));
 assert(js.includes("if(current!==false)throw new Error('delete_requires_disabled')"));
