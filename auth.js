@@ -130,39 +130,36 @@ async function performLogin() {
         }
     }
 }
-// --- 5. 底部選單生成器 ---
+// --- 5. 響應式全站導覽（不變動驗證流程） ---
 function buildNavigation() {
-    const path = window.location.pathname;
-    const page = path.split("/").pop() || "index.html";
-
-    const navHTML = `
-    <style>
-        body { padding-bottom: 70px; }
-        .bottom-nav {
-            position: fixed; bottom: 0; left: 0; width: 100%; height: 60px;
-            background: #ffffff; border-top: 1px solid #e0e0e0;
-            display: flex; justify-content: space-around; align-items: center;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 9999;
-            padding-bottom: env(safe-area-inset-bottom);
-        }
-        .nav-item {
-            text-decoration: none; color: #999; text-align: center;
-            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            padding: 5px 0; -webkit-tap-highlight-color: transparent;
-        }
-        .nav-item span { font-size: 20px; margin-bottom: 2px; display: block; }
-        .nav-item div { font-size: 11px; font-weight: 500; } 
-        .nav-item.active { color: #00A651; }
-    </style>
-
-    <div class="bottom-nav">
-        <a href="index.html" class="nav-item ${page === 'index.html' ? 'active' : ''}"><span>🏠</span><div>首頁</div></a>
-        <a href="client.html" class="nav-item ${page === 'client.html' ? 'active' : ''}"><span>👥</span><div>客戶</div></a>
-        <a href="calc.html" class="nav-item ${page === 'calc.html' ? 'active' : ''}"><span>🧮</span><div>試算</div></a>
-        <a href="products.html" class="nav-item ${page === 'products.html' ? 'active' : ''}"><span>🏥</span><div>商品</div></a>
-        <a href="event.html" class="nav-item ${page === 'event.html' ? 'active' : ''}"><span>🏆</span><div>高峰會</div></a>
-    </div>
-    `;
-    
-    document.body.insertAdjacentHTML('beforeend', navHTML);
+    if (document.querySelector('.site-nav')) return;
+    const page = (window.location.pathname.split('/').pop() || 'index.html').toLowerCase();
+    const activeSection = page === 'index.html' ? 'home'
+        : page === 'client.html' ? 'client'
+        : (page === 'calc.html' || page.startsWith('calc_')) ? 'calc'
+        : (page === 'products.html' || page.startsWith('prod_')) ? 'products'
+        : (page === 'event.html' || page.startsWith('event_')) ? 'event'
+        : '';
+    const items = [
+        ['home', 'index.html', '🏠', '首頁'],
+        ['client', 'client.html', '👥', '客戶'],
+        ['calc', 'calc.html', '🧮', '試算'],
+        ['products', 'products.html', '🛡️', '商品'],
+        ['event', 'event.html', '🏆', '高峰會']
+    ];
+    const markup = items.map(([key, href, emoji, label]) =>
+        '<a href="' + href + '" class="site-nav-link' + (activeSection === key ? ' is-active' : '') +
+        '"' + (activeSection === key ? ' aria-current="page"' : '') + '>' +
+        '<span class="site-nav-icon" aria-hidden="true">' + emoji + '</span>' +
+        '<span class="site-nav-label">' + label + '</span></a>'
+    ).join('');
+    const navHtml = '<nav class="site-nav" aria-label="主要功能導覽">' +
+        '<div class="site-nav-inner"><div class="site-nav-brand"><span class="site-nav-brand-icon" aria-hidden="true">🍀</span><span>國泰雲端學習站</span></div>' +
+        '<div class="site-nav-links">' + markup + '</div></div></nav>';
+    const style = document.createElement('style');
+    style.id = 'site-navigation-theme';
+    style.textContent = "\n.site-nav-ready { padding-bottom: calc(86px + env(safe-area-inset-bottom)) !important; }\n.site-nav {position:fixed;bottom:0;left:0;right:0;z-index:9999;background:rgba(255,255,255,.97);border-top:1px solid #d9e8de;box-shadow:0 -6px 24px rgba(13,64,39,.09);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);font-family:-apple-system,BlinkMacSystemFont,\"Segoe UI\",\"Microsoft JhengHei\",sans-serif}\n.site-nav-inner{display:flex;align-items:center;justify-content:center;width:100%;max-width:1180px;margin:0 auto}\n.site-nav-brand{display:none}\n.site-nav-links{display:flex;align-items:stretch;justify-content:space-between;gap:2px;width:100%;min-height:65px;padding:4px 5px calc(4px + env(safe-area-inset-bottom))}\n.site-nav-link{display:flex;flex:1 1 0;min-width:0;min-height:55px;flex-direction:column;justify-content:center;align-items:center;gap:3px;padding:5px 3px;border-radius:12px;text-decoration:none;font-weight:650;color:#6a7b70;transition:background .18s,color .18s;-webkit-tap-highlight-color:transparent}\n.site-nav-icon{font-size:21px;line-height:1.2}\n.site-nav-label{font-size:11.5px;line-height:1.3;white-space:nowrap}\n.site-nav-link.is-active{background:#e7f5ec;color:#087b48}\n.site-nav-link:hover{color:#07693e;background:#f0f8f3}\n.site-nav-link:focus-visible{outline:3px solid #e4ad4f;outline-offset:-3px}\n@media (min-width:600px) and (max-width:1023px) {\n.site-nav-ready{padding-bottom:110px !important}\n.site-nav{bottom:14px;left:50%;right:auto;transform:translateX(-50%);width:min(94vw,720px);border:1px solid #d9e8de;border-radius:22px;overflow:hidden;box-shadow:0 12px 35px rgba(19,75,48,.18)}\n.site-nav-links{padding:7px;min-height:72px;gap:7px}\n.site-nav-link{min-height:57px;flex-direction:row;gap:9px}\n.site-nav-label{font-size:14px}\n}\n@media (min-width:1024px) {\n.site-nav-ready{padding-top:92px !important;padding-bottom:24px !important}\n.site-nav{top:0;bottom:auto;box-shadow:0 5px 25px rgba(15,73,44,.07);border-top:0;border-bottom:1px solid #dce9e0}\n.site-nav-inner{padding:11px 26px;justify-content:space-between;gap:30px}\n.site-nav-brand{display:flex;flex:0 0 auto;align-items:center;gap:10px;color:#0b7044;font-weight:780;font-size:16px;white-space:nowrap}\n.site-nav-brand-icon{display:grid;place-items:center;width:38px;height:38px;border-radius:11px;background:#e9f7ed}\n.site-nav-links{width:auto;min-height:0;padding:0;gap:7px}\n.site-nav-link{flex:0 0 auto;flex-direction:row;gap:8px;min-height:46px;padding:9px 17px;border-radius:11px}\n.site-nav-icon{font-size:18px}\n.site-nav-label{font-size:14px}\n}\n@media(prefers-reduced-motion:reduce){.site-nav-link{transition:none}}\n";
+    document.head.appendChild(style);
+    document.body.insertAdjacentHTML('beforeend', navHtml);
+    document.body.classList.add('site-nav-ready');
 }
