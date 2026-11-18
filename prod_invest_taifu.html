@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>國泰人壽月月泰富 - 撥回與費用試算</title>
+    <script type="module" src="auth.js"></script>
+    <style>
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        
+        /* Header Style */
+        h1 {
+            color: #00994e;
+            text-align: center;
+            font-size: 28px;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        /* Input Section */
+        .input-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .input-group {
+            flex: 1;
+            min-width: 200px;
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            font-size: 14px;
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 8px;
+        }
+        input, select {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            height: 42px;
+            box-sizing: border-box;
+        }
+        input:focus, select:focus {
+            border-color: #00994e;
+            outline: none;
+        }
+
+        /* Green Button */
+        .btn-update {
+            width: 100%;
+            background-color: #00994e;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: background 0.3s;
+        }
+        .btn-update:hover {
+            background-color: #007a3e;
+        }
+        .ref-link {
+            text-align: right;
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 20px;
+        }
+        .ref-link a {
+            color: #888;
+            text-decoration: none;
+        }
+        .ref-link a:hover { text-decoration: underline; }
+
+        /* Two Column Layout */
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .card {
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 20px;
+            background-color: #fff;
+        }
+        .card-header {
+            font-size: 16px;
+            font-weight: bold;
+            color: #00994e;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .card-header::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 16px;
+            background-color: #00994e;
+            margin-right: 8px;
+            border-radius: 2px;
+        }
+
+        /* Data Rows */
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #444;
+            border-bottom: 1px dashed #f0f0f0;
+            padding-bottom: 5px;
+        }
+        .data-row:last-child { border-bottom: none; }
+        .data-val { font-weight: bold; color: #333; }
+        .highlight-val { color: #d9534f; }
+        .note-text { font-size: 12px; color: #999; margin-top: 10px; }
+
+        /* Payout Table Section */
+        .payout-section {
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #00994e;
+            margin-bottom: 5px;
+        }
+        .fund-name-display {
+            text-align: right;
+            font-size: 14px;
+            color: #555;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .match-tier-display {
+            text-align: right;
+            font-size: 14px;
+            color: #d9534f;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        /* Table Style */
+        .payout-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            text-align: center;
+        }
+        .payout-table th {
+            background-color: #eafcf3;
+            color: #00994e;
+            padding: 10px;
+            font-weight: bold;
+            border: 1px solid #d4ece1;
+        }
+        .payout-table td {
+            padding: 10px;
+            border: 1px solid #eee;
+            color: #555;
+            vertical-align: middle;
+        }
+        .active-row {
+            background-color: #fffbe6;
+            font-weight: bold;
+        }
+        .active-row td {
+            color: #00994e;
+            border-top: 2px solid #00994e;
+            border-bottom: 2px solid #00994e;
+        }
+        
+        /* Bottom Summary Box */
+        .summary-box {
+            border: 2px dashed #00994e;
+            border-radius: 8px;
+            padding: 20px;
+            background-color: #f9fffb;
+            margin-bottom: 20px;
+        }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .summary-label { font-size: 15px; color: #333; font-weight: bold; }
+        .summary-value { font-size: 20px; color: #d9534f; font-weight: bold; }
+        .rate-value { font-size: 20px; color: #00994e; font-weight: bold; }
+
+        .bonus-col {
+            color: #d9534f;
+            font-weight: bold;
+            background-color: #fff5f5;
+        }
+        .active-row .bonus-col {
+            background-color: #ffe8e8;
+        }
+
+        /* Footer Warning */
+        .footer-warning {
+            border: 1px solid #ffcccc;
+            background-color: #fff5f5;
+            color: #d9534f;
+            padding: 10px;
+            text-align: center;
+            font-size: 14px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .details-grid { grid-template-columns: 1fr; }
+            .input-row { flex-direction: column; gap: 10px; }
+            .summary-row { flex-direction: column; align-items: flex-end; }
+            .summary-label { margin-bottom: 5px; width: 100%; text-align: left;}
+        }
+    
+        .payout-section { overflow-x:auto; }
+        .payout-table { min-width:630px; }
+        .row-details { font-size:13px;color:#555;line-height:1.85; }
+        .figure-note { border:1px solid #dce9dd;border-radius:7px;background:#f7fbf7;padding:12px 14px;margin:14px 0;line-height:1.7;font-size:13px; }
+        .data-row > span:first-child { padding-right:12px; }
+        .data-row .data-val {text-align:right;}
+        .fee-sub {margin:8px 0 0;font-size:12px;color:#666;line-height:1.7;}
+        .warning-note {border-radius:8px;background:#fffaeb;border:1px solid #ead7a6;padding:13px;margin-bottom:18px;color:#6a5614;font-size:13px;line-height:1.8;}
+        .fund-type {font-size:12px;color:#607469;text-align:right;margin-top:4px;}
+        @media (max-width: 520px) {body{padding:10px;} .container{padding:16px;}h1{font-size:23px;} .card{padding:15px;} .payout-section{padding:12px;} }
+    </style>
+</head>
+<body>
+<div class="container">
+  <div class="warning-note"><strong>資料及試算範圍：</strong>依本次提供的「月月泰富」費用表及投資帳戶資產撥回標準製作。行政費按帳戶價值逐月扣取，非一次性保費扣除。<strong>投入單位數是假設保費全額配置、尚未扣除首次投資配置前行政費、保險成本及其他實際費用的比較示例</strong>，不等於真實保單帳戶價值。</div>
+  <h1>國泰人壽月月泰富 - 現金撥回與費用試算</h1>
+  <div class="subtitle">泰優利組合預設｜每月帳戶行政費與解約費用分開試算｜僅供教育訓練</div>
+  <div class="input-row">
+    <div class="input-group"><label for="invTwd">投入保險費（新臺幣）</label><input id="invTwd" type="text" inputmode="decimal" value="1,000,000"></div>
+    <div class="input-group"><label for="rate">美金匯率（即期賣出，示例）</label><input id="rate" type="number" min="0.01" step="0.01" value="33"></div>
+    <div class="input-group"><label for="fundSelect">投資標的（資產撥回帳戶）</label>
+      <select id="fundSelect" onchange="switchFund()">
+        <option value="taiyouli" selected>泰優利組合（美元，國泰投信）</option>
+        <option value="mit">MIT 多元收益組合（美元，國泰投信）</option>
+        <option value="asia">亞太三鑫（新臺幣，國泰投信）</option>
+      </select></div>
+    <div class="input-group"><label for="nav" id="navLabel">投資帳戶單位淨值（USD）</label><input id="nav" type="number" min="0.00001" step="0.01" value="10.3"></div>
+  </div>
+  <button class="btn-update" onclick="calculate()">更新試算結果</button>
+  <div class="ref-link">匯率參考：<a href="https://www.cathaybk.com.tw/cathaybk/personal/product/deposit/currency-billboard/" target="_blank" rel="noopener noreferrer">國泰世華銀行即期賣出匯率</a>（本頁不自動更新）</div>
+
+  <div class="details-grid">
+    <div class="card">
+      <div class="card-header">📊 投資明細（假設配置）</div>
+      <div class="data-row"><span>原始保險費：</span><span class="data-val" id="dispTwd">—</span></div>
+      <div class="data-row"><span>模擬投入金額：</span><span class="data-val" id="dispNetTwd">—</span></div>
+      <div class="data-row"><span>投資帳戶幣別：</span><span class="data-val" id="dispCurrency">—</span></div>
+      <div class="data-row"><span>換算投資金額：</span><span class="data-val" id="dispUsd">—</span></div>
+      <div class="data-row"><span>模擬取得單位數：</span><span class="data-val" id="dispUnits">—</span></div>
+      <div class="note-text">*假設費用尚未扣減、一次性按輸入匯率及淨值配置。實際帳戶單位數須以配置當日交易資訊及所扣費用為準。</div>
+    </div>
+    <div class="card">
+      <div class="card-header">💰 保單費用（依提供費用表）</div>
+      <div class="data-row"><span>保單行政費：</span><span class="data-val">逐月按帳戶價值計算</span></div>
+      <div class="data-row"><span>第 1 年每月費率：</span><span class="data-val">0.11%</span></div>
+      <div class="data-row"><span>第 2 年每月費率：</span><span class="data-val">0.08%</span></div>
+      <div class="data-row"><span>第 3 年每月費率：</span><span class="data-val">0.05%</span></div>
+      <div class="data-row"><span>第 4 年每月費率：</span><span class="data-val">0.03%</span></div>
+      <div class="data-row"><span>第 5 年起：</span><span class="data-val">0%</span></div>
+      <div class="data-row"><span>保單管理費：</span><span class="data-val">無</span></div>
+      <div class="data-row"><span>委託投資帳戶經理費：</span><span class="data-val">每年 1.7%</span></div>
+      <div class="note-text">*委託帳戶經理費已反映於淨值，不重複扣收；每月保險成本另依被保險人條件計算，本頁未納入。</div>
+    </div>
+  </div>
+
+  <div class="payout-section">
+    <div class="section-title">現金撥回試算（依提供的資產撥回標準）</div>
+    <div class="fund-name-display" id="dispFundName">—</div>
+    <div class="fund-type" id="fundCurrencyText">—</div>
+    <div class="data-row" style="justify-content:flex-end;border:none;padding:0"><span>目前淨值：</span><span id="dispNav" style="margin-left:10px;font-size:18px;font-weight:bold">—</span></div>
+    <div class="match-tier-display" id="dispTier">符合級距：—</div>
+    <table class="payout-table">
+      <thead><tr>
+        <th>淨值區間</th>
+        <th id="fixedUnitHeading">定期每月撥回<br>（USD／單位）</th>
+        <th id="variableUnitHeading">不定期撥回<br>（USD／單位／月）</th>
+        <th>定期每月金額<br>（新臺幣）</th>
+        <th>條件性不定期金額<br>（新臺幣／次）</th>
+        <th>若當月兩者均發放<br>（新臺幣）</th>
+      </tr></thead>
+      <tbody id="payoutTableBody"></tbody>
+    </table>
+    <div class="figure-note">
+      <strong>機制說明：</strong>定期撥回需符合淨值門檻；額外「不定期撥回」依該月評價日及公告條件判定，符合門檻亦不代表未來每月保證領取。撥回可能來自本金，帳戶資產可能減少。
+    </div>
+  </div>
+
+  <div class="summary-box">
+    <div class="summary-row"><span class="summary-label">目前淨值級距－示範每月定期撥回：</span><span class="summary-value" id="sumFixed">—</span></div>
+    <div class="summary-row"><span class="summary-label">目前級距－若當月符合不定期撥回：</span><span class="summary-value" id="sumVariable">—</span></div>
+    <div class="summary-row"><span class="summary-label">若當月兩項均發放（示例）：</span><span class="summary-value" id="sumMonth">—</span></div>
+    <div class="summary-row"><span class="summary-label">僅定期撥回的年化示例（12 個月皆符合）：</span><span class="summary-value" id="sumFixedYear">—</span></div>
+    <div class="summary-row" style="margin-top:15px;padding-top:10px;border-top:1px dashed #ccc"><span class="summary-label">兩項每月均符合時的年化情境（非承諾）：</span><span class="summary-value" id="sumYearTotal">—</span></div>
+    <div class="summary-row"><span class="summary-label">上述現金撥回／原保費比例（非報酬率）：</span><span class="rate-value" id="sumRate">—</span></div>
+  </div>
+
+  <div class="payout-section">
+    <div class="section-title">保單行政費年度表（每月扣繳）</div>
+    <p class="fee-sub">每月保單行政費＝當次費用計算基礎的保單帳戶價值 × 當年度每月費率。下表示例均假設<strong>每月費用計算基礎等於原始保費</strong>，僅作同基礎費率比較；不代表真實帳戶價值、逐月遞減軌跡或保單每年實際扣款。</p>
+    <table class="payout-table">
+      <thead><tr><th>年度</th><th>第 1 年</th><th>第 2 年</th><th>第 3 年</th><th>第 4 年</th><th>第 5 年及以後</th></tr></thead>
+      <tbody>
+        <tr><td>每月行政費率</td><td>0.11%</td><td>0.08%</td><td>0.05%</td><td>0.03%</td><td>0%</td></tr>
+        <tr><td>假設每月行政費（元）</td><td id="admin1">—</td><td id="admin2">—</td><td id="admin3">—</td><td id="admin4">—</td><td id="admin5">0</td></tr>
+      </tbody>
+    </table>
+    <div class="row-details">首次投資配置日前的保單行政費依相關條款辦理；保險成本按性別、年齡、體況及淨危險保額逐月計收，未列入本試算。</div>
+  </div>
+
+  <div class="payout-section">
+    <div class="section-title">解約費用與部分提領規則</div>
+    <p class="fee-sub">解約費用＝（申請辦理次一個資產評價日的保單帳戶價值－配息停泊標的價值）×當年度解約費用率。以下示例假設該計算基礎恆為投入保費，<strong>不是實際可領回解約金或費用承諾</strong>。</p>
+    <table class="payout-table">
+      <thead><tr><th>保單年度</th><th>第 1 年</th><th>第 2 年</th><th>第 3 年</th><th>第 4 年</th><th>第 5 年及以後</th></tr></thead>
+      <tbody>
+        <tr><td>解約費率</td><td>6%</td><td>5%</td><td>3%</td><td>2%</td><td>0%</td></tr>
+        <tr><td>假設解約費用（元）</td><td id="surrenderFee1">—</td><td id="surrenderFee2">—</td><td id="surrenderFee3">—</td><td id="surrenderFee4">—</td><td id="surrenderFee5">0</td></tr>
+      </tbody>
+    </table>
+    <div class="row-details"><strong>投資標的轉換：</strong>每保單年度前 6 次免收；第 7～12 次若以網路申請亦免收；超過次數者每次得自轉換金額扣新臺幣 500 元。投資標的關閉、終止及配息停泊標的轉換等情形另有條款例外。<br><strong>部分提領：</strong>有解約費用率的保單年度，以部分提領金額扣除配息停泊標的提領金額後，乘以該年解約費率；解約費率為零的年度，每保單年度 4 次免費，超過每次扣新臺幣 1,000 元，特定狀況依條款辦理。</div>
+  </div>
+
+  <div class="footer-warning">⚠️ 本頁僅供內部教育訓練。撥回金額與年化比例不是投資報酬率，亦不表示保證收益；可能由本金支付。未計入保險成本、帳戶價值變動、配息造成的單位變化、匯差及首次配置前相關費用。保單權利義務依正式條款，投資標的資產撥回規則依最新公告。</div>
+  <div class="note-text" style="text-align:center;padding:10px">月月泰富試算 v1.0｜2026-11-18</div>
+</div>
+<script>
+/* Monthly distribution terms are read from the two user-supplied screenshots; show conditional payout separately. */
+const funds = {
+  taiyouli: {
+    name:"委託國泰投信投資帳戶－泰優利組合（新現金撥回）",
+    currency:"USD", fixedThreshold:8, variableThreshold:10.2, fixedUnit:0.04167, variableUnit:0.04167
+  },
+  mit: {
+    name:"委託國泰投信投資帳戶－MIT 多元收益組合（新現金撥回）",
+    currency:"USD", fixedThreshold:8, variableThreshold:10.3, fixedUnit:0.04167, variableUnit:0.1
+  },
+  asia: {
+    name:"委託國泰投信投資帳戶－亞太三鑫（現金撥回）",
+    currency:"TWD", fixedThreshold:8, variableThreshold:10.2, fixedUnit:0.04167, variableUnit:0.04167
+  }
+};
+const adminFeeRates = [0.0011,0.0008,0.0005,0.0003,0];
+const surrenderFeeRates = [0.06,0.05,0.03,0.02,0];
+const $ = id => document.getElementById(id);
+const formatMoney = amount => Math.round(amount).toLocaleString("zh-TW")+" 元";
+const formatUnits = amount => amount.toLocaleString("zh-TW",{maximumFractionDigits:2,minimumFractionDigits:2});
+const cleanNumber = x => Number(String(x).trim().replace(/,/g,""));
+function switchFund() {
+  const fund = funds[$("fundSelect").value];
+  $("navLabel").innerText = "投資帳戶單位淨值（"+fund.currency+"）";
+  calculate();
+}
+function calculate() {
+  const principal = cleanNumber($("invTwd").value);
+  const fx = cleanNumber($("rate").value);
+  const nav = cleanNumber($("nav").value);
+  const fund = funds[$("fundSelect").value];
+  if (!fund || !Number.isFinite(principal) || !Number.isFinite(fx) || !Number.isFinite(nav) || principal<=0 || fx<=0 || nav<=0) {
+    alert("請輸入有效的保費、匯率及單位淨值（皆須大於 0）。");
+    return;
+  }
+  // User-supplied schedule states monthly policy administrative fees, not an up-front premium deduction.
+  // Invested amount is a deliberately simplified gross allocation hypothesis.
+  const invested = fund.currency === "USD" ? principal / fx : principal;
+  const units = invested / nav;
+  const toTwd = fund.currency === "USD" ? fx : 1;
+  $("dispTwd").innerText = formatMoney(principal);
+  $("dispNetTwd").innerText = formatMoney(principal) + "（未扣相關費用）";
+  $("dispCurrency").innerText = fund.currency === "USD" ? "美元 USD" : "新臺幣 TWD";
+  $("dispUsd").innerText = fund.currency + " " + formatUnits(invested);
+  $("dispUnits").innerText = formatUnits(units) + " 單位";
+  $("dispFundName").innerText = fund.name;
+  $("fundCurrencyText").innerText = "單位淨值及每單位撥回幣別：" + fund.currency + "（新臺幣帳戶不套用美元匯率）";
+  $("dispNav").innerText = fund.currency + " " + formatUnits(nav);
+  $("fixedUnitHeading").innerText = "定期每月撥回（" + fund.currency + "／單位）";
+  $("variableUnitHeading").innerText = "不定期撥回（" + fund.currency + "／單位／月）";
+  const tierSpecs = [
+    {min:fund.variableThreshold, max:null, label:"淨值 ≥ "+fund.variableThreshold, fixed:fund.fixedUnit, extra:fund.variableUnit},
+    {min:fund.fixedThreshold, max:fund.variableThreshold, label:fund.fixedThreshold+" ≤ 淨值 < "+fund.variableThreshold, fixed:fund.fixedUnit, extra:0},
+    {min:null, max:fund.fixedThreshold, label:"淨值 < "+fund.fixedThreshold, fixed:0, extra:0}
+  ];
+  $("payoutTableBody").innerHTML = "";
+  let currentFixed = 0, currentExtra = 0;
+  let currentTier = "—";
+  for (const tier of tierSpecs) {
+    const matches = (tier.min === null || nav >= tier.min) && (tier.max === null || nav < tier.max);
+    const fixedTwd = units * tier.fixed * toTwd;
+    const extraTwd = units * tier.extra * toTwd;
+    if (matches) {currentFixed=fixedTwd; currentExtra=extraTwd;currentTier=tier.label;}
+    const tr = document.createElement("tr");
+    if (matches) tr.className = "active-row";
+    const fixedUnitText = tier.fixed ? tier.fixed.toFixed(5) : "—";
+    const extraUnitText = tier.extra ? tier.extra.toFixed(5) : "—";
+    tr.innerHTML = "<td>"+tier.label+"</td><td>"+fixedUnitText+"</td><td class='bonus-col'>"+extraUnitText+"</td><td>"+(tier.fixed?formatMoney(fixedTwd):"—")+"</td><td class='bonus-col'>"+(tier.extra?formatMoney(extraTwd):"—")+"</td><td>"+formatMoney(fixedTwd+extraTwd)+"</td>";
+    $("payoutTableBody").appendChild(tr);
+  }
+  $("dispTier").innerText = "符合級距：" + currentTier;
+  $("sumFixed").innerText = formatMoney(currentFixed);
+  $("sumVariable").innerText = currentExtra > 0 ? formatMoney(currentExtra)+"（條件符合才有機會撥回）" : "0 元";
+  $("sumMonth").innerText = formatMoney(currentFixed+currentExtra);
+  $("sumFixedYear").innerText = formatMoney(currentFixed*12);
+  $("sumYearTotal").innerText = formatMoney((currentFixed+currentExtra)*12);
+  $("sumRate").innerText = (((currentFixed+currentExtra)*12/principal)*100).toFixed(2)+"%";
+  adminFeeRates.forEach((v,i)=>{$("admin"+(i+1)).innerText = formatMoney(principal*v);});
+  surrenderFeeRates.forEach((v,i)=>{$("surrenderFee"+(i+1)).innerText = formatMoney(principal*v);});
+}
+window.onload = switchFund;
+</script>
+</body></html>
