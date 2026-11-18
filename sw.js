@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cathay-app-v39';
+const CACHE_NAME = 'cathay-app-v40';
 const urlsToCache = [
   './',
   'index.html',
@@ -14,7 +14,8 @@ const urlsToCache = [
   'calc_retire.html', // 新增
   'products.html',
   'prod_overflow_love.html',   // 新增
-  'prod_accident.html', 
+  'prod_accident.html',
+  'prod_accident_history.html', 
   'prod_rider.html', 
   'prod_surgery.html', 
   'prod_bone.html', 
