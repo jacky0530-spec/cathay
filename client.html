@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>客戶資料管理系統 (自動日期修復版)</title>
     <script type="module" src="auth.js"></script>
+    <style id="cathay-preauth">body{visibility:hidden!important}</style>
+
 
     <style>
         :root {
@@ -226,11 +228,17 @@
             <button onclick="saveData()" id="saveBtn" class="btn-save">儲存資料</button>
             <button onclick="cancelEdit()" id="cancelBtn" class="btn-cancel">取消編輯</button>
             <button onclick="exportData()" class="btn-export">匯出 Excel (CSV)</button>
+<button type="button" onclick="exportBackupJSON()" class="btn-export" style="background:#176d77">下載完整 JSON 備份</button>
+<button type="button" onclick="uploadCloudBackup()" class="btn-export" style="background:#386e54">新增雲端備份版本</button>
+<button type="button" onclick="restoreCloudBackup()" class="btn-export" style="background:#3363a0">選擇雲端版本合併</button>
         </div>
 
-        <div class="import-section">
+        <p style="color:#775019;background:#fff8e8;padding:11px;border-radius:8px">⚠️ 目前資料儲存在這台裝置的瀏覽器中。請定期下載完整 JSON 備份並妥善加密保存。</p>
+<div class="import-section">
             <span style="font-size: 14px; font-weight: bold;">匯入資料：</span>
             <input type="file" id="csvFileInput" accept=".csv">
+<input type="file" id="jsonFileInput" accept=".json" aria-label="選擇 JSON 備份檔案">
+<button type="button" onclick="importBackupJSON()" class="btn-import">合併 JSON 備份</button>
             <button onclick="importCSV()" class="btn-import">確認匯入</button>
         </div>
     </div>
@@ -402,6 +410,97 @@
         renderTable(records);
     }
 
+    function escapeHTML(value) { return String(value==null?'':value).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[ch]); }
+    function exportBackupJSON() {
+      let records;try{records=JSON.parse(localStorage.getItem('contactRecords')||'[]');}catch(e){alert('客戶資料讀取錯誤，請勿清除瀏覽器資料。');return;}
+      if(!Array.isArray(records)){alert('客戶資料格式異常');return;}
+      const b=new Blob([JSON.stringify({schemaVersion:1,exportedAt:new Date().toISOString(),records},null,2)],{type:'application/json'});
+      const url=URL.createObjectURL(b),a=document.createElement('a');a.href=url;a.download='cathay-client-backup-'+new Date().toISOString().slice(0,10)+'.json';
+      document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);
+    }
+
+    function getClientRecords() {
+      const records=JSON.parse(localStorage.getItem('contactRecords')||'[]');
+      if(!Array.isArray(records))throw Error('資料格式不符');
+      return records;
+    }
+    function recordFingerprint(r) {
+      return ['recordDate','name','phone','lineId','address','experience','notes']
+        .map(key=>String(r[key]==null?'':r[key])).join('\u001f');
+    }
+    function mergeClientRecords(incoming) {
+      if(!Array.isArray(incoming))throw Error('備份格式不符');
+      const local=getClientRecords();
+      const existing=new Set(local.map(recordFingerprint));
+      const occupied=new Set(local.map(r=>String(r.id)));
+      let nextId=Date.now();
+      for(const record of local){
+        const id=Number(record.id);
+        if(Number.isSafeInteger(id)) nextId=Math.max(nextId,id);
+      }
+      nextId+=1;
+      let added=0,skipped=0;
+      for(const candidate of incoming){
+        if(!candidate||typeof candidate!=='object'||typeof candidate.name!=='string'||typeof candidate.phone!=='string'){skipped++;continue;}
+        const key=recordFingerprint(candidate);
+        if(existing.has(key)){skipped++;continue;}
+        const record={...candidate};
+        const proposed=Number(record.id);
+        if(!Number.isSafeInteger(proposed)||occupied.has(String(proposed))){record.id=nextId++;}else{record.id=proposed;}
+        occupied.add(String(record.id));existing.add(key);local.push(record);added++;
+      }
+      localStorage.setItem('contactRecords',JSON.stringify(local));
+      loadData();
+      alert('合併完成：新增 '+added+' 筆、略過重複或格式不符 '+skipped+' 筆。本機資料原有筆數仍保留。');
+    }
+    async function uploadCloudBackup() {
+      try{
+        const records=getClientRecords();
+        if(!records.length){alert('本機沒有資料，不允許上傳空備份。');return;}
+        if(!confirm('確定將本機 '+records.length+' 筆客戶資料新增為個人雲端備份版本？系統不會覆蓋之前的版本。'))return;
+        const result=await window.cathayCloud.backup(records);
+        alert('已新增 '+result.count+' 筆的雲端備份版本（'+result.updatedAt+'）。之前版本仍保留。');
+      }catch(e){alert('雲端備份失敗：請確認已登入、網路與 Firebase 權限設定。');}
+    }
+    async function selectCloudBackup() {
+      const versions=await window.cathayCloud.listBackups();
+      if(!versions.length){alert('目前找不到個人雲端備份。');return null;}
+      if(versions.length===1)return versions[0];
+      const summary=versions.map((v,i)=>(i+1)+'. '+v.updatedAt+'（'+v.count+' 筆）').join('\n');
+      const choice=prompt('請選擇要合併的備份版本編號（最多顯示最近20份）：\n'+summary,'1');
+      if(choice===null)return null;
+      const index=Number(choice);
+      if(!/^\d+$/.test(choice.trim())||!Number.isInteger(index)||index<1||index>versions.length){
+        alert('備份編號無效，沒有更動任何客戶資料。');
+        return null;
+      }
+      return versions[index-1];
+    }
+    async function restoreCloudBackup() {
+      try{
+        const selected=await selectCloudBackup();
+        if(!selected)return;
+        const data=await window.cathayCloud.restore(selected.id);
+        if(!data||data.schemaVersion!==1||!Array.isArray(data.records)){alert('此雲端備份格式不符，未更動本機資料。');return;}
+        if(!confirm('選取 '+selected.updatedAt+' 的 '+data.records.length+' 筆備份。\n將先提出本機 JSON 下載，再以「合併」方式匯入；原有記錄不會被覆蓋。要繼續嗎？'))return;
+        exportBackupJSON();
+        mergeClientRecords(data.records);
+      }catch(e){alert('雲端讀取或合併失敗，請先核對本機資料。');}
+    }
+    async function importBackupJSON() {
+      const input=document.getElementById('jsonFileInput');
+      const file=input.files&&input.files[0];
+      if(!file){alert('請先選擇 JSON 備份檔');return;}
+      try{
+        const data=JSON.parse(await file.text());
+        if(data.schemaVersion!==1||!Array.isArray(data.records))throw Error('Invalid backup');
+        if(!confirm('確定將 '+data.records.length+' 筆 JSON 備份合併進目前資料？不會清除既有資料。'))return;
+        exportBackupJSON();
+        mergeClientRecords(data.records);
+        input.value='';
+      }catch(error){alert('JSON 檔案格式不正確或匯入失敗，本機資料未清除。');}
+    }
+
     function renderTable(data) {
         const tbody = document.getElementById('tableBody');
         const noDataMsg = document.getElementById('noDataMsg');
@@ -422,21 +521,22 @@
 
         data.forEach(record => {
             const displayDate = record.recordDate || '';
-            const displayLine = record.lineId ? `<span class="line-id-text">${record.lineId}</span>` : '';
+            const safeId = Number.isSafeInteger(Number(record.id)) ? Number(record.id) : null;
+            const displayLine = record.lineId ? `<span class="line-id-text">${escapeHTML(record.lineId)}</span>` : '';
 
             const row = `
                 <tr>
-                    <td>${displayDate}</td>
-                    <td><strong>${record.name}</strong></td>
-                    <td>${record.phone}</td>
+                    <td>${escapeHTML(displayDate)}</td>
+                    <td><strong>${escapeHTML(record.name)}</strong></td>
+                    <td>${escapeHTML(record.phone)}</td>
                     <td>${displayLine}</td>
-                    <td>${record.address}</td>
-                    <td>${record.experience}</td>
-                    <td>${record.notes}</td>
+                    <td>${escapeHTML(record.address)}</td>
+                    <td>${escapeHTML(record.experience)}</td>
+                    <td>${escapeHTML(record.notes)}</td>
                     <td>
                         <div class="action-btns">
-                            <button class="btn-edit" onclick="editData(${record.id})">編輯</button>
-                            <button class="btn-delete" onclick="deleteData(${record.id})">刪除</button>
+                            <button class="btn-edit" onclick="editData(${safeId})">編輯</button>
+                            <button class="btn-delete" onclick="deleteData(${safeId})">刪除</button>
                         </div>
                     </td>
                 </tr>
@@ -462,72 +562,100 @@
         renderTable(filtered);
     }
 
-    function exportData() {
-        let records = JSON.parse(localStorage.getItem('contactRecords')) || [];
-        if(records.length === 0) {
-            alert("沒有資料可以匯出");
-            return;
-        }
-        let csvContent = "\uFEFF"; 
-        csvContent += "日期,姓名,電話,LineID,地址,工作經歷,聯絡內容\n";
-
-        records.forEach(row => {
-            const clean = text => text ? text.replace(/,/g, "，").replace(/\n/g, " ") : "";
-            const line = `${row.recordDate || ''},${clean(row.name)},${clean(row.phone)},${clean(row.lineId)},${clean(row.address)},${clean(row.experience)},${clean(row.notes)}`;
-            csvContent += line + "\n";
-        });
-
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
-        const url = URL.createObjectURL(blob);
-        link.href = url;
-        link.download = `客戶資料_${new Date().toISOString().split('T')[0]}.csv`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+    // CSV is an exchange format; complete archival/restoration uses the lossless JSON backup.
+    function csvEncodeCell(value) {
+        let text=String(value==null?'':value);
+        // Prevent spreadsheet software interpreting imported customer text as formulas.
+        if(/^\s*[=+\-@]/.test(text))text="'"+text;
+        return '"'+text.replace(/"/g,'""')+'"';
     }
 
-    function importCSV() {
-        const fileInput = document.getElementById('csvFileInput');
-        const file = fileInput.files[0];
-        if (!file) { alert("請先選擇 CSV 檔案"); return; }
-
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            try {
-                const text = e.target.result;
-                const lines = text.split('\n');
-                let records = JSON.parse(localStorage.getItem('contactRecords')) || [];
-                let count = 0;
-
-                for (let i = 1; i < lines.length; i++) {
-                    const line = lines[i].trim();
-                    if (!line) continue;
-                    const cols = line.split(',');
-                    if (cols.length >= 3) {
-                        records.push({
-                            id: Date.now() + i,
-                            createdDate: new Date().toLocaleString(),
-                            recordDate: cols[0].trim(),
-                            name: cols[1].trim(),
-                            phone: cols[2].trim(),
-                            lineId: cols[3] ? cols[3].trim() : "",
-                            address: cols[4] ? cols[4].trim() : "",
-                            experience: cols[5] ? cols[5].trim() : "",
-                            notes: cols[6] ? cols[6].trim() : ""
-                        });
-                        count++;
-                    }
-                }
-                localStorage.setItem('contactRecords', JSON.stringify(records));
-                loadData();
-                alert(`匯入成功！新增了 ${count} 筆資料。`);
-                fileInput.value = '';
-            } catch (err) {
-                alert("匯入失敗，請確認檔案格式正確。");
+    function csvParseText(raw) {
+        const source=String(raw==null?'':raw).replace(/^\uFEFF/,'');
+        const rows=[];
+        let row=[],field='',inQuotes=false,afterQuote=false;
+        for(let i=0;i<source.length;i++){
+            const c=source[i];
+            if(inQuotes){
+                if(c==='"'){
+                    if(source[i+1]==='"'){field+='"';i++;}
+                    else {inQuotes=false;afterQuote=true;}
+                }else field+=c;
+                continue;
             }
-        };
-        reader.readAsText(file);
+            if(c===','){
+                row.push(field);field='';afterQuote=false;
+            }else if(c==='\n'||c==='\r'){
+                if(c==='\r'&&source[i+1]==='\n')i++;
+                if(row.length||field!==''||afterQuote)rows.push([...row,field]);
+                row=[];field='';afterQuote=false;
+            }else if(c==='"'&&field===''&&!afterQuote){
+                inQuotes=true;
+            }else{
+                if(afterQuote||c==='"')throw new Error('CSV 欄位引號格式不正確');
+                field+=c;
+            }
+        }
+        if(inQuotes)throw new Error('CSV 欄位引號未結束');
+        if(row.length||field!==''||afterQuote)rows.push([...row,field]);
+        return rows;
+    }
+
+    function exportData() {
+        let records;
+        try {records=getClientRecords();}
+        catch(e){alert("客戶資料讀取異常，請勿清除瀏覽器資料。");return;}
+        if(records.length===0){alert("沒有資料可以匯出");return;}
+        const headings=['日期','姓名','電話','LineID','地址','工作經歷','聯絡內容'];
+        const csvLines=[headings.map(csvEncodeCell).join(',')];
+        for(const row of records){
+            const values=[row.recordDate,row.name,row.phone,row.lineId,row.address,row.experience,row.notes];
+            csvLines.push(values.map(csvEncodeCell).join(','));
+        }
+        const blob=new Blob(['\uFEFF'+csvLines.join('\r\n')+'\r\n'],{type:'text/csv;charset=utf-8;'});
+        const link=document.createElement('a');
+        const url=URL.createObjectURL(blob);
+        link.href=url;
+        link.download='客戶資料_'+new Date().toISOString().slice(0,10)+'.csv';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(()=>URL.revokeObjectURL(url),10000);
+    }
+
+    async function importCSV() {
+        const input=document.getElementById('csvFileInput');
+        const file=input.files&&input.files[0];
+        if(!file){alert('請先選擇 CSV 檔案');return;}
+        try{
+            if(file.size>20*1024*1024)throw new Error('檔案過大，請分批匯入');
+            const rows=csvParseText(await file.text());
+            if(rows.length<2)throw new Error('CSV 沒有有效的客戶資料');
+            const header=rows.shift().map(s=>s.replace(/^\uFEFF/,'').trim());
+            if(header[0]!=='日期'||header[1]!=='姓名'||header[2]!=='電話')
+                throw new Error('CSV 欄位不符：必須依序包含日期、姓名、電話');
+            const incoming=[];
+            for(let i=0;i<rows.length;i++){
+                const cols=rows[i];
+                if(cols.every(s=>!s.trim()))continue;
+                if(cols.length<3||cols.length>7)throw new Error('第 '+(i+2)+' 列欄位數量錯誤');
+                if(!cols[1].trim()||!cols[2].trim())throw new Error('第 '+(i+2)+' 列姓名或電話空白');
+                incoming.push({
+                    recordDate:cols[0].trim(),name:cols[1].trim(),phone:cols[2].trim(),
+                    lineId:(cols[3]||'').trim(),address:(cols[4]||'').trim(),
+                    experience:(cols[5]||'').trim(),notes:(cols[6]||'').trim(),
+                    createdDate:new Date().toLocaleString()
+                });
+            }
+            if(!incoming.length)throw new Error('檔案內沒有有效紀錄');
+            const original=getClientRecords();
+            if(!confirm('即將合併 '+incoming.length+' 筆 CSV 紀錄，系統會跳過重複內容。原有 '+original.length+' 筆紀錄不會被覆蓋；請先確認已有完整 JSON 備份。確定繼續嗎？'))return;
+            // Only the merge routine writes to storage; no partial per-row writes.
+            mergeClientRecords(incoming);
+            input.value='';
+        }catch(e){
+            alert('CSV 匯入未執行：'+(e.message||'檔案格式錯誤')+'。請核對原本資料筆數。');
+        }
     }
 </script>
 

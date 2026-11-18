@@ -15,6 +15,7 @@
     button:disabled{background:#9bafa4;cursor:not-allowed}
     .steps{padding-left:22px;line-height:1.8}a{color:#006d42}
   </style>
+  <style id="cathay-preauth">body{visibility:hidden!important}</style>
 </head>
 <body>
 <main>
@@ -30,10 +31,13 @@
     <li>不同手機、平板、電腦的原始資料可能不同，請各自備份並保存檔案。</li>
   </ol>
   <p><small>這是唯讀備份頁面，沒有雲端同步或其他傳輸功能。資料一直留在原瀏覽器，直到您自行清除網站資料。</small></p>
-  <p><strong>下載後的下一步：</strong>請使用 <a href="backup-verify.html">JSON 備份檔驗證工具</a> 檢查筆數、格式與 SHA-256。檔案只會在本機瀏覽器處理，不會上傳。</p>
+  <p><strong>下載後：</strong><a href="backup-verify.html">檢查 JSON 備份是否完整</a>。驗證只在本機進行，不會上傳個人資料。</p>
   <p><a href="client.html">返回原客戶管理頁</a></p>
 </main>
-<script>
+<script type="module">
+// V1.0: unlike the temporary legacy main export page, the post-migration page requires Firebase membership.
+import "./auth.js";
+await window.cathayAuthReady;
 (() => {
   'use strict';
   const status=document.getElementById('status');

@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const src=readFileSync('vip-access/spark/manager.mjs','utf8');
+assert(src.includes('async function readFirebaseRest(path)'));
+assert(src.includes("endpoint.searchParams.set('auth',idToken)"));
+assert(src.includes("referrerPolicy:'no-referrer'"));
+assert(src.includes("cache:'no-store'"));
+assert(src.includes('new AbortController()'));
+assert(src.includes("if(response.status===401||response.status===403)"));
+assert(src.includes("readFirebaseRest('members/'+encodeURIComponent(uid))"));
+assert(src.includes("readFirebaseRest('whitelist'),readFirebaseRest('vipProfiles')"));
+assert(!src.includes("get(ref(db,'members/'+uid)"));
+assert(!src.includes("get(ref(db,'vipProfiles')"));
+assert(src.includes("nextVipStatus(current,enabled)"));
+assert(src.includes('normalizeNewVipCode'));
+assert(src.includes("say('步驟 2／3：帳號驗證成功"));
+assert(!src.includes('localStorage.clear('));
+console.log('Firebase Spark v0.1.5 REST member verification and list loading: PASS');

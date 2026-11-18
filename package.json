@@ -1,0 +1,15 @@
+{
+  "name": "cathay-v1-security-tests",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:static": "node scripts/check-v1.mjs",
+    "test:rules": "firebase emulators:exec --only database --project demo-cathay-v1 \"node scripts/test-database-rules.mjs && node scripts/test-transition-rules.mjs && node scripts/test-spark-rules.mjs\""
+  },
+  "devDependencies": {
+    "firebase": "13.3.0",
+    "@firebase/rules-unit-testing": "6.0.0",
+    "firebase-tools": "15.36.0"
+  }
+}

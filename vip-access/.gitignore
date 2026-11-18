@@ -1,0 +1,8 @@
+# Never commit credential files, development environment secrets or local artifacts.
+.env
+.env.*
+node_modules/
+*.service-account.json
+*serviceAccountKey*.json
+firebase-debug.log
+firebase-debug.*.log
