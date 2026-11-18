@@ -1,104 +1,73 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>國泰教育訓練專用</title>
-    
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icon-192.png">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    
-    <script type="module" src="auth.js"></script>
-
-    <style>
-        /* 基礎設定 */
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            background-color: #f4f4f4; 
-            padding: 0; 
-            margin: 0; 
-        }
-        
-        /* ⚠️ 醒目警語樣式 (紅色閃爍感) */
-        .warning-banner {
-            background-color: #ffebee;
-            color: #d32f2f;
-            text-align: center;
-            padding: 12px 10px;
-            font-weight: bold;
-            font-size: 15px;
-            border-bottom: 2px solid #ef5350;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        /* 連結按鈕樣式 */
-        .link-section {
-            padding: 0 15px;
-            margin-bottom: 80px; /* 預留底部選單空間 */
-        }
-        .link-btn {
-            display: flex;
-            align-items: center;
-            background: white;
-            padding: 16px;
-            margin-bottom: 15px;
-            border-radius: 12px;
-            text-decoration: none;
-            color: #333;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            transition: transform 0.1s;
-            border-left: 5px solid #00A651; /* 國泰綠裝飾 */
-        }
-        .link-btn:active { transform: scale(0.98); background-color: #f9f9f9; }
-        .link-icon { font-size: 24px; margin-right: 15px; }
-        .link-text { font-size: 16px; font-weight: bold; flex: 1; }
-        .link-arrow { color: #ccc; font-weight: bold; }
-
-        /* LOGO 區塊樣式 */
-        .header-logo {
-            text-align: center;
-            padding: 20px;
-            background: white;
-            margin-bottom: 20px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#087b48">
+  <title>國泰雲端學習站｜首頁</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="stylesheet" href="hub-ui.css">
+  <script type="module" src="auth.js"></script>
 </head>
-<body>
-
-    <div class="warning-banner">
-        ⚠️ 僅提供教育訓練使用，不可用於行銷！
-    </div>
-
-<div class="header-logo">
-    <img src="icon-192.png" style="width: 80px; ...">
-    <h2 style="...">國泰雲端學習站</h2>
-    
-    <button onclick="doLogout()" style="background:none; border:1px solid #ccc; padding:5px 15px; border-radius:20px; color:#666; font-size:12px; cursor:pointer; margin-top:10px;">
-        🔒 安全登出
-    </button>
-</div>
-
-    <div class="link-section">
-        <h3 style="margin: 0 0 15px 5px; color: #555; font-size: 15px;">🔗 快速查詢工具</h3>
-
-        <a href="https://fund.cathaylife.com.tw/" target="_blank" class="link-btn">
-            <span class="link-icon">📈</span>
-            <span class="link-text">國泰人壽基金查詢</span>
-            <span class="link-arrow">➜</span>
+<body class="hub-page">
+  <main class="hub-shell" id="main-content">
+    <header class="hub-topbar">
+      <div class="hub-brand">
+        <span class="hub-brand-mark"><img src="icon-192.png" alt="國泰雲端學習站圖示"></span>
+        <div class="hub-brand-text"><strong>國泰雲端學習站</strong><span>專屬教育訓練平台</span></div>
+      </div>
+      <button type="button" class="hub-logout" onclick="doLogout()" aria-label="安全登出系統">🔒 安全登出</button>
+    </header>
+    <div class="hub-alert" role="note"><span class="symbol" aria-hidden="true">⚠️</span><span>本平台僅供內部教育訓練使用，不可用於對外行銷。</span></div>
+    <section class="hub-hero" aria-labelledby="hub-home-title">
+      <div class="hub-kicker">CATHAY LEARNING HUB</div>
+      <h1 id="hub-home-title">學習、試算與資料管理<br>都在這裡</h1>
+      <p>常用工具集中管理，從保障試算到商品比較，電腦、平板和手機都能快速找到需要的功能。</p>
+    </section>
+    <section class="hub-section" aria-labelledby="home-functions">
+      <div class="hub-section-heading">
+        <div><div class="hub-section-kicker">QUICK ACCESS</div><h2 id="home-functions">常用功能</h2><p>選擇要使用的工作區域</p></div>
+      </div>
+      <div class="hub-grid hub-grid--two">
+        <a href="calc.html" class="hub-card hub-card--featured">
+          <span class="hub-card-icon" aria-hidden="true">🧮</span><span class="hub-card-title">財務試算工具</span>
+          <span class="hub-card-desc">勞保、國保、退休與遺產稅規劃</span><span class="hub-card-arrow" aria-hidden="true">↗</span>
         </a>
-
-        <a href="https://www.cathaybk.com.tw/cathaybk/personal/product/deposit/currency-billboard/" target="_blank" class="link-btn">
-            <span class="link-icon">💱</span>
-            <span class="link-text">國泰世華銀行匯率</span>
-            <span class="link-arrow">➜</span>
+        <a href="products.html" class="hub-card hub-card--blue">
+          <span class="hub-card-icon" aria-hidden="true">🛡️</span><span class="hub-card-title">商品試算與保障</span>
+          <span class="hub-card-desc">醫療保障、投資型商品與歷史商品</span><span class="hub-card-arrow" aria-hidden="true">↗</span>
         </a>
-    </div>
-
-    <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js');
-        }
-    </script>
+        <a href="client.html" class="hub-card">
+          <span class="hub-card-icon" aria-hidden="true">👥</span><span class="hub-card-title">客戶資料管理</span>
+          <span class="hub-card-desc">查閱及維護客戶聯繫紀錄</span><span class="hub-card-arrow" aria-hidden="true">↗</span>
+        </a>
+        <a href="event.html" class="hub-card hub-card--warm">
+          <span class="hub-card-icon" aria-hidden="true">🏆</span><span class="hub-card-title">高峰會專區</span>
+          <span class="hub-card-desc">活動資訊與相關規則查詢</span><span class="hub-card-arrow" aria-hidden="true">↗</span>
+        </a>
+      </div>
+    </section>
+    <section class="hub-section" aria-labelledby="home-resources">
+      <div class="hub-section-heading">
+        <div><div class="hub-section-kicker">REFERENCE</div><h2 id="home-resources">官方資料快速查詢</h2><p>開啟官方網站，另開新分頁</p></div>
+      </div>
+      <div class="hub-grid hub-grid--two">
+        <a href="https://fund.cathaylife.com.tw/" target="_blank" rel="noopener noreferrer" class="hub-card">
+          <span class="hub-card-icon" aria-hidden="true">📈</span><span class="hub-card-title">國泰人壽基金查詢</span>
+          <span class="hub-card-desc">投資標的、基金與淨值資訊</span><span class="hub-card-arrow" aria-hidden="true">↗</span>
+        </a>
+        <a href="https://www.cathaybk.com.tw/cathaybk/personal/product/deposit/currency-billboard/" target="_blank" rel="noopener noreferrer" class="hub-card hub-card--warm">
+          <span class="hub-card-icon" aria-hidden="true">💱</span><span class="hub-card-title">國泰世華銀行匯率</span>
+          <span class="hub-card-desc">即期與現鈔牌告匯率</span><span class="hub-card-arrow" aria-hidden="true">↗</span>
+        </a>
+      </div>
+    </section>
+    <footer class="hub-footer">國泰雲端學習站 · 首頁 UI v2.0｜內部教育訓練專用</footer>
+  </main>
+  <script>
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+  </script>
 </body>
 </html>
