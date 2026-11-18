@@ -54,6 +54,20 @@ a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{o
 .comparison-intro{font-size:.87rem}
 }
 @media print{.site-nav,.toolbar-btn,.filters,.hub-topbar{display:none!important}body{background:#fff!important}.hub-shell{max-width:none;padding:0}.table-scroll{overflow:visible}.matrix{min-width:0;font-size:9px}.matrix td,.matrix th{min-width:0!important;padding:5px}.matrix .row-label{position:static!important}.matrix .section-row th{position:static!important}.data-section{box-shadow:none;border:0} }
+
+/* 比較表 v1.2：日額分段顯示與三年無理賠重點 */
+.matrix .benefit-lines{display:grid;gap:6px;text-align:center;min-width:0}
+.matrix .benefit-line{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px 9px;line-height:1.55}
+.matrix .benefit-amount{font-weight:780;color:#075f3e;white-space:nowrap}
+.matrix .claim-limit{display:flex;flex-direction:column;align-items:center;gap:7px;line-height:1.5}
+.matrix .claim-limit>strong{font-size:.96rem;color:#0e5337}
+.matrix .claim-free-badge{display:inline-flex;gap:5px;align-items:center;justify-content:center;flex-wrap:wrap;background:#fff0ed;color:#a83d28;border:1px solid #f3c6b7;border-radius:999px;padding:5px 9px;font-size:.8rem;font-weight:800;white-space:nowrap}
+.matrix .claim-free-badge b{font-size:.94rem}
+.matrix .claim-limit small{font-size:.7rem;color:#755d52;font-weight:500}
+@media(max-width:700px){
+  .matrix .benefit-line{flex-direction:column;gap:1px}
+  .matrix .claim-free-badge{white-space:normal}
+}
 </style>
 </head>
 <body class="hub-page">
@@ -156,10 +170,10 @@ a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{o
 <td class="product-col" data-product="5">500元／日</td></tr>
 <tr><th scope="row" class="row-label">住院生活補助</th><td class="product-col" data-product="0"><span class="none">—</span></td>
 <td class="product-col" data-product="1"><span class="none">—</span></td>
-<td class="product-col" data-product="2">第8～30日：500元／日；第31日起：1,000元／日</td>
-<td class="product-col" data-product="3">第8～30日：500元／日；第31日起：1,000元／日</td>
-<td class="product-col" data-product="4">第8～30日：500元／日；第31日起：1,000元／日</td>
-<td class="product-col" data-product="5">第8～30日：500元／日；第31日起：1,000元／日</td></tr>
+<td class="product-col" data-product="2"><div class="benefit-lines"><div class="benefit-line">第8～30日<span class="benefit-amount">500元／日</span></div><div class="benefit-line">第31日起<span class="benefit-amount">1,000元／日</span></div></div></td>
+<td class="product-col" data-product="3"><div class="benefit-lines"><div class="benefit-line">第8～30日<span class="benefit-amount">500元／日</span></div><div class="benefit-line">第31日起<span class="benefit-amount">1,000元／日</span></div></div></td>
+<td class="product-col" data-product="4"><div class="benefit-lines"><div class="benefit-line">第8～30日<span class="benefit-amount">500元／日</span></div><div class="benefit-line">第31日起<span class="benefit-amount">1,000元／日</span></div></div></td>
+<td class="product-col" data-product="5"><div class="benefit-lines"><div class="benefit-line">第8～30日<span class="benefit-amount">500元／日</span></div><div class="benefit-line">第31日起<span class="benefit-amount">1,000元／日</span></div></div></td></tr>
 
 <tr class="section-row"><th scope="rowgroup" colspan="7">投保資訊與保費示例</th></tr>
 <tr><th scope="row" class="row-label">傷害限額</th><td class="product-col" data-product="0"><span class="none">—</span></td>
@@ -167,7 +181,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{o
 <td class="product-col" data-product="2">3萬元／次</td>
 <td class="product-col" data-product="3">5萬元／次</td>
 <td class="product-col" data-product="4">5萬元／次</td>
-<td class="product-col" data-product="5">5萬元／次（原圖註：3年無理賠＋30%）</td></tr>
+<td class="product-col" data-product="5"><div class="claim-limit"><strong>5萬元／次</strong><span class="claim-free-badge">3年無理賠 <b>＋30%</b></span><small>原圖註記，實際適用依條款</small></div></td></tr>
 <tr><th scope="row" class="row-label">承保年齡</th><td class="product-col" data-product="0">0～70歲</td>
 <td class="product-col" data-product="1">0～70歲</td>
 <td class="product-col" data-product="2">15～75歲</td>
@@ -187,7 +201,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{o
  <div>本頁僅做原圖資料對照，不對各商品額度作相同承保條件的保證。例如第一類保費可能受保額、性別、職業類別、年齡或附約選擇影響；保障實際給付、等待期間、給付上限及事故定義，均以原保單條款及核保結果為準。</div>
  <div style="margin-top:10px"><a href="prod_accident.html">前往原有「意外險動態試算」</a>（功能與公式保留）</div>
 </section>
-<footer class="hub-footer">意外險歷代商品比較表 v1.1｜2026-11-18｜僅供教育訓練及歷史保障查閱。</footer>
+<footer class="hub-footer">意外險歷代商品比較表 v1.2｜2026-11-18｜僅供教育訓練及歷史保障查閱。</footer>
 </main>
 <script>
 function visibleProductCount(){return document.querySelectorAll('input[data-toggle-col]:checked').length;}
