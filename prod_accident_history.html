@@ -193,6 +193,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{o
 function visibleProductCount(){return document.querySelectorAll('input[data-toggle-col]:checked').length;}
 function setProductColumn(index,show){
  document.querySelectorAll('[data-product="'+index+'"]').forEach(el=>el.classList.toggle('is-hidden',!show));
+ document.querySelectorAll('.matrix .section-row th').forEach(el=>el.colSpan=visibleProductCount()+1);
 }
 document.querySelectorAll('input[data-toggle-col]').forEach(input=>{
  input.addEventListener('change',()=>{
