@@ -35,6 +35,8 @@ jobs:
         run: node scripts/test-spark-rest-admin.mjs
       - name: 驗證 VIP 永久刪除邏輯與管理員防呆
         run: node scripts/test-spark-retire-static.mjs
+      - name: 驗證舊 VIP 帳號識別標籤修改與搜尋
+        run: node scripts/test-spark-label-edit.mjs
       - name: 安裝 Firebase 本機模擬器測試套件
         run: npm install --no-audit --no-fund
       - name: 驗證匿名、使用者、管理員與失效帳號權限

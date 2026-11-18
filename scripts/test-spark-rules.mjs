@@ -49,6 +49,14 @@ try{
  await assertFails(set(path(admin,'whitelist/NEW_CODE'),'yes'));
  await assertFails(set(path(admin,'whitelist'),{NEW_CODE:true}));
  await assertSucceeds(set(path(admin,'vipProfiles/NEW_CODE'),'新人識別'));
+ // Existing VIP accounts may receive or change an admin-only display label.
+ await assertSucceeds(set(path(admin,'vipProfiles/LEGACY_EXAMPLE'),'舊帳號王小姐'));
+ await assertSucceeds(set(path(admin,'vipProfiles/NEW_CODE'),'既有帳號更新名稱'));
+ assert.equal((await assertSucceeds(get(path(admin,'vipProfiles/NEW_CODE')))).val(),'既有帳號更新名稱');
+ assert.equal((await assertSucceeds(get(path(anon,'whitelist/NEW_CODE')))).val(),false);
+ await assertFails(set(path(anon,'vipProfiles/LEGACY_EXAMPLE'),'冒用'));
+ await assertFails(set(path(user,'vipProfiles/LEGACY_EXAMPLE'),'冒用'));
+ await assertFails(set(path(inactive,'vipProfiles/LEGACY_EXAMPLE'),'冒用'));
  await assertFails(get(path(anon,'vipProfiles/NEW_CODE')));
  await assertFails(set(path(admin,'vipProfiles/NEW_CODE'),''));
  await assertFails(set(path(admin,'vipProfiles/NEW_CODE'),'x'.repeat(81)));

@@ -13,6 +13,9 @@ button{border:0;border-radius:8px;padding:10px 15px;color:white;background:#0980
 button.secondary{background:#587363}button.danger{background:#a64040}
 button:disabled{opacity:.5;cursor:default}.notice{border:1px solid #e8d6aa;background:#fff7e3;padding:12px;border-radius:8px}
 section{border-top:1px solid #dfebe2;margin-top:20px;padding-top:16px}
+.label-editor{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:8px;min-width:200px}
+.label-editor input{flex:1;min-width:130px;max-width:250px}
+.label-editor button{padding:9px 11px}
 table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:9px 5px;border-bottom:1px solid #e4eee7}
 td:last-child,th:last-child{text-align:right}.scroll{overflow:auto}
 #status{padding:12px;background:#eaf3ed;border-radius:8px;white-space:pre-wrap;overflow-wrap:anywhere}
@@ -37,9 +40,13 @@ td:last-child,th:last-child{text-align:right}.scroll{overflow:auto}
 <p id="issuedValue"></p><button id="copy" type="button" class="secondary">複製</button>
 <button id="hideCode" type="button" class="secondary">隱藏</button></div>
 <h2>現有授權</h2>
+<p><small>已啟用及已停用的舊帳號都可以點「修改標籤」補填或更正姓名。僅變更識別文字，不影響原 VIP 授權碼或登入狀態。</small></p>
 <p>此頁可啟用／停用 VIP 授權。已停用的授權碼在完成 Firebase 新規則發布後，會出現「永久刪除」按鈕。永久刪除需二次確認且不可復原，同一代碼將永久禁止再發行；登入歷史和客戶資料不刪除。</p>
 <p><strong>提醒：</strong>舊網站內寫死的共用通行碼不受白名單管理，不能從本頁撤銷。</p>
 <p><button id="refresh" type="button" class="secondary">重新整理清單</button></p>
+<label for="accountFilter">搜尋舊帳號（識別標籤或授權碼、末四碼）</label>
+<input id="accountFilter" type="search" autocomplete="off" placeholder="輸入姓名、識別名稱或授權碼尾碼">
+<p id="accountCount" aria-live="polite"></p>
 <div class="scroll"><table><thead><tr><th>識別標籤</th><th>授權碼尾碼</th><th>狀態</th><th>操作</th></tr></thead>
 <tbody id="rows"></tbody></table></div></section>
 <p id="status" role="status" aria-live="polite">請以 Firebase 管理員帳號登入。</p>
