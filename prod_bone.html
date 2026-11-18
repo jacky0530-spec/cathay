@@ -18,15 +18,17 @@
         .skeleton-art .bone-engrave{fill:none;stroke:#99a6b3;stroke-width:1.05;stroke-linecap:round;stroke-linejoin:round}
         .skeleton-art .bone-soft{fill:#e7edf0;stroke:#91a0ae;stroke-width:1.1;stroke-linecap:round;stroke-linejoin:round}
         .bone-part{
-            fill:transparent;stroke:transparent;stroke-width:1.65;cursor:pointer;
-            pointer-events:all;transition:fill .17s,fill-opacity .17s,stroke .17s,stroke-width .17s;
+            fill:var(--bone-select);fill-opacity:.045;stroke:var(--bone-select);
+            stroke-opacity:.30;stroke-width:.95;cursor:pointer;pointer-events:all;
+            transition:fill .17s,fill-opacity .17s,stroke .17s,stroke-width .17s;
             -webkit-tap-highlight-color:transparent;
         }
         .bone-green{--bone-select:#059669}
         .bone-red{--bone-select:#dc4646}
         .bone-blue{--bone-select:#2563eb}
         .bone-part:hover,.bone-part:focus-visible{
-            fill:var(--bone-select);fill-opacity:.15;stroke:var(--bone-select);stroke-width:2.5;
+            fill:var(--bone-select);fill-opacity:.15;stroke:var(--bone-select);
+            stroke-opacity:1;stroke-width:2.5;
             outline:none;filter:drop-shadow(0 0 2px rgba(30,64,110,.28));
         }
         .bone-part.selected{
