@@ -15,7 +15,7 @@ function insertNewVipCodeIfAbsent(current){return current===null?true:undefined;
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import {initializeAuth,inMemoryPersistence,signInWithEmailAndPassword,signOut}
  from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import {getDatabase,ref,get,set,runTransaction}
+import {getDatabase,ref,get,set,remove,runTransaction}
  from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 const config={
  apiKey:"AIzaSyAXmxp2R7oeM-DJsbDoT6YAVlHV4vKC_Xo",
@@ -36,8 +36,14 @@ function reportError(error){
   return '操作遭 Firebase Rules 拒絕。請先確認規則已完成模擬測試及正式發布。';
  if(error?.message==='authorization_changed')return '授權狀態已被修改，請重新整理清單再試。';
  if(error?.message==='code_missing')return '找不到這組授權碼，請重新整理清單。';
+ if(error?.message==='delete_requires_disabled')return '必須先停用授權碼，才能刪除舊帳號。';
+ if(error?.message==='retirement_not_enabled')return 'Firebase 尚未發布永久刪除權限規則，請勿直接清除資料。';
+ if(error?.message==='retirement_verification_failed')return '已執行刪除，但資料庫狀態確認失敗，請按重新整理後檢查。';
+ if(error?.message==='retirement_profile_cleanup_failed')return 'VIP 授權已刪除，但人員標籤清除失敗。請檢查資料庫管理員規則。';
+
  if(error?.message==='verify_failed')return '資料庫變更後驗證失敗，請重新整理清單確認狀態。';
  if(error?.message==='duplicate_vip_code')return '這組 VIP 授權碼已存在（包含已停用），請另外輸入一組，不會覆蓋原授權。';
+ if(error?.message==='retired_vip_code')return '這組授權碼曾經永久刪除，禁止重新發行，請另外設定一組。';
  if(error?.message==='invalid_vip_code')return '授權碼請填寫 6～32 位英文、數字、底線或連字號。';
  if(error?.message==='reserved_vip_code')return '這組授權碼為舊版共用碼，不可再分配給新人。';
  if(error?.code==='auth/network-request-failed')return '無法連接 Firebase Authentication，請確認網路後重新整理頁面。';
@@ -48,6 +54,7 @@ function reportError(error){
  if(error?.message==='membership_timeout')return 'Firebase 帳號已驗證，但管理員權限查詢逾時。請檢查資料庫連線及規則。';
  if(error?.message==='list_timeout')return '授權清單讀取逾時；登入身分已通過，請按「重新整理清單」再試。';
  if(error?.message==='login_required')return '登入狀態已失效，請重新登入。';
+ if(error?.message==='retire_timeout')return '永久刪除操作逾時，請先重新整理確認實際授權狀態，勿連續按刪除。';
  if(error?.message==='db_request_timeout')return '已驗證 Firebase 帳號，但 Realtime Database 讀取逾時，請檢查連線或網路安全軟體。';
  if(error?.message==='db_network_failed')return '無法連接 Firebase Realtime Database。請檢查網路，或使用瀏覽器無痕模式測試。';
  if(error?.message==='member_access_denied')return 'Firebase 資料庫拒絕驗證此管理員的會員資料，請確認 members/UID 規則與帳號角色。';
@@ -92,8 +99,11 @@ async function checkAdmin(){
 function clearIssued(){justCreated='';el('issuedValue').textContent='';el('issued').hidden=true;}
 async function refresh(){
  await checkAdmin();
- const [whitelist,labels]=await Promise.all([
-  readFirebaseRest('whitelist'),readFirebaseRest('vipProfiles')
+ const [whitelist,labels,retirementEnabled]=await Promise.all([
+  readFirebaseRest('whitelist'),readFirebaseRest('vipProfiles'),
+  // Until the separately approved Firebase Rules are published, deleting
+  // accounts stays unavailable instead of showing a nonfunctional button.
+  readFirebaseRest('vipRetired').then(()=>true,()=>false)
  ]);
  const entries=Object.entries(whitelist||{}).filter(([code,val])=>codeFormat.test(code)&&typeof val==='boolean');
  const names=labels||{};
@@ -124,7 +134,51 @@ async function refresh(){
     say('授權狀態已更新為'+(saved?'啟用':'停用')+'，已重新確認資料庫。');await refresh();
    }catch(error){say(reportError(error),true);button.disabled=false;}
   });
-  actionCell.append(button);row.append(actionCell);tbody.append(row);
+  actionCell.append(button);
+  if(!enabled && !RESERVED.has(code) && retirementEnabled){
+   const del=document.createElement('button');
+   del.type='button';del.className='danger';del.textContent='永久刪除';
+   del.style.marginLeft='10px';
+   del.addEventListener('click',async()=>{
+    const displayName=names[code]||'既有授權';
+    const suffix=code.slice(-4);
+    if(!confirm('永久刪除「'+displayName+'」(授權碼尾碼 '+suffix+')？此操作不可復原；登入歷史和客戶資料不會刪除。'))return;
+    const phrase='刪除-'+suffix;
+    const typed=prompt('請輸入「'+phrase+'」確認永久刪除已停用的 VIP 授權：');
+    if(typed!==phrase){say('沒有完成二次確認，未刪除任何資料。');return;}
+    del.disabled=true;
+    try{
+     await checkAdmin();
+     const base='whitelist/'+encodeURIComponent(code);
+     const current=await readFirebaseRest(base);
+     if(current!==false)throw new Error('delete_requires_disabled');
+     const tombstone='vipRetired/'+encodeURIComponent(code);
+     const retired=await readFirebaseRest(tombstone);
+     if(retired!==true){
+      if(retired!==null)throw new Error('retirement_not_enabled');
+      // Permanent tombstone prevents future reissue even if the old code is removed.
+      await withDeadline(set(ref(db,'vipRetired/'+code),true),15000,'retire');
+      if(await readFirebaseRest(tombstone)!==true)throw new Error('retirement_verification_failed');
+     }
+     // Server-side Rules require BOTH disabled status and retirement tombstone.
+     await withDeadline(remove(ref(db,'whitelist/'+code)),15000,'retire');
+     if(await readFirebaseRest(base)!==null)throw new Error('retirement_verification_failed');
+     const profilePath='vipProfiles/'+encodeURIComponent(code);
+     const profile=await readFirebaseRest(profilePath);
+     if(profile!==null){
+      try{
+       await withDeadline(remove(ref(db,'vipProfiles/'+code)),15000,'retire');
+       if(await readFirebaseRest(profilePath)!==null)throw new Error('retirement_profile_cleanup_failed');
+      }catch(_){throw new Error('retirement_profile_cleanup_failed');}
+     }
+     say('已永久刪除已停用的 VIP 授權；同一代碼不可再次發行。登入歷史與客戶資料仍保留。');
+     await refresh();
+    }catch(error){say(reportError(error),true);}
+    finally{del.disabled=false;}
+   });
+   actionCell.append(del);
+  }
+  row.append(actionCell);tbody.append(row);
  }
 }
 // Keep Firebase Authentication, membership validation and list loading separate.
@@ -172,6 +226,13 @@ el('createForm').addEventListener('submit',async event=>{
   if(!label||label.length>80)throw new Error('invalid_label');
   const code=normalizeNewVipCode(el('vipCode').value);
   const codeRef=ref(db,'whitelist/'+code);
+  // Old codes that were permanently retired must never be reissued.
+  // Legacy rules may not expose vipRetired yet; the original creation path
+  // must continue working until updated deletion rules are published.
+  let previouslyRetired=false;
+  try{previouslyRetired=(await readFirebaseRest('vipRetired/'+encodeURIComponent(code)))===true;}
+  catch(error){if(error?.message!=='member_access_denied')throw error;}
+  if(previouslyRetired)throw new Error('retired_vip_code');
   // Check both enabled and disabled codes; never overwrite/re-enable an existing person.
   if((await get(codeRef)).exists())throw new Error('duplicate_vip_code');
   // Firebase transaction retries on concurrent writes to preserve uniqueness.
