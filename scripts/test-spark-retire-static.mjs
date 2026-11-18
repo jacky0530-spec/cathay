@@ -1,0 +1,26 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const rules=JSON.parse(readFileSync('firebase.spark-admin.rules.candidate.json','utf8')).rules;
+const whitelist=rules.whitelist.$code['.write'];
+const retired=rules.vipRetired.$code['.write'];
+const profile=rules.vipProfiles.$code['.write'];
+assert(whitelist.includes('data.val() === false'));
+assert(whitelist.includes("root.child('vipRetired').child($code).val() === true"));
+assert(whitelist.includes("!root.child('vipRetired').child($code).exists()"));
+assert(retired.includes("root.child('whitelist').child($code).val() === false"));
+assert(retired.includes('!data.exists()'));
+assert(profile.includes("!root.child('whitelist').child($code).exists()"));
+assert(rules.whitelist['.read']===true);
+assert(rules.users['.write']===true);
+assert(rules.members.$uid['.read']==='auth != null && auth.uid === $uid');
+const js=readFileSync('vip-access/spark/manager.mjs','utf8');
+assert(js.includes("readFirebaseRest('vipRetired/'+encodeURIComponent(code))"));
+assert(js.includes("await set(ref(db,'vipRetired/'+code),true)"));
+assert(js.includes("await remove(ref(db,'whitelist/'+code))"));
+assert(js.includes("await remove(ref(db,'vipProfiles/'+code))"));
+assert(js.includes("if(enabled)continue")===false); // Retired actions cannot hide the original toggle.
+assert(js.includes('if(enabled){'));
+assert(js.includes('confirm('));
+assert(js.includes('prompt('));
+assert(!js.includes('localStorage.clear('));
+console.log('VIP retirement deletion staged-flow checks: PASS');

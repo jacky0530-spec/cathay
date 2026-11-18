@@ -53,6 +53,40 @@ try{
  await assertFails(set(path(admin,'vipProfiles/NEW_CODE'),''));
  await assertFails(set(path(admin,'vipProfiles/NEW_CODE'),'x'.repeat(81)));
  await assertFails(set(path(admin,'vipProfiles/NEW_CODE'),null));
+ await assertFails(set(path(anon,'vipRetired/NEW_CODE'),true));
+ await assertFails(set(path(user,'vipRetired/NEW_CODE'),true));
+ await assertFails(set(path(inactive,'vipRetired/NEW_CODE'),true));
+ await assertFails(get(path(anon,'vipRetired')));
+ await assertFails(get(path(user,'vipRetired')));
+ // A user or administrator may not delete an active VIP account.
+ await assertFails(set(path(anon,'whitelist/NEW_CODE'),null));
+ await assertFails(set(path(user,'whitelist/NEW_CODE'),null));
+ await assertFails(set(path(admin,'whitelist/NEW_CODE'),null));
+ await assertFails(set(path(admin,'vipRetired/NEW_CODE'),true));
+ // Step 1 must disable the code first.
+ await assertSucceeds(set(path(admin,'whitelist/NEW_CODE'),false));
+ // Step 2 is an admin-only, irreversible tombstone.
+ await assertSucceeds(set(path(admin,'vipRetired/NEW_CODE'),true));
+ assert.equal((await assertSucceeds(get(path(admin,'vipRetired/NEW_CODE')))).val(),true);
+ await assertFails(set(path(admin,'whitelist/NEW_CODE'),true));
+ await assertFails(set(path(admin,'whitelist/NEW_CODE'),false));
+ await assertFails(set(path(admin,'vipRetired/NEW_CODE'),null));
+ await assertFails(set(path(admin,'vipRetired/NEW_CODE'),false));
+ await assertFails(set(path(admin,'vipRetired/NEW_CODE'),true));
+ // Step 3: only a disabled, retired code may be permanently deleted.
+ await assertFails(set(path(anon,'whitelist/NEW_CODE'),null));
+ await assertFails(set(path(user,'whitelist/NEW_CODE'),null));
+ await assertSucceeds(set(path(admin,'whitelist/NEW_CODE'),null));
+ assert.equal((await assertSucceeds(get(path(anon,'whitelist/NEW_CODE')))).val(),null);
+ await assertFails(set(path(admin,'whitelist/NEW_CODE'),true));
+ await assertFails(set(path(admin,'whitelist/NEW_CODE'),false));
+ // Delete only the associated private label, not sign-in history or member records.
+ await assertSucceeds(set(path(admin,'vipProfiles/NEW_CODE'),null));
+ await assertFails(set(path(user,'vipProfiles/NEW_CODE'),'takeover'));
+ await assertFails(get(path(anon,'vipProfiles/NEW_CODE')));
+ // Existing unaffected code retains its original right to read and login.
+ assert.equal((await assertSucceeds(get(path(anon,'whitelist/LEGACY_EXAMPLE')))).val(),true);
+
  await assertSucceeds(update(path(anon,'users/LEGACY_EXAMPLE'),{lastLogin:'still legacy'}));
  await assertFails(get(path(anon,'users/LEGACY_EXAMPLE')));
  await assertFails(set(path(admin,'members/admin/role'),'user'));

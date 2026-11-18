@@ -4,7 +4,7 @@
       ".read": true,
       ".write": false,
       "$code": {
-        ".write": "auth != null && root.child('members').child(auth.uid).child('active').val() === true && root.child('members').child(auth.uid).child('role').val() === 'admin' && $code.matches(/^[A-Z0-9_-]{1,64}$/) && newData.isBoolean()"
+        ".write": "auth != null && root.child('members').child(auth.uid).child('active').val() === true && root.child('members').child(auth.uid).child('role').val() === 'admin' && $code.matches(/^[A-Z0-9_-]{1,64}$/) && ((newData.isBoolean() && !root.child('vipRetired').child($code).exists()) || (!newData.exists() && data.val() === false && root.child('vipRetired').child($code).val() === true))"
       }
     },
     "users": {
@@ -21,7 +21,14 @@
       ".read": "auth != null && root.child('members').child(auth.uid).child('active').val() === true && root.child('members').child(auth.uid).child('role').val() === 'admin'",
       ".write": false,
       "$code": {
-        ".write": "auth != null && root.child('members').child(auth.uid).child('active').val() === true && root.child('members').child(auth.uid).child('role').val() === 'admin' && $code.matches(/^[A-Z0-9_-]{1,64}$/) && newData.isString() && newData.val().length > 0 && newData.val().length <= 80"
+        ".write": "auth != null && root.child('members').child(auth.uid).child('active').val() === true && root.child('members').child(auth.uid).child('role').val() === 'admin' && $code.matches(/^[A-Z0-9_-]{1,64}$/) && ((newData.isString() && newData.val().length > 0 && newData.val().length <= 80) || (!newData.exists() && data.exists() && !root.child('whitelist').child($code).exists() && root.child('vipRetired').child($code).val() === true))"
+      }
+    },
+    "vipRetired": {
+      ".read": "auth != null && root.child('members').child(auth.uid).child('active').val() === true && root.child('members').child(auth.uid).child('role').val() === 'admin'",
+      ".write": false,
+      "$code": {
+        ".write": "auth != null && root.child('members').child(auth.uid).child('active').val() === true && root.child('members').child(auth.uid).child('role').val() === 'admin' && $code.matches(/^[A-Z0-9_-]{1,64}$/) && !data.exists() && newData.val() === true && root.child('whitelist').child($code).val() === false"
       }
     }
   }
