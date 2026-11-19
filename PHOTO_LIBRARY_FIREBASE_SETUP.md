@@ -1,4 +1,4 @@
-# 共用照片資料專區（V2.2）Firebase 部署備註
+# 共用照片資料專區（V2.3）Firebase 部署備註
 
 正式頁面：`photos.html`
 JavaScript：`photos.js`
@@ -14,6 +14,10 @@ Realtime Database：`https://cathay-app-5889a-default-rtdb.firebaseio.com`
 - `/photoLibraryV2/images/{id}`：放大用 JPEG 壓縮圖片（Data URL）。只有點圖放大時讀取。
 - `/photoLibraryV2/pins/{accountHash}/{id}`：個人置頂時間戳記。相同授權碼跨裝置使用同一組最愛。
 - `/photoLibraryV2/categories/{categoryId}`：使用者新增的共用資料區（名稱、圖示、說明、建立時間）。全員讀取同一份分類清單；預設分類「新聞剪報、癌症議題、醫療收據、老化議題」由程式內建。
+- v2.3：既有和自訂分類的改名、圖示及說明更新到 `/photoLibraryV2/categories/{id}` 的 `name`、`emoji`、`description` 欄位。分類 ID 不改，舊照片維持原分類。
+- v2.3：分類顯示排序由 `/photoLibraryV2/categories/{id}/order` 儲存，Firebase REST `PATCH /photoLibraryV2/categories.json` 使用多路徑鍵（例如 `news/order`）一次更新所有分類順序，避免覆寫原有分類內容。所有使用者共用此排序。
+- v2.3：移動圖片只 `PATCH /photoLibraryV2/catalog/{photoId}` 的 `category`，保留原始照片檔 `/images/{photoId}`、圖片 ID、上傳人及獨立個人 `/pins/{accountHash}/{photoId}` 設定。所有使用者能使用圖片「移動」按鈕，僅上傳者介面顯示完整編輯、刪除。
+
 - 分類讀取失敗時，原有共用照片仍可正常使用，但「新增資料區」停用並顯示 Firebase 分類權限錯誤。
 - 舊版照片仍存在裝置 IndexedDB，按「搬移舊版照片」才上傳；舊檔不會被刪除。
 - 圖庫讀取後每 60 秒自動同步、切回分頁時重新同步，也能手動按「重新同步」。
