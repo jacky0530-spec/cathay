@@ -90,7 +90,7 @@
    <div id="grid-aging" class="photo-gallery"><div class="photo-empty"><span class="emoji">🧓</span>目前沒有照片，可點選上方「上傳照片」。</div></div>
   </section>
  </div>
- <footer class="hub-footer">照片資料專區 V2.5｜Firebase 共用圖片 · 依授權碼各自設定最愛置頂｜教育訓練與素材整理用途</footer>
+ <footer class="hub-footer">照片資料專區 V2.6｜Firebase 共用圖片 · 依授權碼各自設定最愛置頂｜教育訓練與素材整理用途</footer>
 </main>
 
 <dialog id="categoryManager" class="photo-dialog photo-manage-dialog" aria-labelledby="categoryManagerTitle">
@@ -120,7 +120,24 @@
  <form id="categoryForm" class="photo-form">
   <input type="hidden" id="categoryEditId">
   <div class="photo-field"><label for="categoryName">資料區名稱 *</label><input id="categoryName" maxlength="24" placeholder="例如：長照議題、醫療科技、保險案例" required></div>
-  <div class="photo-field"><label for="categoryIcon">資料區圖示（選填）</label><input id="categoryIcon" maxlength="8" placeholder="例如：📚、❤️、🏥；不填使用 📁"></div>
+  <div class="photo-field">
+   <label for="categoryIcon">資料區圖示（可直接挑選，也可以自行輸入）</label>
+   <div class="photo-icon-editor">
+    <div class="photo-icon-current" aria-live="polite">
+     <span id="categoryIconPreview" aria-hidden="true">📁</span>
+     <span id="categoryIconPreviewName">目前圖示</span>
+    </div>
+    <input id="categoryIcon" maxlength="12" placeholder="點選下方圖示，或自行輸入 Emoji" autocomplete="off">
+   </div>
+   <div class="photo-icon-picker" aria-label="可挑選的資料區圖示">
+    <div class="photo-icon-picker-header">
+     <strong>挑選適合的圖示</strong>
+     <input id="categoryIconSearch" type="search" placeholder="搜尋圖示：醫療、新聞、科技…" aria-label="搜尋資料區圖示">
+    </div>
+    <div id="categoryIconChoices" class="photo-icon-groups" role="group" aria-label="圖示選擇清單"></div>
+   </div>
+   <p class="photo-form-tip">點一下圖示就會帶入；也可以在上方欄位輸入其他 Emoji，儲存後所有使用者都會看到相同分類圖示。</p>
+  </div>
   <div class="photo-field"><label for="categoryDescription">資料區說明（選填）</label><textarea id="categoryDescription" maxlength="120" rows="3" placeholder="這個資料區主要收藏什麼照片？"></textarea></div>
   <p class="photo-form-tip">新增後所有使用者都會看到這個資料區，並可將照片放進來。個人的最愛置頂仍互不影響。</p>
   <div class="photo-form-actions"><button type="button" id="cancelCategoryEditor" class="photo-btn">取消</button><button type="submit" id="saveCategory" class="photo-btn primary">建立共用資料區</button></div>
