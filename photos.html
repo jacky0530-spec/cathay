@@ -52,6 +52,14 @@
    <p>設定完成後按上方「↻ 重新同步」。若顯示連線逾時或網路錯誤，請改用其他網路後重試。</p>
   </div>
  </details>
+ <div class="photo-batch-toolbar" id="photoBatchToolbar" role="group" aria-label="批次照片管理">
+  <button id="batchModeToggle" class="photo-btn" type="button" aria-pressed="false">☑ 多選照片</button>
+  <span id="batchSelectedCount" class="photo-batch-count" aria-live="polite">尚未啟用多選</span>
+  <button id="batchSelectVisible" class="photo-btn small" type="button" disabled>全選目前顯示</button>
+  <button id="batchClear" class="photo-btn small" type="button" disabled>清除勾選</button>
+  <button id="batchMove" class="photo-btn primary" type="button" disabled>📂 批次移動</button>
+  <button id="batchDelete" class="photo-btn danger" type="button" disabled>🗑 批次刪除</button>
+ </div>
  <div class="photo-controls">
   <div class="photo-tabs" role="group" aria-label="照片分類篩選">
    <button type="button" class="photo-tab" data-filter="all" aria-pressed="true">全部 <small id="count-all">0</small></button>
@@ -81,7 +89,7 @@
    <div id="grid-aging" class="photo-gallery"><div class="photo-empty"><span class="emoji">🧓</span>目前沒有照片，可點選上方「上傳照片」。</div></div>
   </section>
  </div>
- <footer class="hub-footer">照片資料專區 V2.3｜Firebase 共用圖片 · 依授權碼各自設定最愛置頂｜教育訓練與素材整理用途</footer>
+ <footer class="hub-footer">照片資料專區 V2.4｜Firebase 共用圖片 · 依授權碼各自設定最愛置頂｜教育訓練與素材整理用途</footer>
 </main>
 
 <dialog id="categoryManager" class="photo-dialog photo-manage-dialog" aria-labelledby="categoryManagerTitle">
