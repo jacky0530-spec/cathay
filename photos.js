@@ -345,9 +345,11 @@
       const existing=new Set(state.records.map(x=>x.id));
       for(const rec of obj.photos){
         if(!rec||!isCat(rec.category)||!validDataURL(rec.data)){skipped++;continue;}
-        if(existing.has(rec.id)){skipped++;continue;}
+        const sourceId=typeof rec.id==="string"&&/^[A-Za-z0-9_-]{4,140}$/.test(rec.id)?rec.id:null;
+        if(sourceId&&existing.has(sourceId)){skipped++;continue;}
         const file=await dataURLtoFile(rec.data,limit(rec.fileName||"backup.jpg",200));
-        await uploadOne({file,category:rec.category,title:rec.title,description:rec.description,pinned:!!rec.pinned});
+        const newId=await uploadOne({file,category:rec.category,title:rec.title,description:rec.description,pinned:!!rec.pinned,id:sourceId});
+        existing.add(newId);
         saved++;status("正在匯入共用照片… "+saved+"/"+obj.photos.length);
       }
       await refresh("備份上傳完成："+saved+" 張；跳過 "+skipped+" 張。");
@@ -377,14 +379,18 @@
       const local=await readLocalPhotos();
       if(!local.length){alert("目前這台裝置沒有舊版本機照片。");return;}
       if(!confirm("找到 "+local.length+" 張舊版照片，確定全部上傳到共用照片庫供其他人觀看？\n原本存在本機的照片會保留不刪除。"))return;
-      let n=0;
+      let n=0,skipped=0;
+      const existing=new Set(state.records.map(x=>x.id));
       for(const rec of local){
         if(!isCat(rec.category)||!(rec.original instanceof Blob))continue;
+        const sourceId=typeof rec.id==="string"&&/^[A-Za-z0-9_-]{4,140}$/.test(rec.id)?rec.id:null;
+        if(sourceId&&existing.has(sourceId)){skipped++;continue;}
         const file=new File([rec.original],rec.fileName||"local-photo.jpg",{type:rec.original.type||"image/jpeg"});
-        await uploadOne({file,category:rec.category,title:rec.title,description:rec.description,pinned:!!rec.pinned});
+        const newId=await uploadOne({file,category:rec.category,title:rec.title,description:rec.description,pinned:!!rec.pinned,id:sourceId});
+        existing.add(newId);
         n++;status("正在同步本機舊照片… "+n+"/"+local.length);
       }
-      await refresh("成功搬移 "+n+" 張舊照片到共用圖庫；本機舊照片仍保留。");
+      await refresh("成功搬移 "+n+" 張舊照片，略過 "+skipped+" 張已存在的照片；本機舊照片仍保留。");
     }catch(err){status("搬移舊照片失敗："+err.message,true);alert(err.message);}
     finally{state.busy=false;$("migrateLocal").disabled=false;}
   }
