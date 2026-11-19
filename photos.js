@@ -1,4 +1,4 @@
-/* Cathay photo library v2.5 | Shared Firebase RTDB gallery, separate per-user favorites.
+/* Cathay photo library v2.6 | Shared Firebase RTDB gallery, separate per-user favorites.
  * Static hosting + existing login code; RTDB permissions must be configured separately.
  * Large originals are retained in previous v1 local IndexedDB until manual migration.
  */
@@ -13,6 +13,42 @@
     receipt:{emoji:"🧾",description:"醫療費用與自費項目的圖片資料"},
     aging:{emoji:"🧓",description:"老化、高齡健康、失能與長期照顧"}
   };
+  // Emoji icon library: grouped choices for health, medical, aging, news and education.
+  // Stored as the selected emoji string in the existing Firebase categories/{id}/emoji field.
+  const ICON_GROUPS=[
+    {name:"常用分類",icons:[
+      ["📁","資料夾"],["🗂️","分類"],["📚","學習"],["📖","閱讀"],
+      ["📷","照片"],["🖼️","圖片"],["⭐","最愛"],["📌","重點"],
+      ["🔖","標籤"],["🗃️","檔案"],["📝","筆記"],["🗓️","日曆"]
+    ]},
+    {name:"醫療健康",icons:[
+      ["🏥","醫院"],["🩺","診療"],["⚕️","醫學"],["🚑","救護"],
+      ["💊","藥物"],["💉","注射"],["🩹","傷口"],["🧪","檢驗"],
+      ["🩸","血液"],["🧬","基因"],["🫀","心臟"],["🧠","大腦"],
+      ["🦴","骨骼"],["🦷","牙科"],["🩻","X光"],["🌡️","體溫"]
+    ]},
+    {name:"癌症・老化・長照",icons:[
+      ["🎗️","癌症"],["🧓","老化"],["👵","長者"],["👴","高齡"],
+      ["🦽","輪椅"],["🦯","行動"],["🤝","照護"],["🛏️","病床"],
+      ["❤️","愛心"],["💗","關懷"],["💪","復健"],["🌿","健康"],
+      ["👨‍👩‍👧‍👦","家庭"],["🏡","居家"],["🌻","樂齡"],["🧘","養生"]
+    ]},
+    {name:"新聞・文書",icons:[
+      ["📰","新聞"],["🗞️","剪報"],["📄","文件"],["📑","資料"],
+      ["🧾","收據"],["📋","清單"],["📢","公告"],["🎥","影片"],
+      ["📊","統計"],["📈","趨勢"],["📉","變動"],["🔍","調查"]
+    ]},
+    {name:"科技・研究",icons:[
+      ["🔬","研究"],["🧫","實驗"],["🤖","科技"],["💻","電腦"],
+      ["📱","數位"],["⚙️","工具"],["🔭","探索"],["💡","創新"],
+      ["📡","資訊"],["🧮","數據"],["🖥️","系統"],["🔋","能源"]
+    ]},
+    {name:"保險・理財・生活",icons:[
+      ["🛡️","保障"],["💼","業務"],["💰","理財"],["💵","金錢"],
+      ["🏦","金融"],["💳","支付"],["⚖️","法律"],["✅","核對"],
+      ["🏠","住宅"],["🚗","車險"],["🏆","獎項"],["🎓","教育"]
+    ]}
+  ];
   const BASE_CATEGORIES={...CATEGORIES};
   const BASE_META=Object.fromEntries(Object.entries(CATEGORY_META).map(([id,meta])=>[id,{...meta}]));
   const CUSTOM_KEY=/^custom_[A-Za-z0-9_-]{6,90}$/;
@@ -94,7 +130,7 @@
       const item=records[id];
       if(item&&typeof item==="object"){
         if(typeof item.name==="string"&&item.name.trim())CATEGORIES[id]=limit(item.name,24);
-        if(typeof item.emoji==="string"&&item.emoji.trim())CATEGORY_META[id].emoji=limit(item.emoji,8);
+        if(typeof item.emoji==="string"&&item.emoji.trim())CATEGORY_META[id].emoji=limit(item.emoji,12);
         if(typeof item.description==="string")CATEGORY_META[id].description=limit(item.description,120);
       }
     }
@@ -104,7 +140,7 @@
     for(const [id,item] of customs.slice(0,95)){
       CATEGORIES[id]=limit(item.name,24);
       CATEGORY_META[id]={
-        emoji:limit(item.emoji||"📁",8)||"📁",
+        emoji:limit(item.emoji||"📁",12)||"📁",
         description:limit(item.description,120)||"自訂共用照片資料區"
       };
     }
@@ -567,11 +603,50 @@
       renderCategoryManager();
     }
   }
+  function syncIconPreview(){
+    const selected=limit($("categoryIcon").value,12)||"📁";
+    $("categoryIconPreview").textContent=selected;
+    const named=ICON_GROUPS.flatMap(group=>group.icons).find(([icon])=>icon===selected);
+    $("categoryIconPreviewName").textContent=named?named[1]:"自訂圖示";
+    document.querySelectorAll('#categoryIconChoices button[data-icon]').forEach(btn=>{
+      btn.setAttribute("aria-pressed",String(btn.dataset.icon===selected));
+    });
+  }
+  function renderIconPicker(){
+    const search=limit($("categoryIconSearch").value,60).toLocaleLowerCase("zh-TW");
+    const root=$("categoryIconChoices");
+    root.replaceChildren();
+    let found=0;
+    for(const group of ICON_GROUPS){
+      const groupMatch=group.name.toLocaleLowerCase("zh-TW").includes(search);
+      const matching=group.icons.filter(([icon,name])=>!search||groupMatch||
+        name.toLocaleLowerCase("zh-TW").includes(search)||icon.includes(search));
+      if(!matching.length)continue;
+      const section=create("section","photo-icon-group");
+      const header=create("h3",null,group.name);section.append(header);
+      const grid=create("div","photo-icon-grid");
+      for(const [icon,name] of matching){
+        const b=create("button","photo-icon-choice");b.type="button";b.dataset.icon=icon;
+        b.setAttribute("aria-label","選擇"+name+"圖示");
+        b.setAttribute("aria-pressed","false");
+        b.append(create("span","photo-icon-glyph",icon),create("span","photo-icon-name",name));
+        b.addEventListener("click",()=>{
+          $("categoryIcon").value=icon;
+          syncIconPreview();
+        });
+        grid.append(b);found++;
+      }
+      section.append(grid);root.append(section);
+    }
+    if(!found)root.append(create("div","photo-icon-empty","沒有找到符合的圖示；您仍可在上方自行輸入 Emoji。"));
+    syncIconPreview();
+  }
   function openCategoryEditor(id=null){
     if(state.busy||state.categoryError)return;
     const editId=(typeof id==="string"&&isCat(id))?id:null;
     state.editingCategoryId=editId;
     $("categoryForm").reset();
+    $("categoryIconSearch").value="";
     $("categoryEditId").value=editId||"";
     $("categoryEditorTitle").textContent=editId?"修改共用資料區":"新增共用資料區";
     $("saveCategory").textContent=editId?"儲存資料區名稱":"建立共用資料區";
@@ -580,6 +655,7 @@
       $("categoryIcon").value=CATEGORY_META[editId]?.emoji||"📁";
       $("categoryDescription").value=CATEGORY_META[editId]?.description||"";
     }
+    renderIconPicker();
     $("categoryEditor").showModal();
     $("categoryName").focus();
   }
@@ -587,7 +663,7 @@
     e.preventDefault();
     if(state.busy)return;
     const name=limit($("categoryName").value,24);
-    const emoji=limit($("categoryIcon").value,8)||"📁";
+    const emoji=limit($("categoryIcon").value,12)||"📁";
     const description=limit($("categoryDescription").value,120);
     const id=$("categoryEditId").value||null;
     if(!name){alert("請填入資料區名稱");return;}
@@ -923,6 +999,8 @@
   $("closeCategoryEditor").addEventListener("click",()=>$("categoryEditor").close());
   $("cancelCategoryEditor").addEventListener("click",()=>$("categoryEditor").close());
   $("categoryForm").addEventListener("submit",saveCategory);
+  $("categoryIconSearch").addEventListener("input",renderIconPicker);
+  $("categoryIcon").addEventListener("input",syncIconPreview);
   $("closeMovePhoto").addEventListener("click",closeMovePhoto);
   $("cancelMovePhoto").addEventListener("click",closeMovePhoto);
   $("movePhotoForm").addEventListener("submit",saveMovePhoto);
