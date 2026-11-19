@@ -47,7 +47,7 @@
 .photo-card.is-pinned{border-color:#e5c68a;box-shadow:0 4px 16px rgba(146,102,25,.1)}
 .photo-thumb-wrap{position:relative;width:100%;aspect-ratio:4/3;background:#eaf1ea}
 .photo-thumb-button{display:block;width:100%;height:100%;padding:0;background:transparent;border:0;cursor:zoom-in}
-.photo-thumb-button img{display:block;width:100%;height:100%;object-fit:cover}
+.photo-thumb-button img{display:block;width:100%;height:100%;object-fit:contain;object-position:center;background:#f6f8f5}
 .photo-thumb-button img:not([src]){opacity:0}
 .photo-pin-flag{position:absolute;top:10px;left:10px;pointer-events:none;background:#fff8dc;color:#8a6000;border:1px solid #ebd2a3;padding:5px 9px;border-radius:99px;font-size:.72rem;font-weight:750}
 .photo-card-body{padding:13px 14px 9px;display:flex;flex-direction:column;gap:7px;flex:1}
@@ -100,7 +100,7 @@
  .photo-card-note{font-size:.75rem}
  .photo-card-actions{padding:7px 8px 10px;gap:5px}
  .photo-card-actions .photo-btn{font-size:.74rem;padding:6px 7px;min-height:35px}
- .photo-thumb-wrap{aspect-ratio:1/1}
+ .photo-thumb-wrap{aspect-ratio:4/3}
  .photo-form{padding:15px}
  .photo-dialog-head{padding:14px 15px}
  .photo-viewer-head{padding:9px 10px}
@@ -158,6 +158,18 @@
  .photo-batch-toolbar #batchSelectVisible,.photo-batch-toolbar #batchClear{flex:1 1 40%}
  .photo-batch-toolbar #batchMove,.photo-batch-toolbar #batchDelete{flex:1 1 40%}
  .photo-batch-choice{right:6px;top:6px;min-width:34px;min-height:34px}
+}
+
+
+/* v2.5：完整保留剪報／長條圖的文字，避免移動後誤以為圖片內容遭截斷 */
+.photo-thumb-wrap{background:#f6f8f5}
+.photo-card-duplicate{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:9px 12px;background:#fff9ed;border-top:1px solid #f2dfb7;color:#7b5427;line-height:1.5}
+.photo-card-duplicate span{font-size:.75rem;flex:1 1 140px}
+.photo-card-duplicate .photo-btn{min-width:90px;flex:0 1 auto;background:#fff;border-color:#e8c38c;color:#865013}
+.photo-card-duplicate .photo-btn:hover{background:#fdf0d6}
+@media(max-width:760px){
+ .photo-card-duplicate{padding:8px;gap:6px}
+ .photo-card-duplicate .photo-btn{min-height:35px;font-size:.72rem;flex:1 1 100%}
 }
 
 @media(prefers-reduced-motion:reduce){.photo-card,.photo-card button{transition:none}}
