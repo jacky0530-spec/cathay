@@ -39,7 +39,7 @@
    <div class="heart-field">
     <label for="heartPremiumOverride">手動套入年繳應繳保費（元，選填）</label>
     <input id="heartPremiumOverride" type="number" inputmode="numeric" min="1" step="1" placeholder="空白＝使用費率表自動試算">
-    <small>有實際建議書時可直接填入年繳金額；空白時採標準費率，不自動扣除外溢折減。</small>
+    <small>請輸入本契約保險金額對應的「年繳應繳保險費」，不是累計實際繳費或折減後實付金額。空白時採標準費率；本工具不自動計入外溢折減。</small>
    </div>
    <div class="heart-rate-detail" id="heartRateDetail">費率：—</div>
    <button class="heart-reset" id="heartReset" type="button">↺ 恢復示範條件</button>
@@ -49,11 +49,11 @@
    <div id="heartError" class="heart-error" hidden role="alert"></div>
    <div class="heart-kpis">
     <div class="heart-kpi"><span>每年應繳保費</span><strong id="heartAnnual">—</strong></div>
-    <div class="heart-kpi"><span>繳費年期總額</span><strong id="heartTotal">—</strong></div>
+    <div class="heart-kpi"><span>完整繳費期應繳總額</span><strong id="heartTotal">—</strong></div>
     <div class="heart-kpi accent"><span>第 <b id="heartFirstYear">30</b> 年先領 50%</span><strong id="heartEarly50">—</strong></div>
     <div class="heart-kpi accent-alt"><span>90 歲仍生存再領 50%</span><strong id="heartAge90">—</strong></div>
    </div>
-   <div class="heart-insight" id="heartInsight">保單生效期間，如符合重大傷病或特定疾病給付條件，仍享相應保障；實際依條款及生效狀態認定。</div>
+   <div class="heart-insight" id="heartInsight">完整繳費期的總額是滿期／祝壽的計算基礎；若發生事故，事故給付應另外按截止日計算。</div>
   </section>
  </div>
  <section class="heart-panel heart-flow" aria-labelledby="timelineHeading">
@@ -87,6 +87,16 @@
    </div>
    <div class="heart-field" id="heartEventYearField" hidden><label for="heartEventYear">事件發生：第幾保單年度</label><input id="heartEventYear" type="number" inputmode="numeric" min="1" max="90" value="35" step="1"></div>
   </div>
+  <div class="heart-benefit-basis" id="heartBenefitBasis" hidden aria-live="polite">
+   <div class="heart-basis-head"><strong>事故時「年繳應繳保險費總額」</strong><span>依事故發生年度重新計算</span></div>
+   <div class="heart-basis-grid">
+    <div><small>應計年繳期數</small><strong><span id="heartBenefitYears">—</span> 期</strong></div>
+    <div><small>至事故時應計保費總額</small><strong id="heartBenefitPremiumSum">—</strong></div>
+    <div><small>應計總額 × 1.05</small><strong id="heartBenefit105">—</strong></div>
+   </div>
+   <p id="heartBenefitCutoff">截點：事故日或原定繳費期屆滿日，取較早者。</p>
+   <p class="heart-basis-caveat">依「第幾保單年度」示範時，假設該年度應繳年繳保費已到期；實際保險金計算仍須依生效日、事故／初次診斷日期與保單應繳保費認定。</p>
+  </div>
   <div class="heart-story">
    <div class="heart-story-illustration" aria-hidden="true" id="heartStoryIcon">👨‍👩‍👧‍👦</div>
    <div class="heart-story-text"><div class="heart-story-kicker" id="heartStoryTag">情境 A · 無理賠事故</div>
@@ -100,16 +110,23 @@
  </section>
  <section class="heart-panel heart-terms" aria-labelledby="rulesHeading">
   <div class="heart-panel-title"><h2 id="rulesHeading">⑤ 主要給付重點與限制</h2></div>
+  <div class="heart-defined-premium">
+   <strong>「年繳應繳保險費總額」的計算截點</strong>
+   <div><span>身故／完全失能</span><p>自契約生效日起，計至身故日／完全失能診斷確定日，或原定繳費期間屆滿日，以較早者為準。</p></div>
+   <div><span>滿期／祝壽</span><p>自契約生效日起，計至原定繳費期間屆滿日，按完整 15 年或 20 年計算。</p></div>
+   <div><span>重大傷病</span><p>自契約生效日起，計至重大傷病初次診斷確定日，或原定繳費期間屆滿日，以較早者為準。</p></div>
+   <div><span>特定疾病</span><p>自契約生效日起，計至特定疾病初次診斷確定日，或原定繳費期間屆滿日，以較早者為準。</p></div>
+  </div>
   <div class="heart-terms-grid">
-   <div><span class="heart-term-icon">🛡️</span><strong>重大傷病</strong><p>第 1 年：年繳應繳保費總額 × 1.05；第 2 年起一般重大傷病：保額與上述金額擇高。慢性精神病另有 20% 保額的比較規則。</p></div>
+   <div><span class="heart-term-icon">🛡️</span><strong>重大傷病</strong><p>第 1 年：事故時應計年繳保費總額 × 1.05；第 2 年起一般重大傷病：保額與事故時應計總額 × 1.05 擇高。慢性精神病另有保額 20% 的比較規則。</p></div>
    <div><span class="heart-term-icon">❤️</span><strong>四項特定心血管疾病</strong><p>重度急性心肌梗塞、冠狀動脈繞道手術、心臟瓣膜開心手術、主動脈外科置換手術。依條款定義認定。</p></div>
-   <div><span class="heart-term-icon">💰</span><strong>兩階段生存給付</strong><p>第 25／30 保單年度末仍生存且契約有效，先領年繳應繳保費總額的 50%；90 歲保險期間屆滿時仍生存且契約有效，再領 50%。</p></div>
+   <div><span class="heart-term-icon">💰</span><strong>兩階段生存給付</strong><p>滿期與祝壽均按原定完整繳費期的「年繳應繳保險費總額」計算：第 25／30 保單年度末仍生存且契約有效，先領 50%；90 歲保險期間屆滿時仍生存且契約有效，再領 50%。</p></div>
    <div><span class="heart-term-icon">📌</span><strong>保費與理賠條件</strong><p>標準費率依本次附件；保費最高折減 6% 的實際條件未在本試算中自動套用。事故等待期間、特殊疾病及終止條件，須以正式條款為準。</p></div>
   </div>
-  <p class="heart-disclaimer"><strong>注意：</strong>這是依提供的商品教學 PDF 與標準年繳費率表製作的內部教育試算。保險給付不是所有情境都能疊加；重大傷病、特定疾病及身故／完全失能等事故給付，涉及契約終止與例外規定。投保年齡、實際費率、當年度保險金額與給付條件，仍須以保單條款及正式建議書核對。未滿 16 歲的身故／完全失能不以一般成人公式計算。</p>
+  <p class="heart-disclaimer"><strong>注意：</strong>本工具依您提供的「年繳應繳保險費總額」契約定義，區分事故給付與生存給付計算期間。事件採保單年度輸入，屬按年繳方式的年度試算，實際事故日期及當期應繳保費仍須以契約核對。這是依提供的商品教學 PDF 與標準年繳費率表製作的內部教育試算。保險給付不是所有情境都能疊加；重大傷病、特定疾病及身故／完全失能等事故給付，涉及契約終止與例外規定。投保年齡、實際費率、當年度保險金額與給付條件，仍須以保單條款及正式建議書核對。未滿 16 歲的身故／完全失能不以一般成人公式計算。</p>
   <p class="heart-sources">參考資料：使用者提供「滿溢鍾心商品百分百」第 1 頁給付規則、「費率 (8)」第 1 頁標準年繳費率。<a href="https://www.cathaylife.com.tw/official/products/health-illness/zcqzcr" target="_blank" rel="noopener noreferrer">國泰人壽官方商品介紹</a>。<br>本試算僅供內部教育訓練使用，不作為對外行銷或正式理賠承諾。</p>
  </section>
- <footer class="hub-footer">滿溢鍾心保費與保障路徑 v1.0｜2026-11-19｜國泰雲端學習站</footer>
+ <footer class="hub-footer">滿溢鍾心保費與保障路徑 v1.1｜2026-11-19｜國泰雲端學習站</footer>
 </main>
 <script>if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js");</script>
 </body>
