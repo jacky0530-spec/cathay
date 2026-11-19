@@ -1,4 +1,4 @@
-# 共用照片資料專區（V2.0）Firebase 部署備註
+# 共用照片資料專區（V2.2）Firebase 部署備註
 
 正式頁面：`photos.html`
 JavaScript：`photos.js`
@@ -13,6 +13,8 @@ Realtime Database：`https://cathay-app-5889a-default-rtdb.firebaseio.com`
 - `/photoLibraryV2/catalog/{id}`：共用圖片描述、分類、縮圖（JPEG Data URL）、上傳者識別、時間。
 - `/photoLibraryV2/images/{id}`：放大用 JPEG 壓縮圖片（Data URL）。只有點圖放大時讀取。
 - `/photoLibraryV2/pins/{accountHash}/{id}`：個人置頂時間戳記。相同授權碼跨裝置使用同一組最愛。
+- `/photoLibraryV2/categories/{categoryId}`：使用者新增的共用資料區（名稱、圖示、說明、建立時間）。全員讀取同一份分類清單；預設分類「新聞剪報、癌症議題、醫療收據、老化議題」由程式內建。
+- 分類讀取失敗時，原有共用照片仍可正常使用，但「新增資料區」停用並顯示 Firebase 分類權限錯誤。
 - 舊版照片仍存在裝置 IndexedDB，按「搬移舊版照片」才上傳；舊檔不會被刪除。
 - 圖庫讀取後每 60 秒自動同步、切回分頁時重新同步，也能手動按「重新同步」。
 - 新增／編輯／刪除內容會更新所有使用者可見的共用圖庫；只有置頂順序個別保存。
