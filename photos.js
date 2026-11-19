@@ -149,7 +149,7 @@
         const grid=create("div","photo-gallery");grid.id="grid-"+id;
         section.append(head,grid);
       }
-      $("title-"+id).textContent=meta.emoji+" "+name;
+      section.querySelector('#title-'+id).textContent=meta.emoji+" "+name;
       const desc=section.querySelector(".photo-category-head p");
       if(desc)desc.textContent=meta.description||"共用照片資料區";
       sections.append(section);
