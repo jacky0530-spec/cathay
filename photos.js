@@ -1,4 +1,4 @@
-/* Cathay photo library v2.0 | Shared Firebase RTDB gallery, separate per-user favorites.
+/* Cathay photo library v2.1 | Shared Firebase RTDB gallery, separate per-user favorites.
  * Static hosting + existing login code; RTDB permissions must be configured separately.
  * Large originals are retained in previous v1 local IndexedDB until manual migration.
  */
@@ -32,6 +32,8 @@
   function status(text,error=false){
     $("galleryStatus").textContent=text;
     $("galleryStatus").classList.toggle("error",error);
+    const help=$("photoConnectionHelp");
+    if(help)help.hidden=!(error&&ACCOUNT&&SESSION);
   }
   async function userHash(raw){
     const bytes = new TextEncoder().encode("cathay-photos-v2:"+raw.toUpperCase());
@@ -431,7 +433,17 @@
   $("importPhotos").addEventListener("click",()=>$("backupInput").click());
   $("backupInput").addEventListener("change",e=>importBackup(e.target.files?.[0]));
   $("migrateLocal").addEventListener("click",migrateLocal);
-  $("reloadPhotos").addEventListener("click",()=>refresh("共用照片庫已重新同步。").catch(e=>status("更新失敗："+e.message,true)));
+  $("reloadPhotos").addEventListener("click",async()=>{
+    const btn=$("reloadPhotos");
+    if(btn.disabled)return;
+    btn.disabled=true;
+    status("正在重新檢查 Firebase 共用照片庫連線…");
+    try{
+      await init(); // 包含重新取得帳號識別及檢查讀取權限；成功後解鎖上傳功能
+    }finally{
+      if(ACCOUNT&&SESSION)btn.disabled=false;
+    }
+  });
   document.addEventListener("visibilitychange",()=>{
     if(document.visibilityState==="visible"&&state.accountKey&&Date.now()-state.lastLoaded>30000)
       refresh().catch(e=>status("更新失敗："+e.message,true));
