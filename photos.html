@@ -31,6 +31,7 @@
   <div class="photo-actions">
    <button id="addPhoto" class="photo-btn primary" type="button">＋ 上傳共用照片</button>
    <button id="createCategory" class="photo-btn" type="button">＋ 新增資料區</button>
+   <button id="manageCategories" class="photo-btn" type="button">↕ 專區改名／排序</button>
    <button id="reloadPhotos" class="photo-btn" type="button">↻ 檢查連線／重新同步</button>
    <button id="migrateLocal" class="photo-btn" type="button">⇧ 搬移舊版照片</button>
    <button id="exportPhotos" class="photo-btn" type="button">↓ 匯出備份</button>
@@ -39,7 +40,7 @@
   </div>
  </div>
  <div class="photo-note">
-  <strong>共用方式：</strong>所有使用者讀取同一份 Firebase Realtime Database 照片清單；上傳／編輯／刪除共用圖片及新增分類會影響所有使用者，只有「★ 我的置頂」是各自獨立。<strong>使用相同授權碼登入的人，會共用同一組置頂偏好。</strong><br>
+  <strong>共用方式：</strong>所有使用者讀取同一份 Firebase Realtime Database 照片清單；上傳、移動、編輯或刪除共用圖片，以及改名、新增和調整專區順序，都會同步給所有使用者；只有「★ 我的置頂」是各自獨立。<strong>使用相同授權碼登入的人，會共用同一組置頂偏好。</strong><br>
   <strong>首次啟用：</strong>共用圖庫必須先開通 Firebase 對應資料路徑的存取權限；若看到「權限不足」，表示後端尚未完成設定，照片不會假裝已同步。舊版瀏覽器照片可透過「搬移舊版照片」手動上傳。
  </div>
 
@@ -80,12 +81,35 @@
    <div id="grid-aging" class="photo-gallery"><div class="photo-empty"><span class="emoji">🧓</span>目前沒有照片，可點選上方「上傳照片」。</div></div>
   </section>
  </div>
- <footer class="hub-footer">照片資料專區 V2.2｜Firebase 共用圖片 · 依授權碼各自設定最愛置頂｜教育訓練與素材整理用途</footer>
+ <footer class="hub-footer">照片資料專區 V2.3｜Firebase 共用圖片 · 依授權碼各自設定最愛置頂｜教育訓練與素材整理用途</footer>
 </main>
+
+<dialog id="categoryManager" class="photo-dialog photo-manage-dialog" aria-labelledby="categoryManagerTitle">
+ <div class="photo-dialog-head"><h2 id="categoryManagerTitle">專區改名與顯示排序</h2><button id="closeCategoryManager" class="photo-close" type="button" aria-label="關閉專區管理">×</button></div>
+ <div class="photo-form">
+  <p class="photo-form-tip">使用「↑ 上移／↓ 下移」調整資料區在畫面上的排列，或點「改名」變更名稱、圖示與說明。所有使用者看到相同順序；原有照片不會消失。</p>
+  <div id="categoryManagerList" class="photo-manage-list" aria-label="共用資料區順序"></div>
+  <div class="photo-form-actions"><button id="doneCategoryManager" class="photo-btn primary" type="button">完成</button></div>
+ </div>
+</dialog>
+
+<dialog id="movePhotoDialog" class="photo-dialog" aria-labelledby="movePhotoTitle">
+ <div class="photo-dialog-head"><h2 id="movePhotoTitle">移動照片到其他資料區</h2><button id="closeMovePhoto" class="photo-close" type="button" aria-label="關閉移動照片視窗">×</button></div>
+ <form id="movePhotoForm" class="photo-form">
+  <p id="movingPhotoName" class="photo-form-tip"></p>
+  <div class="photo-field"><label for="movePhotoCategory">目標資料區</label><select id="movePhotoCategory" required></select></div>
+  <p class="photo-form-tip">移動只會更改照片分類，不會重傳、刪除或改變圖片內容；所有使用者都會看到新的所在專區。您的最愛置頂設定會保留。</p>
+  <div class="photo-form-actions">
+    <button id="cancelMovePhoto" class="photo-btn" type="button">取消</button>
+    <button id="saveMovePhoto" class="photo-btn primary" type="submit">確定移動</button>
+  </div>
+ </form>
+</dialog>
 
 <dialog id="categoryEditor" class="photo-dialog" aria-labelledby="categoryEditorTitle">
  <div class="photo-dialog-head"><h2 id="categoryEditorTitle">新增共用資料區</h2><button type="button" id="closeCategoryEditor" class="photo-close" aria-label="關閉新增資料區">×</button></div>
  <form id="categoryForm" class="photo-form">
+  <input type="hidden" id="categoryEditId">
   <div class="photo-field"><label for="categoryName">資料區名稱 *</label><input id="categoryName" maxlength="24" placeholder="例如：長照議題、醫療科技、保險案例" required></div>
   <div class="photo-field"><label for="categoryIcon">資料區圖示（選填）</label><input id="categoryIcon" maxlength="8" placeholder="例如：📚、❤️、🏥；不填使用 📁"></div>
   <div class="photo-field"><label for="categoryDescription">資料區說明（選填）</label><textarea id="categoryDescription" maxlength="120" rows="3" placeholder="這個資料區主要收藏什麼照片？"></textarea></div>
