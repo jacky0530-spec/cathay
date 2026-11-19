@@ -106,4 +106,23 @@
  .photo-viewer-head{padding:9px 10px}
  .photo-viewer-img{max-height:calc(96dvh - 158px)}
 }
+
+/* v2.3：分類管理、手機友善上移下移按鈕、照片移動視窗 */
+.photo-actions #manageCategories{background:#f2f7fb;border-color:#bdd7e2;color:#1b5a73}
+.photo-manage-dialog{width:min(94vw,670px)}
+.photo-manage-list{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.photo-manage-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:12px 13px;border:1px solid #dce6df;border-radius:12px;background:#f9fcfa}
+.photo-manage-info{display:flex;flex-direction:column;gap:4px;min-width:125px;flex:1}
+.photo-manage-info strong{font-size:.92rem;color:#144c33;overflow-wrap:anywhere}
+.photo-manage-info small{color:#698073;font-size:.74rem}
+.photo-manage-actions{display:flex;gap:6px;flex-wrap:wrap}
+.photo-manage-actions .photo-btn{min-height:40px}
+.photo-card-actions .photo-btn{min-width:0}
+@media(max-width:475px){
+ .photo-manage-row{padding:10px}
+ .photo-manage-actions{width:100%}
+ .photo-manage-actions .photo-btn{flex:1;padding:8px 6px;font-size:.78rem}
+ .photo-actions #manageCategories{flex:1 1 43%}
+}
+
 @media(prefers-reduced-motion:reduce){.photo-card,.photo-card button{transition:none}}
