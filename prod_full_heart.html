@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#087b48">
+<title>滿溢鍾心｜保費與先領後保障動態試算｜國泰雲端學習站</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="hub-ui.css">
+<link rel="stylesheet" href="prod_full_heart.css">
+<script type="module" src="auth.js"></script>
+<script defer src="prod_full_heart.js"></script>
+</head>
+<body class="hub-page">
+<main class="hub-shell heart-shell">
+ <header class="hub-topbar">
+  <div class="hub-brand"><span class="hub-brand-mark"><img src="icon-192.png" alt=""></span><div class="hub-brand-text"><strong>滿溢鍾心試算</strong><span>國泰雲端學習站 · 重大傷病保障</span></div></div>
+  <a href="products.html" class="hub-logout" style="text-decoration:none">⌂ 返回商品選單</a>
+ </header>
+ <section class="hub-hero hub-hero--small" aria-labelledby="pageTitle">
+  <div class="hub-kicker">HEALTH PROTECTION · POLICY TIMELINE</div>
+  <h1 id="pageTitle">滿期先領 50%<br>保障怎麼走？</h1>
+  <p>滿溢鍾心重大傷病定期保險（外溢型）｜輸入保費與保額，立即看懂繳費年期、先領時間及保障延續。</p>
+ </section>
+ <div class="heart-highlight" role="note">
+  <div><span>✓</span> 15 年期：第 <strong>25</strong> 保單年度末先領</div>
+  <div><span>✓</span> 20 年期：第 <strong>30</strong> 保單年度末先領</div>
+  <div><span>✓</span> 保單有效時保障至 <strong>90 歲</strong></div>
+ </div>
+ <div class="heart-layout">
+  <section class="heart-panel heart-inputs" aria-labelledby="formHeading">
+   <div class="heart-panel-title"><h2 id="formHeading">① 輸入投保條件</h2><span>依上傳費率表自動試算</span></div>
+   <div class="heart-field-grid">
+    <div class="heart-field"><label for="heartAge">投保年齡</label><input id="heartAge" type="number" inputmode="numeric" min="0" max="55" step="1" value="40"></div>
+    <div class="heart-field"><label for="heartSex">性別</label><select id="heartSex"><option value="M">男性</option><option value="F">女性</option></select></div>
+    <div class="heart-field"><label for="heartTerm">繳費年期</label><select id="heartTerm"><option value="15">15 年期</option><option value="20" selected>20 年期</option></select></div>
+    <div class="heart-field"><label for="heartFace">保險金額（萬元）</label><input id="heartFace" type="number" min="30" max="500" step="1" inputmode="numeric" value="100"></div>
+   </div>
+   <div class="heart-rate-status" id="heartRateStatus" role="status" aria-live="polite">依標準年繳費率計算。</div>
+   <div class="heart-field">
+    <label for="heartPremiumOverride">手動套入年繳應繳保費（元，選填）</label>
+    <input id="heartPremiumOverride" type="number" inputmode="numeric" min="1" step="1" placeholder="空白＝使用費率表自動試算">
+    <small>有實際建議書時可直接填入年繳金額；空白時採標準費率，不自動扣除外溢折減。</small>
+   </div>
+   <div class="heart-rate-detail" id="heartRateDetail">費率：—</div>
+   <button class="heart-reset" id="heartReset" type="button">↺ 恢復示範條件</button>
+  </section>
+  <section class="heart-panel heart-summary" aria-labelledby="summaryHeading">
+   <div class="heart-panel-title"><h2 id="summaryHeading">② 保費與兩階段生存給付</h2><span>條款示意，非核保報價</span></div>
+   <div id="heartError" class="heart-error" hidden role="alert"></div>
+   <div class="heart-kpis">
+    <div class="heart-kpi"><span>每年應繳保費</span><strong id="heartAnnual">—</strong></div>
+    <div class="heart-kpi"><span>繳費年期總額</span><strong id="heartTotal">—</strong></div>
+    <div class="heart-kpi accent"><span>第 <b id="heartFirstYear">30</b> 年先領 50%</span><strong id="heartEarly50">—</strong></div>
+    <div class="heart-kpi accent-alt"><span>90 歲仍生存再領 50%</span><strong id="heartAge90">—</strong></div>
+   </div>
+   <div class="heart-insight" id="heartInsight">保單生效期間，如符合重大傷病或特定疾病給付條件，仍享相應保障；實際依條款及生效狀態認定。</div>
+  </section>
+ </div>
+ <section class="heart-panel heart-flow" aria-labelledby="timelineHeading">
+  <div class="heart-panel-title"><h2 id="timelineHeading">③ 看懂保單走向</h2><span>時間軸隨輸入自動更新</span></div>
+  <div class="heart-timeline" id="heartTimeline" aria-label="保單從投保到90歲的時間軸">
+   <div class="heart-track" aria-hidden="true"><span id="heartTrackPaid"></span><span id="heartTrackWait"></span><span id="heartTrackProtect"></span></div>
+   <div class="heart-timeline-steps">
+    <div class="heart-milestone"><span class="heart-dot">1</span><b>投保生效</b><small id="heartStartAge">40 歲</small><em>開始繳費</em></div>
+    <div class="heart-milestone"><span class="heart-dot">2</span><b>繳費期滿</b><small id="heartPaidAge">60 歲</small><em id="heartPaidLabel">第 20 年末</em></div>
+    <div class="heart-milestone major"><span class="heart-dot">✓</span><b>先領 50%</b><small id="heartEarlyAge">70 歲</small><em id="heartEarlyLabel">第 30 年末</em></div>
+    <div class="heart-milestone"><span class="heart-dot">★</span><b>90 歲生存</b><small>保險期間屆滿</small><em>再領 50%</em></div>
+   </div>
+  </div>
+  <div class="heart-periods">
+   <div class="heart-period"><span class="heart-period-line pay"></span><strong>繳費階段</strong><p id="heartPeriodPay">第 1～20 年繳費</p></div>
+   <div class="heart-period"><span class="heart-period-line wait"></span><strong>繳清後繼續保障</strong><p>繳費結束後再經過 10 年，才是第一次滿期金給付時點</p></div>
+   <div class="heart-period"><span class="heart-period-line continue"></span><strong>先領後保障延續</strong><p>滿足有效契約及生存條件時，保障持續到 90 歲</p></div>
+  </div>
+ </section>
+ <section class="heart-panel heart-cases" aria-labelledby="scenarioHeading">
+  <div class="heart-panel-title"><h2 id="scenarioHeading">④ 情境模擬｜保障怎麼走？</h2><span>情境互斥，不可把不同事故理賠重複加總</span></div>
+  <div class="heart-scenario-fields">
+   <div class="heart-field"><label for="heartScenario">選擇情境</label>
+    <select id="heartScenario">
+     <option value="healthy">A｜健康至 90 歲</option>
+     <option value="critical">B｜符合重大傷病（非慢性精神病）</option>
+     <option value="chronic">B2｜符合重大傷病（慢性精神病）</option>
+     <option value="specific">C｜符合四項特定心血管疾病</option>
+     <option value="death">D｜身故／完全失能（簡化示意）</option>
+    </select>
+   </div>
+   <div class="heart-field" id="heartEventYearField" hidden><label for="heartEventYear">事件發生：第幾保單年度</label><input id="heartEventYear" type="number" inputmode="numeric" min="1" max="90" value="35" step="1"></div>
+  </div>
+  <div class="heart-story">
+   <div class="heart-story-illustration" aria-hidden="true" id="heartStoryIcon">👨‍👩‍👧‍👦</div>
+   <div class="heart-story-text"><div class="heart-story-kicker" id="heartStoryTag">情境 A · 無理賠事故</div>
+    <h3 id="heartStoryTitle">健康至 90 歲</h3>
+    <p id="heartStoryDescription">繳費期滿後十年先領 50%，持續有效至 90 歲再領 50%。</p>
+   </div>
+  </div>
+  <div class="heart-flow-cards" id="heartEventCards"></div>
+  <div class="heart-scenario-amount"><span id="heartScenarioAmountLabel">本情境生存給付示意合計</span><strong id="heartScenarioAmount">—</strong></div>
+  <p id="heartScenarioNote" class="heart-scenario-note">以上為生存且契約持續有效的教育示例，非報酬率或保證投資收益。</p>
+ </section>
+ <section class="heart-panel heart-terms" aria-labelledby="rulesHeading">
+  <div class="heart-panel-title"><h2 id="rulesHeading">⑤ 主要給付重點與限制</h2></div>
+  <div class="heart-terms-grid">
+   <div><span class="heart-term-icon">🛡️</span><strong>重大傷病</strong><p>第 1 年：年繳應繳保費總額 × 1.05；第 2 年起一般重大傷病：保額與上述金額擇高。慢性精神病另有 20% 保額的比較規則。</p></div>
+   <div><span class="heart-term-icon">❤️</span><strong>四項特定心血管疾病</strong><p>重度急性心肌梗塞、冠狀動脈繞道手術、心臟瓣膜開心手術、主動脈外科置換手術。依條款定義認定。</p></div>
+   <div><span class="heart-term-icon">💰</span><strong>兩階段生存給付</strong><p>第 25／30 保單年度末仍生存且契約有效，先領年繳應繳保費總額的 50%；90 歲保險期間屆滿時仍生存且契約有效，再領 50%。</p></div>
+   <div><span class="heart-term-icon">📌</span><strong>保費與理賠條件</strong><p>標準費率依本次附件；保費最高折減 6% 的實際條件未在本試算中自動套用。事故等待期間、特殊疾病及終止條件，須以正式條款為準。</p></div>
+  </div>
+  <p class="heart-disclaimer"><strong>注意：</strong>這是依提供的商品教學 PDF 與標準年繳費率表製作的內部教育試算。保險給付不是所有情境都能疊加；重大傷病、特定疾病及身故／完全失能等事故給付，涉及契約終止與例外規定。投保年齡、實際費率、當年度保險金額與給付條件，仍須以保單條款及正式建議書核對。未滿 16 歲的身故／完全失能不以一般成人公式計算。</p>
+  <p class="heart-sources">參考資料：使用者提供「滿溢鍾心商品百分百」第 1 頁給付規則、「費率 (8)」第 1 頁標準年繳費率。<a href="https://www.cathaylife.com.tw/official/products/health-illness/zcqzcr" target="_blank" rel="noopener noreferrer">國泰人壽官方商品介紹</a>。<br>本試算僅供內部教育訓練使用，不作為對外行銷或正式理賠承諾。</p>
+ </section>
+ <footer class="hub-footer">滿溢鍾心保費與保障路徑 v1.0｜2026-11-19｜國泰雲端學習站</footer>
+</main>
+<script>if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js");</script>
+</body>
+</html>
