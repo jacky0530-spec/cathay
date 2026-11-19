@@ -1,4 +1,4 @@
-/* Cathay photo library v2.4 | Shared Firebase RTDB gallery, separate per-user favorites.
+/* Cathay photo library v2.5 | Shared Firebase RTDB gallery, separate per-user favorites.
  * Static hosting + existing login code; RTDB permissions must be configured separately.
  * Large originals are retained in previous v1 local IndexedDB until manual migration.
  */
@@ -209,6 +209,14 @@
     try{return await state.refreshPromise;}
     finally{state.refreshPromise=null;}
   }
+  // An in-flight poll may contain data read before a write. Wait for it,
+  // then force a new database fetch so moved photos do not appear in an old section.
+  async function refreshAfterMutation(notice){
+    if(state.refreshPromise){
+      try{await state.refreshPromise;}catch(e){/* A fresh fetch follows even if the prior one failed. */}
+    }
+    return refresh(notice);
+  }
   function button(txt,cls,fn){
     const el=create("button","photo-btn small "+(cls||""),txt);
     el.type="button";el.addEventListener("click",fn);
@@ -286,6 +294,13 @@
   }
   function render(){
     ensureCategoryUI();
+    // Same thumb means separate uploaded records with identical preview images.
+    // Do not hide them or delete anything without an explicit user confirmation.
+    const copiesByThumb=new Map();
+    for(const item of state.records){
+      if(!copiesByThumb.has(item.thumb))copiesByThumb.set(item.thumb,[]);
+      copiesByThumb.get(item.thumb).push(item);
+    }
     for(const cat of state.categoryOrder){
       const n=state.records.filter(x=>x.category===cat).length;
       $("count-"+cat).textContent=n;
@@ -339,7 +354,18 @@
           tools.append(button("編輯","",()=>openEditor(p.id)));
           tools.append(button("刪除","danger",()=>deletePhoto(p.id)));
         }
-        card.append(thumb,body,tools);fragment.append(card);
+        card.append(thumb,body,tools);
+        const copies=copiesByThumb.get(p.thumb)||[];
+        if(copies.length>1){
+          const duplicatesOwned=copies.filter(item=>item.id!==p.id&&item.uploadedBy===state.accountKey);
+          const duplicateNote=create("div","photo-card-duplicate");
+          duplicateNote.append(create("span",null,"⚠ 相同影像有 "+copies.length+" 筆上傳紀錄；移動其中一筆不會刪掉另一筆。"));
+          if(p.uploadedBy===state.accountKey&&duplicatesOwned.length>0){
+            duplicateNote.append(button("保留此張、整理重複","",()=>removeDuplicateCopies(p.id)));
+          }
+          card.append(duplicateNote);
+        }
+        fragment.append(card);
       }
       grid.append(fragment);
     }
@@ -420,7 +446,7 @@
       state.selectedIds.clear();
       state.batchMode=false;
       state.filter=destination;
-      await refresh("已批次移動 "+moving.length+" 張照片至「"+CATEGORIES[destination]+"」，其他使用者同步後也會看到。");
+      await refreshAfterMutation("已批次移動 "+moving.length+" 張照片至「"+CATEGORIES[destination]+"」，其他使用者同步後也會看到。");
     }catch(error){
       status(committed?"照片已移動，但重新載入失敗："+error.message:"批次移動失敗，照片未變更："+error.message,true);
       alert(committed?"批次移動成功，但請重新同步確認。":"批次移動失敗："+error.message);
@@ -450,7 +476,7 @@
       for(const photo of eligible){state.viewCache.delete(photo.id);state.selectedIds.delete(photo.id);}
       if(state.selectedIds.size===0)state.batchMode=false;
       if($("photoViewer").open)$("photoViewer").close();
-      await refresh("已批次刪除 "+eligible.length+" 張共用照片"+(notOwned?"，另外 "+notOwned+" 張非本人上傳照片未刪除。":"。"));
+      await refreshAfterMutation("已批次刪除 "+eligible.length+" 張共用照片"+(notOwned?"，另外 "+notOwned+" 張非本人上傳照片未刪除。":"。"));
     }catch(error){
       status(committed?"照片已刪除，但重新載入失敗："+error.message:"批次刪除失敗，照片未刪除："+error.message,true);
       alert(committed?"刪除已完成，請按重新同步確認。":"批次刪除失敗："+error.message);
@@ -467,7 +493,7 @@
     try{
       await api("catalog/"+photo.id,"PATCH",{category:destination,updatedAt:new Date().toISOString()});
       closeMovePhoto();
-      await refresh("已將「"+(photo.title||photo.fileName||"照片")+"」移至「"+CATEGORIES[destination]+"」，所有使用者都會看到更新。");
+      await refreshAfterMutation("已將「"+(photo.title||photo.fileName||"照片")+"」移至「"+CATEGORIES[destination]+"」，所有使用者都會看到更新。");
       state.filter=destination;
       render();
     }catch(error){
@@ -530,7 +556,7 @@
       next.forEach((key,index)=>{patch[key+"/order"]=index;});
       // Firebase supports atomic multi-path PATCH updates; preserve names and metadata.
       await api("categories","PATCH",patch);
-      await refresh("已更新全部使用者的專區排列順序。");
+      await refreshAfterMutation("已更新全部使用者的專區排列順序。");
       renderCategoryManager();
     }catch(error){
       status("儲存專區排序失敗："+error.message,true);
@@ -581,7 +607,7 @@
         });
       }
       $("categoryEditor").close();
-      await refresh(id?"已將專區改名為「"+name+"」，照片會保留在原專區。":"已建立共用資料區「"+name+"」。");
+      await refreshAfterMutation(id?"已將專區改名為「"+name+"」，照片會保留在原專區。":"已建立共用資料區「"+name+"」。");
     }catch(error){
       status((id?"修改":"新增")+"資料區失敗："+error.message,true);
       alert((id?"修改":"建立")+"共用資料區失敗："+error.message);
@@ -655,7 +681,7 @@
         if(!record||record.uploadedBy!==state.accountKey)throw new Error("只能編輯自己上傳的照片");
         await api("catalog/"+id,"PATCH",{category,title:title||record.fileName,description,updatedAt:new Date().toISOString()});
         await setPin(id,pinned);
-        closeEditor();await refresh("已更新共用照片資料，其他使用者重新載入後即可看見。");
+        closeEditor();await refreshAfterMutation("已更新共用照片資料，其他使用者重新載入後即可看見。");
       } else {
         const files=[...($("photoFiles").files||[])];
         if(files.length===0)throw new Error("請先選擇照片");
@@ -668,7 +694,7 @@
           saved++;
           status("已上傳 "+saved+"/"+files.length+" 張至共用照片庫…");
         }
-        closeEditor();await refresh("成功將 "+saved+" 張照片上傳到共用照片庫。");
+        closeEditor();await refreshAfterMutation("成功將 "+saved+" 張照片上傳到共用照片庫。");
       }
     }catch(err){
       console.error(err);
@@ -687,9 +713,51 @@
     try{
       const active=Boolean(state.pins[id]);
       await setPin(id,!active);
-      await refresh(active?"已取消我的置頂。":"★ 已設為我的最愛；其他使用者的排列不受影響。");
+      await refreshAfterMutation(active?"已取消我的置頂。":"★ 已設為我的最愛；其他使用者的排列不受影響。");
     }catch(err){status("個人置頂更新失敗："+err.message,true);}
     finally{state.busy=false;}
+  }
+  async function removeDuplicateCopies(keepId){
+    if(state.busy)return;
+    const keeper=state.records.find(p=>p.id===keepId);
+    if(!keeper||keeper.uploadedBy!==state.accountKey)return;
+    const same=state.records.filter(p=>p.thumb===keeper.thumb);
+    const removable=same.filter(p=>p.id!==keepId&&p.uploadedBy===state.accountKey);
+    if(!removable.length){
+      alert("沒有其他可以刪除的本人上傳副本。");
+      return;
+    }
+    const locations=removable.map(p=>CATEGORIES[p.category]||p.category).join("、");
+    if(!confirm(
+      "要保留「"+(keeper.title||keeper.fileName||"這張照片")+"」（"+(CATEGORIES[keeper.category]||"目前專區")+"）並刪除另外 "+removable.length+" 筆完全相同的上傳紀錄嗎？"+
+      "\n\n將刪除的副本位於："+locations+
+      "\n\n這只會處理您自己上傳的重複圖片，不影響其他人上傳的副本；所有使用者都會看見刪除結果。"
+    ))return;
+    state.busy=true;updateBatchUI();
+    let committed=false;
+    try{
+      const patch={};
+      for(const record of removable){
+        patch["catalog/"+record.id]=null;
+        patch["images/"+record.id]=null;
+        patch["pins/"+state.accountKey+"/"+record.id]=null;
+      }
+      // If the old duplicate was a personal favorite, transfer its personal pin to the retained one.
+      if(!state.pins[keeper.id]&&removable.some(p=>Boolean(state.pins[p.id]))){
+        patch["pins/"+state.accountKey+"/"+keepId]=Date.now();
+      }
+      await api("","PATCH",patch);
+      committed=true;
+      for(const record of removable){
+        state.selectedIds.delete(record.id);
+        state.viewCache.delete(record.id);
+      }
+      if($("photoViewer").open)$("photoViewer").close();
+      await refreshAfterMutation("已保留「"+(CATEGORIES[keeper.category]||"目前專區")+"」的照片，清除 "+removable.length+" 筆重複上傳紀錄。");
+    }catch(err){
+      status(committed?"清理已成功，但重新載入失敗："+err.message:"重複照片清理失敗："+err.message,true);
+      alert(committed?"請重新同步確認重複照片清理結果。":"清理失敗："+err.message);
+    }finally{state.busy=false;updateBatchUI();}
   }
   async function deletePhoto(id){
     const record=state.records.find(x=>x.id===id);
@@ -704,7 +772,7 @@
       ]);
       state.viewCache.delete(id);
       if($("photoViewer").open)$("photoViewer").close();
-      await refresh("照片已從共用圖庫刪除。");
+      await refreshAfterMutation("照片已從共用圖庫刪除。");
     }catch(err){status("共用刪除失敗："+err.message,true);}
     finally{state.busy=false;}
   }
@@ -787,7 +855,7 @@
         existing.add(newId);
         saved++;status("正在匯入共用照片… "+saved+"/"+obj.photos.length);
       }
-      await refresh("備份上傳完成："+saved+" 張；跳過 "+skipped+" 張。");
+      await refreshAfterMutation("備份上傳完成："+saved+" 張；跳過 "+skipped+" 張。");
     }catch(err){console.error(err);status("備份匯入失敗："+err.message,true);alert(err.message);}
     finally{state.busy=false;$("importPhotos").disabled=false;$("backupInput").value="";}
   }
@@ -825,7 +893,7 @@
         existing.add(newId);
         n++;status("正在同步本機舊照片… "+n+"/"+local.length);
       }
-      await refresh("成功搬移 "+n+" 張舊照片，略過 "+skipped+" 張已存在的照片；本機舊照片仍保留。");
+      await refreshAfterMutation("成功搬移 "+n+" 張舊照片，略過 "+skipped+" 張已存在的照片；本機舊照片仍保留。");
     }catch(err){status("搬移舊照片失敗："+err.message,true);alert(err.message);}
     finally{state.busy=false;$("migrateLocal").disabled=false;}
   }
