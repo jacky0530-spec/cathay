@@ -349,7 +349,10 @@
     if(state.busy)return;
     const photo=state.records.find(p=>p.id===id);
     if(!photo)return;
+    state.bulkMoveIds=null;
     state.movingPhotoId=id;
+    $("movePhotoTitle").textContent="移動照片到其他資料區";
+    $("saveMovePhoto").textContent="確定移動";
     $("movingPhotoName").textContent="照片："+(photo.title||photo.fileName||"未命名圖片");
     const picker=$("movePhotoCategory");
     picker.replaceChildren();
@@ -366,10 +369,96 @@
   function closeMovePhoto(){
     $("movePhotoDialog").close();
     state.movingPhotoId=null;
+    state.bulkMoveIds=null;
+  }
+  function openBulkMove(){
+    if(state.busy||!state.batchMode)return;
+    const picked=selectedRecords();
+    if(!picked.length)return;
+    state.bulkMoveIds=picked.map(p=>p.id);
+    state.movingPhotoId=null;
+    $("movePhotoTitle").textContent="批次移動 "+picked.length+" 張照片";
+    $("movingPhotoName").textContent="已選 "+picked.length+" 張，請選擇要一起移往的專區；已在目標專區的照片會保留原位。";
+    const picker=$("movePhotoCategory");
+    picker.replaceChildren();
+    const placeholder=create("option",null,"請選擇目標專區");
+    placeholder.value="";placeholder.disabled=true;picker.append(placeholder);
+    for(const id of state.categoryOrder){
+      const item=create("option",null,(CATEGORY_META[id]?.emoji||"📁")+" "+CATEGORIES[id]);
+      item.value=id;picker.append(item);
+    }
+    picker.value="";
+    $("saveMovePhoto").textContent="確定批次移動";
+    $("saveMovePhoto").disabled=true;
+    picker.onchange=()=>{$("saveMovePhoto").disabled=
+      !isCat(picker.value)||!picked.some(p=>p.category!==picker.value);};
+    $("movePhotoDialog").showModal();
+  }
+  async function saveBulkMove(){
+    const destination=$("movePhotoCategory").value;
+    if(state.busy||!isCat(destination))return;
+    const moving=(state.bulkMoveIds||[])
+      .map(id=>state.records.find(p=>p.id===id))
+      .filter(p=>p&&p.category!==destination);
+    if(!moving.length){
+      status("已選照片都在該資料區，無需移動。");
+      return;
+    }
+    state.busy=true;$("saveMovePhoto").disabled=true;
+    updateBatchUI();
+    let committed=false;
+    try{
+      const updates={},now=new Date().toISOString();
+      for(const photo of moving){
+        updates[photo.id+"/category"]=destination;
+        updates[photo.id+"/updatedAt"]=now;
+      }
+      // One atomic RTDB PATCH: keep images and personal favorites unchanged.
+      await api("catalog","PATCH",updates);
+      committed=true;
+      closeMovePhoto();
+      state.selectedIds.clear();
+      state.batchMode=false;
+      state.filter=destination;
+      await refresh("已批次移動 "+moving.length+" 張照片至「"+CATEGORIES[destination]+"」，其他使用者同步後也會看到。");
+    }catch(error){
+      status(committed?"照片已移動，但重新載入失敗："+error.message:"批次移動失敗，照片未變更："+error.message,true);
+      alert(committed?"批次移動成功，但請重新同步確認。":"批次移動失敗："+error.message);
+    }finally{state.busy=false;updateBatchUI();}
+  }
+  async function deleteSelectedPhotos(){
+    if(state.busy||!state.batchMode)return;
+    const selected=selectedRecords();
+    const eligible=eligibleForDelete();
+    if(!eligible.length){alert("您選取的照片沒有自己上傳的項目，因此無法批次刪除。");return;}
+    const notOwned=selected.length-eligible.length;
+    const label="確定永久刪除自己上傳的 "+eligible.length+" 張照片？\n\n所有使用者都會看不到這些共用圖片，刪除後無法復原。"+
+      (notOwned?"\n\n另有 "+notOwned+" 張是其他人上傳的照片，本次會跳過、不會刪除。":"");
+    if(!confirm(label))return;
+    state.busy=true;updateBatchUI();
+    let committed=false;
+    try{
+      const updates={};
+      for(const photo of eligible){
+        updates["catalog/"+photo.id]=null;
+        updates["images/"+photo.id]=null;
+        updates["pins/"+state.accountKey+"/"+photo.id]=null;
+      }
+      // One atomic multi-location update: catalog and image deletion cannot partially commit.
+      await api("","PATCH",updates);
+      committed=true;
+      for(const photo of eligible){state.viewCache.delete(photo.id);state.selectedIds.delete(photo.id);}
+      if($("photoViewer").open)$("photoViewer").close();
+      await refresh("已批次刪除 "+eligible.length+" 張共用照片"+(notOwned?"，另外 "+notOwned+" 張非本人上傳照片未刪除。":"。"));
+    }catch(error){
+      status(committed?"照片已刪除，但重新載入失敗："+error.message:"批次刪除失敗，照片未刪除："+error.message,true);
+      alert(committed?"刪除已完成，請按重新同步確認。":"批次刪除失敗："+error.message);
+    }finally{state.busy=false;updateBatchUI();}
   }
   async function saveMovePhoto(event){
     event.preventDefault();
     if(state.busy)return;
+    if(state.bulkMoveIds?.length)return saveBulkMove();
     const photo=state.records.find(p=>p.id===state.movingPhotoId);
     const destination=$("movePhotoCategory").value;
     if(!photo||!isCat(destination)||destination===photo.category)return;
@@ -771,6 +860,8 @@
   $("batchModeToggle").addEventListener("click",toggleBatchMode);
   $("batchSelectVisible").addEventListener("click",selectAllVisible);
   $("batchClear").addEventListener("click",clearBatchSelection);
+  $("batchMove").addEventListener("click",openBulkMove);
+  $("batchDelete").addEventListener("click",deleteSelectedPhotos);
   $("addPhoto").addEventListener("click",()=>openEditor());
   $("closeEditor").addEventListener("click",closeEditor);
   $("cancelEditor").addEventListener("click",closeEditor);
