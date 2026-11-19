@@ -1,4 +1,4 @@
-/* 滿溢鍾心 重大傷病定期保險(外溢型) · 教育試算 v1.1
+/* 滿溢鍾心 重大傷病定期保險(外溢型) · 教育試算 v1.2
    費率依「費率 (8).pdf」第1頁標準年繳費率：新臺幣／每萬元保額。
    「年繳應繳保險費總額」須按給付種類分別計算：
    1. 滿期與祝壽：以保額對應之年繳應繳保費 × 原定完整繳費年期。
@@ -132,9 +132,14 @@
     $("heartBenefitBasis").hidden=isHealthy;
     $("heartEventYear").max=String(q.finalYear);
     if(!isHealthy){
-      const current=Number($("heartEventYear").value);
-      if(!Number.isInteger(current)||current<1||current>q.finalYear){
-        $("heartEventYear").value=String(Math.min(q.finalYear,q.earlyYear+5));
+      const eventField=$("heartEventYear");
+      const rawYear=eventField.value.trim();
+      const current=Number(rawYear);
+      // Editing an empty/partial year must not restore the old default on every keystroke.
+      // Only clamp a completed out-of-range year if this field is not being edited.
+      if(rawYear!=="" && (!Number.isInteger(current)||current<1||current>q.finalYear)
+        && document.activeElement!==eventField){
+        eventField.value=String(Math.min(q.finalYear,q.earlyYear+5));
       }
     }
     const out=$("heartEventCards");out.replaceChildren();
@@ -212,6 +217,31 @@
   for(const id of ids){
     $(id).addEventListener("input",update);
     $(id).addEventListener("change",update);
+  }
+  // iOS Safari does not consistently support selecting the contents of type=number.
+  // These four fields are type=text with numeric keyboards; the first tap selects
+  // the existing value, so typing 10 replaces "1" rather than creating "110".
+  for(const id of ["heartAge","heartFace","heartPremiumOverride","heartEventYear"]){
+    const input=$(id);
+    let untouchedSinceFocus=false;
+    const selectExisting=()=>{
+      if(untouchedSinceFocus && input.value!=="")input.select();
+    };
+    input.addEventListener("focus",()=>{
+      untouchedSinceFocus=true;
+      selectExisting();
+    });
+    input.addEventListener("click",selectExisting);
+    input.addEventListener("touchend",()=>{
+      // On iOS the native tap may move the caret after the focus handler.
+      if(typeof requestAnimationFrame==="function"){
+        requestAnimationFrame(()=>{
+          if(untouchedSinceFocus && document.activeElement===input)selectExisting();
+        });
+      }
+    });
+    input.addEventListener("input",()=>{untouchedSinceFocus=false;});
+    input.addEventListener("blur",()=>{untouchedSinceFocus=false;});
   }
   $("heartReset").addEventListener("click",reset);
   update();
