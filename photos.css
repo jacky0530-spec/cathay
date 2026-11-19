@@ -125,4 +125,39 @@
  .photo-actions #manageCategories{flex:1 1 43%}
 }
 
+
+/* v2.4 批次選取、移動、刪除：適用桌機與手機 */
+.photo-batch-toolbar{
+  display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:11px 12px;
+  border:1px solid #d2e1d8;border-radius:14px;background:#fff;
+  box-shadow:0 4px 15px rgba(22,70,44,.04);margin:0 0 16px;
+  position:sticky;top:6px;z-index:12
+}
+.photo-batch-toolbar.is-active{border-color:#8fc6a5;background:#f4faf6}
+.photo-batch-count{flex:1 1 130px;font-size:.82rem;font-weight:730;color:#2c6849}
+.photo-batch-toolbar .photo-btn{min-height:39px}
+.photo-batch-toolbar #batchModeToggle[aria-pressed="true"]{color:#fff;border-color:#096943;background:#096943}
+.photo-batch-toolbar .photo-btn.danger:not(:disabled){background:#fff1ef;color:#ac3028}
+.photo-batch-choice{
+  display:none;position:absolute;right:10px;top:10px;z-index:3;
+  min-width:37px;min-height:37px;align-items:center;justify-content:center;
+  border:1px solid #b3cdbb;border-radius:12px;background:rgba(255,255,255,.96);
+  box-shadow:0 2px 7px rgba(0,0,0,.1);cursor:pointer
+}
+.photo-batch-choice input{width:22px;height:22px;accent-color:#07834d;cursor:pointer}
+.photo-batch-active .photo-batch-choice{display:flex}
+.photo-batch-active .photo-thumb-button{cursor:crosshair}
+.photo-card.is-selected{outline:3px solid #0b9754;outline-offset:-3px;background:#f1faf4}
+.photo-card.is-selected .photo-thumb-wrap{background:#dbf2e4}
+.photo-card.is-selected .photo-thumb-button img{opacity:.86}
+.photo-batch-toolbar .photo-btn:disabled{opacity:.45}
+@media(max-width:760px){
+ .photo-batch-toolbar{top:4px;gap:6px;padding:9px;border-radius:12px}
+ .photo-batch-toolbar .photo-btn{padding:7px 10px;font-size:.8rem;min-height:40px}
+ .photo-batch-count{order:0;flex:1 1 110px}
+ .photo-batch-toolbar #batchSelectVisible,.photo-batch-toolbar #batchClear{flex:1 1 40%}
+ .photo-batch-toolbar #batchMove,.photo-batch-toolbar #batchDelete{flex:1 1 40%}
+ .photo-batch-choice{right:6px;top:6px;min-width:34px;min-height:34px}
+}
+
 @media(prefers-reduced-motion:reduce){.photo-card,.photo-card button{transition:none}}
