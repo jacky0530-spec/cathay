@@ -30,15 +30,15 @@
   <section class="heart-panel heart-inputs" aria-labelledby="formHeading">
    <div class="heart-panel-title"><h2 id="formHeading">① 輸入投保條件</h2><span>依上傳費率表自動試算</span></div>
    <div class="heart-field-grid">
-    <div class="heart-field"><label for="heartAge">投保年齡</label><input id="heartAge" type="number" inputmode="numeric" min="0" max="55" step="1" value="40"></div>
+    <div class="heart-field"><label for="heartAge">投保年齡</label><input id="heartAge" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" enterkeyhint="done" value="40"></div>
     <div class="heart-field"><label for="heartSex">性別</label><select id="heartSex"><option value="M">男性</option><option value="F">女性</option></select></div>
     <div class="heart-field"><label for="heartTerm">繳費年期</label><select id="heartTerm"><option value="15">15 年期</option><option value="20" selected>20 年期</option></select></div>
-    <div class="heart-field"><label for="heartFace">保險金額（萬元）</label><input id="heartFace" type="number" min="30" max="500" step="1" inputmode="numeric" value="100"></div>
+    <div class="heart-field"><label for="heartFace">保險金額（萬元）</label><input id="heartFace" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" enterkeyhint="done" value="100"></div>
    </div>
    <div class="heart-rate-status" id="heartRateStatus" role="status" aria-live="polite">依標準年繳費率計算。</div>
    <div class="heart-field">
     <label for="heartPremiumOverride">手動套入年繳應繳保費（元，選填）</label>
-    <input id="heartPremiumOverride" type="number" inputmode="numeric" min="1" step="1" placeholder="空白＝使用費率表自動試算">
+    <input id="heartPremiumOverride" type="text" inputmode="decimal" autocomplete="off" enterkeyhint="done" placeholder="空白＝使用費率表自動試算">
     <small>請輸入本契約保險金額對應的「年繳應繳保險費」，不是累計實際繳費或折減後實付金額。空白時採標準費率；本工具不自動計入外溢折減。</small>
    </div>
    <div class="heart-rate-detail" id="heartRateDetail">費率：—</div>
@@ -85,7 +85,7 @@
      <option value="death">D｜身故／完全失能（簡化示意）</option>
     </select>
    </div>
-   <div class="heart-field" id="heartEventYearField" hidden><label for="heartEventYear">事件發生：第幾保單年度</label><input id="heartEventYear" type="number" inputmode="numeric" min="1" max="90" value="35" step="1"></div>
+   <div class="heart-field" id="heartEventYearField" hidden><label for="heartEventYear">事件發生：第幾保單年度</label><input id="heartEventYear" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" enterkeyhint="done" value="35"></div>
   </div>
   <div class="heart-benefit-basis" id="heartBenefitBasis" hidden aria-live="polite">
    <div class="heart-basis-head"><strong>事故時「年繳應繳保險費總額」</strong><span>依事故發生年度重新計算</span></div>
@@ -126,7 +126,7 @@
   <p class="heart-disclaimer"><strong>注意：</strong>本工具依您提供的「年繳應繳保險費總額」契約定義，區分事故給付與生存給付計算期間。事件採保單年度輸入，屬按年繳方式的年度試算，實際事故日期及當期應繳保費仍須以契約核對。這是依提供的商品教學 PDF 與標準年繳費率表製作的內部教育試算。保險給付不是所有情境都能疊加；重大傷病、特定疾病及身故／完全失能等事故給付，涉及契約終止與例外規定。投保年齡、實際費率、當年度保險金額與給付條件，仍須以保單條款及正式建議書核對。未滿 16 歲的身故／完全失能不以一般成人公式計算。</p>
   <p class="heart-sources">參考資料：使用者提供「滿溢鍾心商品百分百」第 1 頁給付規則、「費率 (8)」第 1 頁標準年繳費率。<a href="https://www.cathaylife.com.tw/official/products/health-illness/zcqzcr" target="_blank" rel="noopener noreferrer">國泰人壽官方商品介紹</a>。<br>本試算僅供內部教育訓練使用，不作為對外行銷或正式理賠承諾。</p>
  </section>
- <footer class="hub-footer">滿溢鍾心保費與保障路徑 v1.1｜2026-11-19｜國泰雲端學習站</footer>
+ <footer class="hub-footer">滿溢鍾心保費與保障路徑 v1.2｜2026-11-19｜國泰雲端學習站</footer>
 </main>
 <script>if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js");</script>
 </body>
