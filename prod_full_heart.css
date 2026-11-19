@@ -1,4 +1,4 @@
-/* 滿溢鍾心 v1.0：保費和保障時間軸 */
+/* 滿溢鍾心 v1.1：事故給付的年繳保費採計期間 */
 .heart-shell{max-width:1320px}
 .heart-highlight{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:-5px 0 22px}
 .heart-highlight>div{padding:14px 15px;border:1px solid #cfe3d6;background:#fff;border-radius:14px;font-size:.88rem;font-weight:680;color:#285b43;line-height:1.55}
@@ -117,4 +117,29 @@
  .hub-logout,.heart-reset{display:none!important}
  .heart-panel{box-shadow:none;break-inside:avoid;border:1px solid #d8e4dc}
  .heart-layout{grid-template-columns:1fr 1fr}
+}
+
+
+/* v1.1：事故／初次診斷日與繳費期滿日擇早之計算明細 */
+.heart-benefit-basis{border:1px solid #b9dacb;border-radius:15px;background:#f3fbf7;padding:15px 17px;margin:4px 0 18px}
+.heart-benefit-basis[hidden]{display:none!important}
+.heart-basis-head{display:flex;justify-content:space-between;align-items:start;gap:9px;flex-wrap:wrap;margin-bottom:11px}
+.heart-basis-head strong{color:#176142;font-size:.97rem}
+.heart-basis-head span{color:#587665;font-size:.77rem}
+.heart-basis-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.heart-basis-grid>div{display:flex;flex-direction:column;gap:7px;border:1px solid #d5e9db;border-radius:11px;padding:12px 10px;background:white;min-width:0}
+.heart-basis-grid small{color:#5b7b68;font-size:.74rem;line-height:1.5}
+.heart-basis-grid strong{color:#0d6b44;font-size:1.13rem;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.heart-benefit-basis>p{margin:12px 0 0;font-size:.79rem;color:#466954;line-height:1.7}
+.heart-benefit-basis>p.heart-basis-caveat{color:#7c6442;font-size:.74rem}
+.heart-defined-premium{border:1px solid #cde5d5;background:#f5fbf6;border-radius:15px;padding:16px 17px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:15px}
+.heart-defined-premium>strong{grid-column:1/-1;font-size:1rem;color:#155d3d}
+.heart-defined-premium>div{border-top:1px solid #dae9df;padding-top:10px}
+.heart-defined-premium>div span{color:#155d3d;font-weight:780;font-size:.87rem}
+.heart-defined-premium>div p{margin:5px 0 0;color:#566e5e;font-size:.79rem;line-height:1.7}
+@media(max-width:690px){
+ .heart-basis-grid{grid-template-columns:1fr;gap:7px}
+ .heart-basis-grid>div{display:flex;flex-direction:row;justify-content:space-between;align-items:center;gap:7px;padding:9px 10px}
+ .heart-basis-grid strong{font-size:1rem}
+ .heart-defined-premium{grid-template-columns:1fr;gap:9px;padding:12px 14px}
 }
