@@ -7,6 +7,14 @@
 .photo-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:43px;padding:10px 15px;border-radius:11px;border:1px solid #cbdcd0;background:#fff;color:#1a5235;text-decoration:none;font-size:.89rem;font-weight:730;cursor:pointer;font-family:inherit;white-space:nowrap}
 .photo-btn:hover{background:#eff8f1}
 .photo-btn:focus-visible,.photo-card button:focus-visible,.photo-tab:focus-visible{outline:3px solid #e8a83f;outline-offset:2px}
+/* v2.2 共用自訂資料區：明確顯示新增入口與大量分類的水平捲動 */
+.photo-actions #createCategory{background:#eef8f3;border-color:#a6d3b7;color:#087b48}
+.photo-actions #createCategory:hover{background:#dff1e6}
+.photo-tabs{scrollbar-width:thin;scroll-padding:12px}
+.photo-tab{flex:0 0 auto}
+.photo-dialog #categoryForm .photo-field input:focus,
+.photo-dialog #categoryForm .photo-field textarea:focus{outline:3px solid #bde9cb;outline-offset:1px}
+
 .photo-btn.primary{background:#0a7b49;border-color:#0a7b49;color:#fff}
 .photo-btn.primary:hover{background:#07643b}
 .photo-btn.danger{color:#a22e28;border-color:#efcac8}
