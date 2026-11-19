@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cathay-app-v48';
+const CACHE_NAME = 'cathay-app-v49';
 const urlsToCache = [
   './',
   'index.html',
