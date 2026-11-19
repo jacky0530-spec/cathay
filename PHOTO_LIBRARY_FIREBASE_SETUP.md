@@ -1,4 +1,4 @@
-# 共用照片資料專區（V2.3）Firebase 部署備註
+# 共用照片資料專區（V2.4）Firebase 部署備註
 
 正式頁面：`photos.html`
 JavaScript：`photos.js`
@@ -23,6 +23,15 @@ Realtime Database：`https://cathay-app-5889a-default-rtdb.firebaseio.com`
 - 圖庫讀取後每 60 秒自動同步、切回分頁時重新同步，也能手動按「重新同步」。
 - 新增／編輯／刪除內容會更新所有使用者可見的共用圖庫；只有置頂順序個別保存。
 - 上傳時自動壓縮原圖，避免大量占用 Firebase Spark Realtime Database 額度。
+
+## V2.4 多選照片批次管理
+
+- 啟用「多選照片」，可逐張勾選照片；「全選目前顯示」只選取目前專區及搜尋條件下的結果，跨分類切換仍保留勾選。一次最多選擇 200 張。
+- 「批次移動」使用 `PATCH /photoLibraryV2/catalog.json` 的多路徑欄位更新：`{photoId}/category` 與 `{photoId}/updatedAt`，保持圖片原檔及個人置頂狀態不變。
+- 「批次刪除」先顯示確認訊息，僅包含前端驗證為目前登入授權碼上傳的圖片；其他人的圖片不會加入刪除清單。
+- 刪除用 `PATCH /photoLibraryV2.json` 一次送出 `catalog/{id}: null`、`images/{id}: null`、`pins/{accountHash}/{id}: null`，確保該批次的圖檔、清單索引和目前授權碼的置頂紀錄不會出現部分更新。其他使用者的舊置頂鍵不會自動清除，因照片已從清單刪除，並不影響圖庫顯示。
+- **權限說明：** 目前「僅可刪除自己上傳的照片」是網站 UI 的檢查。若 Realtime Database 的 Rules 仍設公開寫入，此限制不是 Firebase 伺服器端強制執行。建議日後導入 Firebase Authentication／受保護後端與更嚴格的安全規則。
+
 
 ## 上線驗證與待完成工作
 
