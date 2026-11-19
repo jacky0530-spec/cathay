@@ -448,6 +448,7 @@
       await api("","PATCH",updates);
       committed=true;
       for(const photo of eligible){state.viewCache.delete(photo.id);state.selectedIds.delete(photo.id);}
+      if(state.selectedIds.size===0)state.batchMode=false;
       if($("photoViewer").open)$("photoViewer").close();
       await refresh("已批次刪除 "+eligible.length+" 張共用照片"+(notOwned?"，另外 "+notOwned+" 張非本人上傳照片未刪除。":"。"));
     }catch(error){
