@@ -1,4 +1,4 @@
-/* Cathay photo library v2.3 | Shared Firebase RTDB gallery, separate per-user favorites.
+/* Cathay photo library v2.4 | Shared Firebase RTDB gallery, separate per-user favorites.
  * Static hosting + existing login code; RTDB permissions must be configured separately.
  * Large originals are retained in previous v1 local IndexedDB until manual migration.
  */
@@ -23,16 +23,18 @@
   const SESSION = String(localStorage.getItem("currentSession")||"").trim();
   const MAX_FILE = 20 * 1024 * 1024;
   const MAX_BATCH = 24;
+  const MAX_SELECTED = 200;
   const FORMAT1 = "cathay-photo-library-backup-v1";
   const FORMAT2 = "cathay-photo-library-shared-backup-v2";
   const state={records:[],pins:{},accountKey:"",filter:"all",query:"",busy:false,
     viewIds:[],viewIndex:0,viewCache:new Map(),lastLoaded:0,refreshPromise:null,categoryError:null,
-    categoryOrder:[],categoryRecords:{},categorySignature:"",editingCategoryId:null,movingPhotoId:null};
+    categoryOrder:[],categoryRecords:{},categorySignature:"",editingCategoryId:null,movingPhotoId:null,
+    batchMode:false,selectedIds:new Set(),bulkMoveIds:null};
   const isCat = x => Object.hasOwn(CATEGORIES,x);
   const limit = (s,n) => String(s||"").trim().slice(0,n);
   const safeDate = x => Number.isFinite(new Date(x).getTime()) ? new Date(x).toLocaleDateString("zh-TW") : "";
   const key = () => (crypto.randomUUID ? crypto.randomUUID() : "photo-"+Date.now()+"-"+Math.random().toString(36).slice(2));
-  const qs = path => ROOT+"/"+path+".json";
+  const qs = path => path ? ROOT+"/"+path+".json" : ROOT+".json";
   const validDataURL = value => typeof value==="string" && /^data:image\/(?:jpeg|png|gif|webp);base64,[A-Za-z0-9+/=]+$/.test(value);
   const create = (tag,cls,txt) => {
     const n=document.createElement(tag);
@@ -193,6 +195,9 @@
         x && /^[\w-]{4,140}$/.test(id) && isCat(x.category) && validDataURL(x.thumb)
       ).map(([id,x])=>({...x,id}));
       state.pins=(pins && typeof pins==="object") ? pins : {};
+      // Retain checkmarks across sync/filter changes, but remove entries that were deleted.
+      const currentIds=new Set(state.records.map(x=>x.id));
+      for(const id of state.selectedIds)if(!currentIds.has(id))state.selectedIds.delete(id);
       state.lastLoaded=Date.now();
       render();
       ["addPhoto","importPhotos","exportPhotos","migrateLocal"].forEach(id=>$(id).disabled=false);
@@ -208,6 +213,76 @@
     const el=create("button","photo-btn small "+(cls||""),txt);
     el.type="button";el.addEventListener("click",fn);
     return el;
+  }
+  function selectedRecords(){
+    return state.records.filter(record=>state.selectedIds.has(record.id));
+  }
+  function eligibleForDelete(){
+    return selectedRecords().filter(photo=>photo.uploadedBy===state.accountKey);
+  }
+  function updateBatchUI(){
+    const total=state.selectedIds.size;
+    const allowed=eligibleForDelete().length;
+    const mode=$("batchModeToggle");
+    mode.setAttribute("aria-pressed",String(state.batchMode));
+    mode.textContent=state.batchMode?"✓ 結束多選":"☑ 多選照片";
+    $("photoBatchToolbar").classList.toggle("is-active",state.batchMode);
+    $("gallerySections").classList.toggle("photo-batch-active",state.batchMode);
+    $("batchSelectedCount").textContent=state.batchMode
+      ? "已選 "+total+" 張"+(total>0?"（其中 "+allowed+" 張可刪除）":"")
+      : "選取多張照片後可批次移動／刪除";
+    $("batchSelectVisible").disabled=!state.batchMode||state.busy||state.records.length===0;
+    $("batchClear").disabled=!state.batchMode||state.busy||total===0;
+    $("batchMove").disabled=!state.batchMode||state.busy||total===0;
+    $("batchDelete").disabled=!state.batchMode||state.busy||allowed===0;
+    $("batchDelete").textContent=allowed?"🗑 批次刪除 "+allowed+" 張":"🗑 批次刪除";
+    document.querySelectorAll(".photo-card[data-photo-id]").forEach(card=>{
+      const checked=state.selectedIds.has(card.dataset.photoId);
+      card.classList.toggle("is-selected",state.batchMode&&checked);
+      const input=card.querySelector(".photo-batch-choice input");
+      if(input)input.checked=checked;
+    });
+  }
+  function toggleBatchMode(){
+    if(state.busy)return;
+    state.batchMode=!state.batchMode;
+    if(!state.batchMode)state.selectedIds.clear();
+    updateBatchUI();
+  }
+  function togglePhotoSelection(id){
+    if(state.busy)return;
+    if(!state.batchMode)state.batchMode=true;
+    if(state.selectedIds.has(id))state.selectedIds.delete(id);
+    else{
+      if(state.selectedIds.size>=MAX_SELECTED){
+        alert("一次最多選擇 "+MAX_SELECTED+" 張照片，請分批操作。");
+        return;
+      }
+      if(!state.records.some(photo=>photo.id===id))return;
+      state.selectedIds.add(id);
+    }
+    updateBatchUI();
+  }
+  function selectAllVisible(){
+    if(state.busy||!state.batchMode)return;
+    const cats=state.filter==="all"?state.categoryOrder:[state.filter];
+    let added=0;
+    for(const cat of cats){
+      for(const photo of sorted(cat)){
+        if(state.selectedIds.size>=MAX_SELECTED)break;
+        if(!state.selectedIds.has(photo.id)){
+          state.selectedIds.add(photo.id);added++;
+        }
+      }
+    }
+    updateBatchUI();
+    if(state.selectedIds.size>=MAX_SELECTED)status("已達每次最多 "+MAX_SELECTED+" 張的選取上限，請分批移動或刪除。");
+    else if(added===0)status("目前顯示的照片都已勾選。");
+  }
+  function clearBatchSelection(){
+    if(state.busy)return;
+    state.selectedIds.clear();
+    updateBatchUI();
   }
   function render(){
     ensureCategoryUI();
@@ -236,11 +311,21 @@
       for(const p of items){
         const pinned=Boolean(state.pins[p.id]);
         const card=create("article","photo-card"+(pinned?" is-pinned":""));
+        card.dataset.photoId=p.id;
         const thumb=create("div","photo-thumb-wrap");
         const open=create("button","photo-thumb-button");
         open.type="button";open.setAttribute("aria-label","放大查看 "+(p.title||p.fileName||"圖片"));
         const im=create("img");im.loading="lazy";im.alt=p.title||p.fileName||"照片";im.src=p.thumb;
-        open.append(im);open.addEventListener("click",()=>openViewer(p.id,ids));thumb.append(open);
+        open.append(im);
+        open.addEventListener("click",()=>state.batchMode?togglePhotoSelection(p.id):openViewer(p.id,ids));
+        thumb.append(open);
+        const selectLabel=create("label","photo-batch-choice");
+        const selectBox=create("input");
+        selectBox.type="checkbox";
+        selectBox.checked=state.selectedIds.has(p.id);
+        selectBox.setAttribute("aria-label","選取照片："+(p.title||p.fileName||"未命名照片"));
+        selectBox.addEventListener("change",()=>togglePhotoSelection(p.id));
+        selectLabel.append(selectBox);thumb.append(selectLabel);
         if(pinned)thumb.append(create("span","photo-pin-flag","★ 我的最愛"));
         const body=create("div","photo-card-body");
         body.append(create("h3","photo-card-title",p.title||p.fileName||"未命名照片"));
@@ -258,6 +343,7 @@
       }
       grid.append(fragment);
     }
+    updateBatchUI();
   }
   function openMovePhoto(id){
     if(state.busy)return;
@@ -682,6 +768,9 @@
   $("closeMovePhoto").addEventListener("click",closeMovePhoto);
   $("cancelMovePhoto").addEventListener("click",closeMovePhoto);
   $("movePhotoForm").addEventListener("submit",saveMovePhoto);
+  $("batchModeToggle").addEventListener("click",toggleBatchMode);
+  $("batchSelectVisible").addEventListener("click",selectAllVisible);
+  $("batchClear").addEventListener("click",clearBatchSelection);
   $("addPhoto").addEventListener("click",()=>openEditor());
   $("closeEditor").addEventListener("click",closeEditor);
   $("cancelEditor").addEventListener("click",closeEditor);
