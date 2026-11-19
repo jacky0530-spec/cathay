@@ -1,4 +1,4 @@
-/* Cathay photo library v2.2 | Shared Firebase RTDB gallery, separate per-user favorites.
+/* Cathay photo library v2.3 | Shared Firebase RTDB gallery, separate per-user favorites.
  * Static hosting + existing login code; RTDB permissions must be configured separately.
  * Large originals are retained in previous v1 local IndexedDB until manual migration.
  */
@@ -13,6 +13,8 @@
     receipt:{emoji:"🧾",description:"醫療費用與自費項目的圖片資料"},
     aging:{emoji:"🧓",description:"老化、高齡健康、失能與長期照顧"}
   };
+  const BASE_CATEGORIES={...CATEGORIES};
+  const BASE_META=Object.fromEntries(Object.entries(CATEGORY_META).map(([id,meta])=>[id,{...meta}]));
   const CUSTOM_KEY=/^custom_[A-Za-z0-9_-]{6,90}$/;
   const MIME_TYPES = new Set(["image/png","image/jpeg","image/webp","image/gif"]);
   const FIREBASE_BASE = "https://cathay-app-5889a-default-rtdb.firebaseio.com";
@@ -24,7 +26,8 @@
   const FORMAT1 = "cathay-photo-library-backup-v1";
   const FORMAT2 = "cathay-photo-library-shared-backup-v2";
   const state={records:[],pins:{},accountKey:"",filter:"all",query:"",busy:false,
-    viewIds:[],viewIndex:0,viewCache:new Map(),lastLoaded:0,refreshPromise:null,categoryError:null};
+    viewIds:[],viewIndex:0,viewCache:new Map(),lastLoaded:0,refreshPromise:null,categoryError:null,
+    categoryOrder:[],categoryRecords:{},categorySignature:"",editingCategoryId:null,movingPhotoId:null};
   const isCat = x => Object.hasOwn(CATEGORIES,x);
   const limit = (s,n) => String(s||"").trim().slice(0,n);
   const safeDate = x => Number.isFinite(new Date(x).getTime()) ? new Date(x).toLocaleDateString("zh-TW") : "";
@@ -76,50 +79,87 @@
     }finally{clearTimeout(timeout);}
   }
   function mergeSharedCategories(raw){
-    if(!raw||typeof raw!=="object")return;
-    const entries=Object.entries(raw)
-      .filter(([id,info])=>CUSTOM_KEY.test(id)&&info&&typeof info.name==="string"&&info.name.trim())
+    const records=raw&&typeof raw==="object"?raw:{};
+    state.categoryRecords=records;
+    // Restore original IDs and metadata, then apply any shared renames.
+    for(const id of Object.keys(CATEGORIES)){
+      if(!Object.hasOwn(BASE_CATEGORIES,id)){
+        delete CATEGORIES[id];delete CATEGORY_META[id];
+      }
+    }
+    for(const [id,name] of Object.entries(BASE_CATEGORIES)){
+      CATEGORIES[id]=name;CATEGORY_META[id]={...BASE_META[id]};
+      const item=records[id];
+      if(item&&typeof item==="object"){
+        if(typeof item.name==="string"&&item.name.trim())CATEGORIES[id]=limit(item.name,24);
+        if(typeof item.emoji==="string"&&item.emoji.trim())CATEGORY_META[id].emoji=limit(item.emoji,8);
+        if(typeof item.description==="string")CATEGORY_META[id].description=limit(item.description,120);
+      }
+    }
+    const customs=Object.entries(records)
+      .filter(([id,item])=>CUSTOM_KEY.test(id)&&item&&typeof item.name==="string"&&item.name.trim())
       .sort((a,b)=>String(a[1].createdAt||"").localeCompare(String(b[1].createdAt||"")));
-    for(const [id,info] of entries.slice(0,95)){
-      CATEGORIES[id]=limit(info.name,24);
+    for(const [id,item] of customs.slice(0,95)){
+      CATEGORIES[id]=limit(item.name,24);
       CATEGORY_META[id]={
-        emoji:limit(info.emoji||"📁",8)||"📁",
-        description:limit(info.description,120)||"自訂共用照片資料區"
+        emoji:limit(item.emoji||"📁",8)||"📁",
+        description:limit(item.description,120)||"自訂共用照片資料區"
       };
     }
+    const initial=Object.keys(CATEGORIES);
+    const rank=id=>{
+      const rawOrder=records[id]?.order;
+      return rawOrder!==undefined&&rawOrder!==null&&Number.isFinite(Number(rawOrder))
+        ? Number(rawOrder):1000+initial.indexOf(id);
+    };
+    state.categoryOrder=[...initial].sort((a,b)=>
+      rank(a)-rank(b)||initial.indexOf(a)-initial.indexOf(b));
   }
   function ensureCategoryUI(){
+    const ids=state.categoryOrder.length?state.categoryOrder:Object.keys(CATEGORIES);
+    const sig=JSON.stringify(ids.map(id=>[id,CATEGORIES[id],CATEGORY_META[id]?.emoji,CATEGORY_META[id]?.description]));
+    if(sig===state.categorySignature)return;
+    state.categorySignature=sig;
     const tabs=document.querySelector(".photo-tabs");
     const sections=$("gallerySections");
     const picker=$("photoCategory");
-    for(const [id,name] of Object.entries(CATEGORIES)){
+    const currentSelection=picker.value;
+    for(const id of ids){
+      const name=CATEGORIES[id];
       const meta=CATEGORY_META[id]||{emoji:"📁",description:"共用照片資料區"};
-      let tab=$("count-"+id);
+      let count=$("count-"+id);
+      let tab=count?.closest("button");
       if(!tab){
-        const button=create("button","photo-tab");
-        button.type="button";button.dataset.filter=id;
-        button.setAttribute("aria-pressed","false");
-        button.append(document.createTextNode(meta.emoji+" "+name+" "));
-        tab=create("small");tab.id="count-"+id;tab.textContent="0";
-        button.append(tab);tabs.append(button);
+        tab=create("button","photo-tab");
+        tab.type="button";tab.dataset.filter=id;
+        count=create("small");count.id="count-"+id;tab.append(document.createTextNode(""),count);
       }
-      if(!$("grid-"+id)){
-        const section=create("section","photo-category");
+      tab.firstChild.textContent=meta.emoji+" "+name+" ";
+      tabs.append(tab);
+      let section=document.querySelector('[data-section="'+id+'"]');
+      if(!section){
+        section=create("section","photo-category");
         section.dataset.section=id;section.setAttribute("aria-labelledby","title-"+id);
         const head=create("div","photo-category-head");
         const wrap=create("div");
-        const title=create("h2",null,meta.emoji+" "+name);title.id="title-"+id;
-        wrap.append(title,create("p",null,meta.description));
-        const count=create("span","hub-pill","0 張");count.id="section-count-"+id;
-        head.append(wrap,count);
+        const title=create("h2");title.id="title-"+id;
+        wrap.append(title,create("p"));
+        const total=create("span","hub-pill");total.id="section-count-"+id;
+        head.append(wrap,total);
         const grid=create("div","photo-gallery");grid.id="grid-"+id;
-        section.append(head,grid);sections.append(section);
+        section.append(head,grid);
       }
-      if(!Array.from(picker.options).some(o=>o.value===id)){
-        const option=create("option",null,meta.emoji+" "+name);
-        option.value=id;picker.append(option);
-      }
+      $("title-"+id).textContent=meta.emoji+" "+name;
+      const desc=section.querySelector(".photo-category-head p");
+      if(desc)desc.textContent=meta.description||"共用照片資料區";
+      sections.append(section);
+      let option=Array.from(picker.options).find(o=>o.value===id);
+      if(!option){option=create("option");option.value=id;}
+      option.textContent=meta.emoji+" "+name;
+      picker.append(option);
     }
+    if(ids.includes(currentSelection))picker.value=currentSelection;
+    if($("categoryManager")?.open)renderCategoryManager();
   }
   function sorted(category){
     const q=state.query.toLowerCase();
@@ -145,6 +185,7 @@
         if(photo && CUSTOM_KEY.test(String(photo.category||"")) && !isCat(photo.category)){
           CATEGORIES[photo.category]="其他資料區";
           CATEGORY_META[photo.category]={emoji:"📁",description:"分類資訊尚未同步"};
+          state.categoryOrder.push(photo.category);
         }
       }
       state.categoryError=categoryError;
@@ -169,14 +210,14 @@
   }
   function render(){
     ensureCategoryUI();
-    for(const cat of Object.keys(CATEGORIES)){
+    for(const cat of state.categoryOrder){
       const n=state.records.filter(x=>x.category===cat).length;
       $("count-"+cat).textContent=n;
       $("section-count-"+cat).textContent=n+" 張";
     }
     $("count-all").textContent=state.records.length;
     document.querySelectorAll(".photo-tab[data-filter]").forEach(btn=>btn.setAttribute("aria-pressed",String(btn.dataset.filter===state.filter)));
-    for(const cat of Object.keys(CATEGORIES)){
+    for(const cat of state.categoryOrder){
       const section=document.querySelector('[data-section="'+cat+'"]');
       section.hidden=!(state.filter==="all"||state.filter===cat);
       const grid=$("grid-"+cat);
