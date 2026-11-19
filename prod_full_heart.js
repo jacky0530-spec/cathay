@@ -94,6 +94,8 @@
     }catch(err){
       setError(err.message||"條件有誤");
       ["heartAnnual","heartTotal","heartEarly50","heartAge90","heartScenarioAmount"].forEach(id=>set(id,"—"));
+      $("heartBenefitBasis").hidden=true;
+      ["heartBenefitYears","heartBenefitPremiumSum","heartBenefit105","heartBenefitCutoff"].forEach(id=>set(id,"—"));
       set("heartRateStatus","輸入條件尚未成立，請修正紅色提示後再試算。");
       $("heartRateStatus").classList.add("warning");
       $("heartEventCards").replaceChildren();
