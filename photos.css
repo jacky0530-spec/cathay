@@ -14,8 +14,15 @@
 .photo-btn:disabled{opacity:.5;cursor:not-allowed}
 .photo-btn.small{font-size:.79rem;padding:7px 10px;min-height:35px}
 .photo-note{border:1px solid #f0d9b0;border-radius:12px;background:#fffaf0;color:#76551d;padding:13px 17px;font-size:.81rem;line-height:1.8;margin-bottom:18px}
-.photo-status{min-height:24px;color:#476855;font-size:.83rem;margin:8px 0 14px}
-.photo-status.error{color:#b02525}
+/* v2.1：讓連線失敗緊貼上傳按鈕顯示，不再藏在說明卡片下方 */
+.photo-status{display:flex;align-items:center;min-height:45px;padding:11px 15px;color:#275f43;font-size:.88rem;font-weight:660;line-height:1.65;margin:0 0 15px;border:1px solid #cfe6d6;border-radius:13px;background:#ecf8f0;overflow-wrap:anywhere}
+.photo-status.error{color:#9a2b23;border-color:#f0b9af;background:#fff0ed}
+.photo-connection-help{border:1px solid #efc9b8;background:#fffaf7;border-radius:13px;padding:13px 16px;margin:0 0 19px;color:#71472b;font-size:.86rem;line-height:1.75}
+.photo-connection-help summary{cursor:pointer;color:#934022;font-weight:780}
+.photo-connection-help .photo-help-inner p{margin:10px 0}
+.photo-connection-help code{font-family:ui-monospace,monospace;background:#fae9e2;border-radius:5px;padding:1px 5px}
+.photo-connection-help a{color:#0a704a;font-weight:700;text-decoration:underline}
+.photo-connection-help[hidden]{display:none!important}
 .photo-controls{display:flex;align-items:center;gap:13px;flex-wrap:wrap;margin:22px 0 17px}
 .photo-search{flex:1 1 240px;max-width:450px;min-height:45px;padding:11px 14px;border:1px solid #cfe0d4;border-radius:12px;background:#fff;font:inherit;font-size:.92rem;color:#194630}
 .photo-search:focus{outline:3px solid #bde9cb;outline-offset:1px}
