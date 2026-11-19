@@ -325,12 +325,10 @@
       const count=state.records.filter(photo=>photo.category===id).length;
       info.append(name,create("small",null,count+" 張照片 · 第 "+(index+1)+" 個專區"));
       const actions=create("div","photo-manage-actions");
-      const up=button("↑ 上移","",()=>{});
+      const up=button("↑ 上移","",()=>moveCategory(id,-1));
       up.disabled=index===0||state.busy||Boolean(state.categoryError);
-      up.addEventListener("click",()=>moveCategory(id,-1));
-      const down=button("↓ 下移","",()=>{});
+      const down=button("↓ 下移","",()=>moveCategory(id,1));
       down.disabled=index===state.categoryOrder.length-1||state.busy||Boolean(state.categoryError);
-      down.addEventListener("click",()=>moveCategory(id,1));
       const edit=button("✎ 改名","",()=>openCategoryEditor(id));
       edit.disabled=state.busy||Boolean(state.categoryError);
       actions.append(up,down,edit);
