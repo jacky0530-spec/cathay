@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#087b48">
-<title>照片資料專區｜國泰雲端學習站</title>
+<title>共用照片資料專區｜國泰雲端學習站</title>
 <link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="hub-ui.css">
 <link rel="stylesheet" href="photos.css">
@@ -22,22 +22,25 @@
  </header>
  <section class="hub-hero hub-hero--small" aria-labelledby="gallery-title">
   <div class="hub-kicker">PHOTO RESOURCE LIBRARY</div>
-  <h1 id="gallery-title">圖片收藏與主題資料庫</h1>
-  <p>新聞剪報、癌症議題、醫療收據三大分類；上傳後可補充主題與說明，點圖放大查看，將喜愛照片設為置頂。</p>
+  <h1 id="gallery-title">共用照片資料庫</h1>
+  <p>所有使用者共享新聞剪報、癌症議題與醫療收據照片；每個人可依自己的喜好設置置頂，互不影響。</p>
  </section>
  <div class="photo-banner">
-  <div><strong>📷 我的照片庫</strong><p>圖片依分類整理；每個分類內「★ 已置頂」優先顯示，其次依最新上傳排序。</p></div>
+  <div><strong>📷 團隊共用照片庫</strong><p>所有人看同一份圖片；每位使用者的「★ 我的置頂」只改變自己的顯示順序。</p></div>
   <div class="photo-actions">
-   <button id="addPhoto" class="photo-btn primary" type="button">＋ 上傳照片</button>
+   <button id="addPhoto" class="photo-btn primary" type="button">＋ 上傳共用照片</button>
+   <button id="reloadPhotos" class="photo-btn" type="button">↻ 重新同步</button>
+   <button id="migrateLocal" class="photo-btn" type="button">⇧ 搬移舊版照片</button>
    <button id="exportPhotos" class="photo-btn" type="button">↓ 匯出備份</button>
    <button id="importPhotos" class="photo-btn" type="button">↑ 匯入備份</button>
    <input id="backupInput" type="file" accept=".json,application/json" hidden>
   </div>
  </div>
  <div class="photo-note">
-  <strong>照片保存方式：</strong>本版照片直接儲存在目前瀏覽器（IndexedDB），不需另外設定圖片伺服器。不同裝置與瀏覽器尚未同步；清除網站資料或更換裝置前，請使用「匯出備份」，再於其他裝置「匯入備份」。備份 JSON 會包含原始照片。
+  <strong>共用方式：</strong>所有使用者讀取同一份 Firebase Realtime Database 照片清單；上傳／編輯／刪除共用圖片會影響其他人，只有「★ 我的置頂」是各自獨立。<strong>使用相同授權碼登入的人，會共用同一組置頂偏好。</strong><br>
+  <strong>首次啟用：</strong>共用圖庫必須先開通 Firebase 對應資料路徑的存取權限；若看到「權限不足」，表示後端尚未完成設定，照片不會假裝已同步。舊版瀏覽器照片可透過「搬移舊版照片」手動上傳。
  </div>
- <div id="galleryStatus" class="photo-status" role="status" aria-live="polite">正在開啟本機照片庫…</div>
+ <div id="galleryStatus" class="photo-status" role="status" aria-live="polite">正在連線共用照片庫…</div>
  <div class="photo-controls">
   <div class="photo-tabs" role="group" aria-label="照片分類篩選">
    <button type="button" class="photo-tab" data-filter="all" aria-pressed="true">全部 <small id="count-all">0</small></button>
@@ -62,7 +65,7 @@
    <div id="grid-receipt" class="photo-gallery"><div class="photo-empty"><span class="emoji">🧾</span>目前沒有照片，可點選上方「上傳照片」。</div></div>
   </section>
  </div>
- <footer class="hub-footer">照片資料專區 V1.0｜本機照片庫，不具跨裝置即時同步功能｜教育訓練與素材整理用途</footer>
+ <footer class="hub-footer">照片資料專區 V2.0｜Firebase 共用圖片 · 依授權碼各自設定最愛置頂｜教育訓練與素材整理用途</footer>
 </main>
 
 <dialog id="photoEditor" class="photo-dialog" aria-labelledby="editorTitle">
@@ -72,7 +75,7 @@
   <div class="photo-field" id="uploadFileField">
    <label for="photoFiles">選擇照片（可一次多選）</label>
    <input type="file" id="photoFiles" accept="image/jpeg,image/png,image/webp,image/gif" multiple>
-   <p class="photo-form-tip">支援 JPG、PNG、WebP、GIF，單張上限 20 MB。保留圖片原始內容供放大檢視；多張照片會共用本次選定分類與文字。HEIC 建議先轉 JPG。</p>
+   <p class="photo-form-tip">支援 JPG、PNG、WebP、GIF，單張原檔上限 20 MB。上傳時會自動壓縮成共用圖片，放大顯示使用壓縮版本；GIF 會轉成靜態首格。HEIC 建議先轉 JPG。多張照片共用本次分類與文字。</p>
   </div>
   <div class="photo-field"><label for="photoCategory">分類</label><select id="photoCategory" required>
    <option value="news">📰 新聞剪報</option>
@@ -81,10 +84,10 @@
   </select></div>
   <div class="photo-field"><label for="photoTitle">主題／標題（選填）</label><input type="text" id="photoTitle" maxlength="120" placeholder="例如：癌症治療新趨勢；不填則使用檔案名稱"></div>
   <div class="photo-field"><label for="photoDescription">內容說明（選填）</label><textarea id="photoDescription" maxlength="1500" rows="4" placeholder="可記錄報導來源、費用重點、備註或閱讀心得"></textarea></div>
-  <label class="photo-field" style="display:flex;align-items:center;gap:9px;font-size:.89rem;color:#345642"><input type="checkbox" id="photoPinned" style="width:19px;height:19px;accent-color:#0a7b49"> ★ 設為最喜愛的照片並置頂</label>
+  <label class="photo-field" style="display:flex;align-items:center;gap:9px;font-size:.89rem;color:#345642"><input type="checkbox" id="photoPinned" style="width:19px;height:19px;accent-color:#0a7b49"> ★ 加入「我的最愛」並置頂（不影響別人）</label>
   <div class="photo-form-actions">
    <button id="cancelEditor" class="photo-btn" type="button">取消</button>
-   <button id="savePhotos" class="photo-btn primary" type="submit">儲存照片</button>
+   <button id="savePhotos" class="photo-btn primary" type="submit">上傳至共用照片庫</button>
   </div>
  </form>
 </dialog>
