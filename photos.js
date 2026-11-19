@@ -84,6 +84,7 @@
       state.pins=(pins && typeof pins==="object") ? pins : {};
       state.lastLoaded=Date.now();
       render();
+      ["addPhoto","importPhotos","exportPhotos","migrateLocal"].forEach(id=>$(id).disabled=false);
       status(notice||"已同步共用照片庫："+state.records.length+" 張；★ 置頂只影響您自己的排序。");
     })();
     try{return await state.refreshPromise;}
@@ -238,8 +239,10 @@
         closeEditor();await refresh("成功將 "+saved+" 張照片上傳到共用照片庫。");
       }
     }catch(err){
-      console.error(err);status("共用儲存失敗："+err.message,true);alert("照片儲存失敗："+err.message);
+      console.error(err);
       await refresh().catch(()=>{});
+      status("共用儲存失敗："+err.message,true);
+      alert("照片儲存失敗："+err.message);
     }finally{state.busy=false;$("savePhotos").disabled=false;}
   }
   async function setPin(id,on){
