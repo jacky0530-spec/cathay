@@ -1,7 +1,11 @@
-/* 滿溢鍾心 重大傷病定期保險(外溢型) · 教育試算 v1.0
+/* 滿溢鍾心 重大傷病定期保險(外溢型) · 教育試算 v1.1
    費率依「費率 (8).pdf」第1頁標準年繳費率：新臺幣／每萬元保額。
-   所繳保費總額：採年繳應繳保費(未折減) × 15或20年。
-   生存給付：第25/30保單年度末50%，90歲仍生存且保單有效再50%。
+   「年繳應繳保險費總額」須按給付種類分別計算：
+   1. 滿期與祝壽：以保額對應之年繳應繳保費 × 原定完整繳費年期。
+   2. 重大傷病／特定疾病／身故／完全失能：
+      以事故發生／診斷日與原定繳費期屆滿日較早者為截點。
+   網頁以「第 N 保單年度」輸入情境，按年繳方式假設該年度保費應繳；
+   示範計入 min(N, 繳費期數) 期，實際日期與保費應繳情況應依保單核對。
 */
 (() => {
   "use strict";
@@ -46,18 +50,31 @@
       earlyYear,earlyAge:age+earlyYear,finalYear,first:total/2,last:total/2,
       fromOverride:override!==null,protectedTo:90};
   };
-  const payout=(quote,kind,eventYear)=> {
+  const premiumSumForBenefit=(quote,kind,eventYear)=> {
+    if(["maturity","longevity"].includes(kind)){
+      // 滿期、祝壽以原定繳費期間算，不因先領年度或90歲而延長計算。
+      return {years:quote.term,sum:quote.annual*quote.term,cutoff:"原定繳費期間屆滿"};
+    }
+    if(!["critical","chronic","specific","death"].includes(kind))
+      throw new Error("未支援的給付種類。");
     if(!Number.isInteger(eventYear)||eventYear<1||eventYear>quote.finalYear)
       throw new Error("事故年度必須介於第 1 年及保障至 90 歲的保單年度之間。");
-    const threshold=quote.total*1.05;
+    // 每個保單年度年初繳交該期應繳年繳保費；事故發生於第 N 保單年度示範計入該年度。
+    const years=Math.min(eventYear,quote.term);
+    return {years,sum:quote.annual*years,
+      cutoff:eventYear<=quote.term?"第 "+eventYear+" 保單年度之事故／初次診斷日":"原定繳費期間屆滿"};
+  };
+  const payout=(quote,kind,eventYear)=> {
+    const basis=premiumSumForBenefit(quote,kind,eventYear);
+    const threshold=basis.sum*1.05;
     if(kind==="critical")return eventYear===1?threshold:Math.max(quote.face,threshold);
     if(kind==="chronic")return eventYear===1?threshold:Math.max(quote.face*.2,threshold);
     if(kind==="specific")return eventYear===1?threshold:Math.max(quote.face,threshold);
     if(kind==="death")return quote.age+eventYear<16?null:Math.max(quote.face,threshold);
     throw new Error("未支援的情境");
   };
-  // Publish pure numerical helpers for source-level checking; do not expose personal data.
-  window.FullHeartMath=Object.freeze({quote,payout,rates});
+  // 提供純數值函式供自動化測試；不包含客戶資料。
+  window.FullHeartMath=Object.freeze({quote,premiumSumForBenefit,payout,rates});
   function set(id,value){$(id).textContent=value;}
   function setError(error){
     const el=$("heartError");
@@ -110,6 +127,7 @@
     const scenario=$("heartScenario").value;
     const isHealthy=scenario==="healthy";
     $("heartEventYearField").hidden=isHealthy;
+    $("heartBenefitBasis").hidden=isHealthy;
     $("heartEventYear").max=String(q.finalYear);
     if(!isHealthy){
       const current=Number($("heartEventYear").value);
@@ -146,15 +164,20 @@
         set("heartScenarioAmount","—");
         return;
       }
+      const basis=premiumSumForBenefit(q,scenario,year);
       const afterEarly=year>q.earlyYear;
       const firstReceived=afterEarly?q.first:0;
-      const calcName=scenario==="chronic"?"保額的 20%／總保費 1.05 倍擇高":
-        scenario==="death"?"當年度保額／總保費 1.05 倍擇高（簡化）":
-        "保額／總保費 1.05 倍擇高";
+      set("heartBenefitYears",String(basis.years));
+      set("heartBenefitPremiumSum",money(basis.sum));
+      set("heartBenefit105",money(basis.sum*1.05));
+      set("heartBenefitCutoff",basis.cutoff+"（以第 "+year+" 年度試算）");
+      const calcName=scenario==="chronic"?"保額的 20%／事故時應計總保費 1.05 倍擇高":
+        scenario==="death"?"當年度保額／事故時應計總保費 1.05 倍擇高（簡化）":
+        "保額／事故時應計總保費 1.05 倍擇高";
       if(scenario==="death"){
         set("heartStoryDescription","以教材所列身故／完全失能給付作簡化示意；未滿 16 歲不適用一般成人理賠公式，亦需核對當年度保險金額及條款。");
       }else{
-        set("heartStoryDescription","依教材提供的年繳應繳保費總額及保額比較規則作示例；第一保單年度與第二年度以後，計算方式不同。");
+        set("heartStoryDescription","依您提供的契約定義，以事故／初次診斷日與原定繳費期滿日較早者計算應計年繳保費；第 1 年與第 2 年起的保障比較規則不同。");
       }
       out.append(
         card("第 "+q.earlyYear+" 年末","是否先領生存金",afterEarly?money(q.first):"尚未領取",
@@ -168,7 +191,7 @@
       );
       sum=amount===null?null:firstReceived+amount;
       set("heartScenarioAmountLabel",amount===null?"本情境給付金額":"本情境已發生給付示意合計");
-      notes="第一階段滿期金只有在第 "+q.earlyYear+" 保單年度末仍生存且契約有效才會給付；事故情境的給付試算與已領生存金，是否能如此合併，以及保費返還、給付扣抵、未滿16歲等，均應依正式條款再核對。本情境不是額外保證領取的金額。";
+      notes="本情境事故發生於第 "+year+" 保單年度，年繳應繳保險費總額按 "+basis.years+" 期 × "+money(q.annual)+" ＝ "+money(basis.sum)+" 計算，並以事故／診斷日與原定繳費期屆滿日較早者為準。年度模擬假設該年保費已到期，實際計算須按保單日期核對。第 "+q.earlyYear+" 年末先領生存金需符合生存及契約有效條件；事故給付與先領生存金能否合併、給付扣抵、未滿16歲及契約終止等，仍以條款為準。";
     }
     set("heartScenarioAmount",sum===null?"請依條款核算":money(sum));
     set("heartScenarioNote",notes);
