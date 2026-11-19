@@ -247,6 +247,7 @@
         body.append(create("div","photo-card-meta",safeDate(p.createdAt)));
         const tools=create("div","photo-card-actions");
         tools.append(button(pinned?"★ 取消置頂":"☆ 我的置頂",pinned?"pin-on":"",()=>togglePin(p.id)));
+        tools.append(button("📂 移動","",()=>openMovePhoto(p.id)));
         // Content editing remains limited in UI to the uploader. Favorites are always personal.
         if(p.uploadedBy===state.accountKey){
           tools.append(button("編輯","",()=>openEditor(p.id)));
@@ -256,6 +257,47 @@
       }
       grid.append(fragment);
     }
+  }
+  function openMovePhoto(id){
+    if(state.busy)return;
+    const photo=state.records.find(p=>p.id===id);
+    if(!photo)return;
+    state.movingPhotoId=id;
+    $("movingPhotoName").textContent="照片："+(photo.title||photo.fileName||"未命名圖片");
+    const picker=$("movePhotoCategory");
+    picker.replaceChildren();
+    for(const catId of state.categoryOrder){
+      const item=create("option",null,(CATEGORY_META[catId]?.emoji||"📁")+" "+CATEGORIES[catId]);
+      item.value=catId;picker.append(item);
+    }
+    picker.value=photo.category;
+    $("saveMovePhoto").disabled=true;
+    picker.addEventListener("change",()=>{$("saveMovePhoto").disabled=picker.value===photo.category;},{once:true});
+    // Reset control state on every open, including repeat moves of the same photo.
+    picker.onchange=()=>{$("saveMovePhoto").disabled=picker.value===photo.category;};
+    $("movePhotoDialog").showModal();
+  }
+  function closeMovePhoto(){
+    $("movePhotoDialog").close();
+    state.movingPhotoId=null;
+  }
+  async function saveMovePhoto(event){
+    event.preventDefault();
+    if(state.busy)return;
+    const photo=state.records.find(p=>p.id===state.movingPhotoId);
+    const destination=$("movePhotoCategory").value;
+    if(!photo||!isCat(destination)||destination===photo.category)return;
+    state.busy=true;$("saveMovePhoto").disabled=true;
+    try{
+      await api("catalog/"+photo.id,"PATCH",{category:destination,updatedAt:new Date().toISOString()});
+      closeMovePhoto();
+      await refresh("已將「"+(photo.title||photo.fileName||"照片")+"」移至「"+CATEGORIES[destination]+"」，所有使用者都會看到更新。");
+      state.filter=destination;
+      render();
+    }catch(error){
+      status("移動照片失敗："+error.message,true);
+      alert("移動失敗："+error.message);
+    }finally{state.busy=false;$("saveMovePhoto").disabled=false;}
   }
   function openEditor(id=null){
     const p=id?state.records.find(x=>x.id===id):null;
@@ -564,6 +606,9 @@
   $("closeCategoryEditor").addEventListener("click",()=>$("categoryEditor").close());
   $("cancelCategoryEditor").addEventListener("click",()=>$("categoryEditor").close());
   $("categoryForm").addEventListener("submit",saveCategory);
+  $("closeMovePhoto").addEventListener("click",closeMovePhoto);
+  $("cancelMovePhoto").addEventListener("click",closeMovePhoto);
+  $("movePhotoForm").addEventListener("submit",saveMovePhoto);
   $("addPhoto").addEventListener("click",()=>openEditor());
   $("closeEditor").addEventListener("click",closeEditor);
   $("cancelEditor").addEventListener("click",closeEditor);
