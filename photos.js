@@ -1,11 +1,19 @@
-/* Cathay photo library v2.1 | Shared Firebase RTDB gallery, separate per-user favorites.
+/* Cathay photo library v2.2 | Shared Firebase RTDB gallery, separate per-user favorites.
  * Static hosting + existing login code; RTDB permissions must be configured separately.
  * Large originals are retained in previous v1 local IndexedDB until manual migration.
  */
 (() => {
   "use strict";
   const $ = id => document.getElementById(id);
-  const CATEGORIES = Object.freeze({news:"新聞剪報",cancer:"癌症議題",receipt:"醫療收據"});
+  // The four built-in areas always exist. Additional categories are shared in Firebase.
+  const CATEGORIES={news:"新聞剪報",cancer:"癌症議題",receipt:"醫療收據",aging:"老化議題"};
+  const CATEGORY_META={
+    news:{emoji:"📰",description:"新聞報導、政策資訊與重要剪報"},
+    cancer:{emoji:"🎗️",description:"癌症治療、新療法、衛教與保障觀念"},
+    receipt:{emoji:"🧾",description:"醫療費用與自費項目的圖片資料"},
+    aging:{emoji:"🧓",description:"老化、高齡健康、失能與長期照顧"}
+  };
+  const CUSTOM_KEY=/^custom_[A-Za-z0-9_-]{6,90}$/;
   const MIME_TYPES = new Set(["image/png","image/jpeg","image/webp","image/gif"]);
   const FIREBASE_BASE = "https://cathay-app-5889a-default-rtdb.firebaseio.com";
   const ROOT = FIREBASE_BASE + "/photoLibraryV2";
@@ -16,7 +24,7 @@
   const FORMAT1 = "cathay-photo-library-backup-v1";
   const FORMAT2 = "cathay-photo-library-shared-backup-v2";
   const state={records:[],pins:{},accountKey:"",filter:"all",query:"",busy:false,
-    viewIds:[],viewIndex:0,viewCache:new Map(),lastLoaded:0,refreshPromise:null};
+    viewIds:[],viewIndex:0,viewCache:new Map(),lastLoaded:0,refreshPromise:null,categoryError:null};
   const isCat = x => Object.hasOwn(CATEGORIES,x);
   const limit = (s,n) => String(s||"").trim().slice(0,n);
   const safeDate = x => Number.isFinite(new Date(x).getTime()) ? new Date(x).toLocaleDateString("zh-TW") : "";
@@ -67,6 +75,52 @@
       throw err;
     }finally{clearTimeout(timeout);}
   }
+  function mergeSharedCategories(raw){
+    if(!raw||typeof raw!=="object")return;
+    const entries=Object.entries(raw)
+      .filter(([id,info])=>CUSTOM_KEY.test(id)&&info&&typeof info.name==="string"&&info.name.trim())
+      .sort((a,b)=>String(a[1].createdAt||"").localeCompare(String(b[1].createdAt||"")));
+    for(const [id,info] of entries.slice(0,95)){
+      CATEGORIES[id]=limit(info.name,24);
+      CATEGORY_META[id]={
+        emoji:limit(info.emoji||"📁",8)||"📁",
+        description:limit(info.description,120)||"自訂共用照片資料區"
+      };
+    }
+  }
+  function ensureCategoryUI(){
+    const tabs=document.querySelector(".photo-tabs");
+    const sections=$("gallerySections");
+    const picker=$("photoCategory");
+    for(const [id,name] of Object.entries(CATEGORIES)){
+      const meta=CATEGORY_META[id]||{emoji:"📁",description:"共用照片資料區"};
+      let tab=$("count-"+id);
+      if(!tab){
+        const button=create("button","photo-tab");
+        button.type="button";button.dataset.filter=id;
+        button.setAttribute("aria-pressed","false");
+        button.append(document.createTextNode(meta.emoji+" "+name+" "));
+        tab=create("small");tab.id="count-"+id;tab.textContent="0";
+        button.append(tab);tabs.append(button);
+      }
+      if(!$("grid-"+id)){
+        const section=create("section","photo-category");
+        section.dataset.section=id;section.setAttribute("aria-labelledby","title-"+id);
+        const head=create("div","photo-category-head");
+        const wrap=create("div");
+        const title=create("h2",null,meta.emoji+" "+name);title.id="title-"+id;
+        wrap.append(title,create("p",null,meta.description));
+        const count=create("span","hub-pill","0 張");count.id="section-count-"+id;
+        head.append(wrap,count);
+        const grid=create("div","photo-gallery");grid.id="grid-"+id;
+        section.append(head,grid);sections.append(section);
+      }
+      if(!Array.from(picker.options).some(o=>o.value===id)){
+        const option=create("option",null,meta.emoji+" "+name);
+        option.value=id;picker.append(option);
+      }
+    }
+  }
   function sorted(category){
     const q=state.query.toLowerCase();
     return state.records.filter(x=>x.category===category && (
@@ -79,7 +133,21 @@
   async function refresh(notice){
     if(state.refreshPromise) return state.refreshPromise;
     state.refreshPromise=(async()=>{
-      const [catalog,pins]=await Promise.all([api("catalog"),api("pins/"+state.accountKey)]);
+      let categoryError=null;
+      const [catalog,pins,customCategories]=await Promise.all([
+        api("catalog"),
+        api("pins/"+state.accountKey),
+        api("categories").catch(error=>{categoryError=error;return null;})
+      ]);
+      mergeSharedCategories(customCategories);
+      // Don't lose a photo if its custom category metadata is temporarily unavailable.
+      for(const photo of Object.values(catalog||{})){
+        if(photo && CUSTOM_KEY.test(String(photo.category||"")) && !isCat(photo.category)){
+          CATEGORIES[photo.category]="其他資料區";
+          CATEGORY_META[photo.category]={emoji:"📁",description:"分類資訊尚未同步"};
+        }
+      }
+      state.categoryError=categoryError;
       state.records=Object.entries(catalog||{}).filter(([id,x])=>
         x && /^[\w-]{4,140}$/.test(id) && isCat(x.category) && validDataURL(x.thumb)
       ).map(([id,x])=>({...x,id}));
@@ -87,7 +155,9 @@
       state.lastLoaded=Date.now();
       render();
       ["addPhoto","importPhotos","exportPhotos","migrateLocal"].forEach(id=>$(id).disabled=false);
-      status(notice||"已同步共用照片庫："+state.records.length+" 張；★ 置頂只影響您自己的排序。");
+      $("createCategory").disabled=Boolean(categoryError);
+      status((notice||"已同步共用照片庫："+state.records.length+" 張；★ 置頂只影響您自己的排序。")+
+        (categoryError?" 自訂分類同步失敗："+categoryError.message:""),Boolean(categoryError));
     })();
     try{return await state.refreshPromise;}
     finally{state.refreshPromise=null;}
@@ -98,6 +168,7 @@
     return el;
   }
   function render(){
+    ensureCategoryUI();
     for(const cat of Object.keys(CATEGORIES)){
       const n=state.records.filter(x=>x.category===cat).length;
       $("count-"+cat).textContent=n;
@@ -114,7 +185,7 @@
       const items=sorted(cat), ids=items.map(x=>x.id);
       if(items.length===0){
         const empty=create("div","photo-empty");
-        empty.append(create("span","emoji",({news:"📰",cancer:"🎗️",receipt:"🧾"})[cat]));
+        empty.append(create("span","emoji",CATEGORY_META[cat]?.emoji||"📁"));
         empty.append(document.createTextNode(state.query?"找不到符合搜尋條件的照片。":"目前沒有共用照片，歡迎上傳第一張。"));
         grid.append(empty);
         continue;
@@ -160,6 +231,37 @@
     $("photoEditor").showModal();
   }
   function closeEditor(){$("photoEditor").close();}
+  function openCategoryEditor(){
+    if(state.busy||state.categoryError)return;
+    $("categoryForm").reset();
+    $("categoryEditor").showModal();
+    $("categoryName").focus();
+  }
+  async function saveCategory(e){
+    e.preventDefault();
+    if(state.busy)return;
+    const name=limit($("categoryName").value,24);
+    const emoji=limit($("categoryIcon").value,8)||"📁";
+    const description=limit($("categoryDescription").value,120);
+    if(!name){alert("請填入資料區名稱");return;}
+    if(Object.values(CATEGORIES).some(label=>label.toLocaleLowerCase()===name.toLocaleLowerCase())){
+      alert("同名資料區已存在，請選用其他名稱。");return;
+    }
+    if(Object.keys(CATEGORIES).length>=100){alert("目前最多可建立 100 個資料區。");return;}
+    state.busy=true;$("saveCategory").disabled=true;
+    try{
+      const id="custom_"+key().replace(/[^A-Za-z0-9_-]/g,"").slice(0,55);
+      await api("categories/"+id,"PUT",{
+        name,emoji,description,createdAt:new Date().toISOString(),createdBy:state.accountKey
+      });
+      $("categoryEditor").close();
+      await refresh("已建立共用資料區「"+name+"」，其他使用者重新同步後即可看見。");
+      if(isCat(id)){state.filter=id;render();}
+    }catch(error){
+      status("新增資料區失敗："+error.message,true);
+      alert("建立共用資料區失敗："+error.message);
+    }finally{state.busy=false;$("saveCategory").disabled=false;}
+  }
   async function imageToDataURL(file,maxWidth,maxHeight,quality){
     const obj=URL.createObjectURL(file);
     try{
@@ -402,7 +504,7 @@
   async function init(){
     if(!ACCOUNT||!SESSION){
       status("請先登入網站再使用共用照片庫。",true);
-      ["addPhoto","exportPhotos","importPhotos","migrateLocal","reloadPhotos"].forEach(id=>$(id).disabled=true);
+      ["addPhoto","createCategory","exportPhotos","importPhotos","migrateLocal","reloadPhotos"].forEach(id=>$(id).disabled=true);
       return;
     }
     try{
@@ -414,14 +516,24 @@
       $("importPhotos").disabled=true;
       $("exportPhotos").disabled=true;
       $("migrateLocal").disabled=true;
+      $("createCategory").disabled=true;
     }
   }
+  $("createCategory").addEventListener("click",openCategoryEditor);
+  $("closeCategoryEditor").addEventListener("click",()=>$("categoryEditor").close());
+  $("cancelCategoryEditor").addEventListener("click",()=>$("categoryEditor").close());
+  $("categoryForm").addEventListener("submit",saveCategory);
   $("addPhoto").addEventListener("click",()=>openEditor());
   $("closeEditor").addEventListener("click",closeEditor);
   $("cancelEditor").addEventListener("click",closeEditor);
   $("photoForm").addEventListener("submit",saveEditor);
   $("photoSearch").addEventListener("input",e=>{state.query=e.target.value.trim();render();});
-  document.querySelectorAll(".photo-tab[data-filter]").forEach(btn=>btn.addEventListener("click",()=>{state.filter=btn.dataset.filter;render();}));
+  document.querySelector(".photo-tabs").addEventListener("click",event=>{
+    const button=event.target.closest("button[data-filter]");
+    if(!button||!document.querySelector(".photo-tabs").contains(button))return;
+    if(button.dataset.filter!=="all"&&!isCat(button.dataset.filter))return;
+    state.filter=button.dataset.filter;render();
+  });
   $("closeViewer").addEventListener("click",()=>$("photoViewer").close());
   $("viewerPrev").addEventListener("click",()=>moveViewer(-1));
   $("viewerNext").addEventListener("click",()=>moveViewer(1));
