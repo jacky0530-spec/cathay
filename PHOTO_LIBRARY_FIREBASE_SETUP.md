@@ -1,4 +1,4 @@
-# 共用照片資料專區（V2.4）Firebase 部署備註
+# 共用照片資料專區（V2.5）Firebase 部署備註
 
 正式頁面：`photos.html`
 JavaScript：`photos.js`
@@ -32,6 +32,15 @@ Realtime Database：`https://cathay-app-5889a-default-rtdb.firebaseio.com`
 - 刪除用 `PATCH /photoLibraryV2.json` 一次送出 `catalog/{id}: null`、`images/{id}: null`、`pins/{accountHash}/{id}: null`，確保該批次的圖檔、清單索引和目前授權碼的置頂紀錄不會出現部分更新。其他使用者的舊置頂鍵不會自動清除，因照片已從清單刪除，並不影響圖庫顯示。
 - **權限說明：** 目前「僅可刪除自己上傳的照片」是網站 UI 的檢查。若 Realtime Database 的 Rules 仍設公開寫入，此限制不是 Firebase 伺服器端強制執行。建議日後導入 Firebase Authentication／受保護後端與更嚴格的安全規則。
 
+
+## V2.5 移動後顯示、重複照片與縮圖改善
+
+- 共用照片縮圖改成 `object-fit: contain`，在桌機、平板、手機都顯示完整圖片而不裁切文字；縮圖本身仍使用上傳時產生的 JPEG 壓縮版。
+- 資料庫單筆移動 `PATCH /photoLibraryV2/catalog/{id}.json` 只會改動 `category`、`updatedAt`，不會複製一筆新照片。若同圖同時顯示於兩個分類，通常代表共用目錄原已有多個獨立照片 ID。
+- 所有寫入後（移動、批次移動、刪除、上傳、改名與置頂等）使用 `refreshAfterMutation`，先等待既有未完成的讀取，再主動重新讀取資料庫，避免舊讀取結果覆蓋剛寫入的畫面。
+- 若有**縮圖資料完全相同**的多筆上傳紀錄，會在照片卡片標示數量；不會自動隱藏或刪除。上傳者可選擇其中一筆點「保留此張、整理重複」，確認後以單次 Firebase 多路徑 `PATCH /photoLibraryV2.json` 刪除本人上傳的其餘同圖副本，同時保留被選中的照片 ID 與目標分類。
+- 如果遭刪的本人副本原先被目前登入授權碼設定為最愛，而保留的照片未置頂，清理時會將個人置頂轉移至保留照片。**其他使用者上傳的相同影像不會被此功能刪除**，其他帳號的最愛紀錄也不會自動轉移。
+- 以上皆為前端權限行為；如果 Firebase Rules 仍允許公開寫入，權限保護必須於資料庫端另行加強。
 
 ## 上線驗證與待完成工作
 
