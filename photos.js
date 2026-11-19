@@ -273,7 +273,6 @@
     }
     picker.value=photo.category;
     $("saveMovePhoto").disabled=true;
-    picker.addEventListener("change",()=>{$("saveMovePhoto").disabled=picker.value===photo.category;},{once:true});
     // Reset control state on every open, including repeat moves of the same photo.
     picker.onchange=()=>{$("saveMovePhoto").disabled=picker.value===photo.category;};
     $("movePhotoDialog").showModal();
