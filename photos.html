@@ -25,11 +25,12 @@
   <h1 id="gallery-title">共用照片資料庫</h1>
   <p>所有使用者共享新聞剪報、癌症議題與醫療收據照片；每個人可依自己的喜好設置置頂，互不影響。</p>
  </section>
+ <div id="galleryStatus" class="photo-status" role="status" aria-live="polite">正在檢查 Firebase 共用照片庫連線…</div>
  <div class="photo-banner">
   <div><strong>📷 團隊共用照片庫</strong><p>所有人看同一份圖片；每位使用者的「★ 我的置頂」只改變自己的顯示順序。</p></div>
   <div class="photo-actions">
    <button id="addPhoto" class="photo-btn primary" type="button">＋ 上傳共用照片</button>
-   <button id="reloadPhotos" class="photo-btn" type="button">↻ 重新同步</button>
+   <button id="reloadPhotos" class="photo-btn" type="button">↻ 檢查連線／重新同步</button>
    <button id="migrateLocal" class="photo-btn" type="button">⇧ 搬移舊版照片</button>
    <button id="exportPhotos" class="photo-btn" type="button">↓ 匯出備份</button>
    <button id="importPhotos" class="photo-btn" type="button">↑ 匯入備份</button>
@@ -40,7 +41,15 @@
   <strong>共用方式：</strong>所有使用者讀取同一份 Firebase Realtime Database 照片清單；上傳／編輯／刪除共用圖片會影響其他人，只有「★ 我的置頂」是各自獨立。<strong>使用相同授權碼登入的人，會共用同一組置頂偏好。</strong><br>
   <strong>首次啟用：</strong>共用圖庫必須先開通 Firebase 對應資料路徑的存取權限；若看到「權限不足」，表示後端尚未完成設定，照片不會假裝已同步。舊版瀏覽器照片可透過「搬移舊版照片」手動上傳。
  </div>
- <div id="galleryStatus" class="photo-status" role="status" aria-live="polite">正在連線共用照片庫…</div>
+
+ <details class="photo-connection-help" id="photoConnectionHelp" hidden>
+  <summary>共用照片無法連線？查看排除方式</summary>
+  <div class="photo-help-inner">
+   <p>如果出現 <strong>Firebase 401／403（Permission denied）</strong>，代表資料庫拒絕目前的讀取或寫入方式。本站原本的授權碼登入並不等於 Firebase Authentication；只修改網頁按鈕無法取得資料庫權限。</p>
+   <p>請由專案管理者進入 <a href="https://console.firebase.google.com/project/cathay-app-5889a/database" target="_blank" rel="noopener noreferrer">Firebase 控制台 → Realtime Database → Rules</a>，確認照片專區 <code>photoLibraryV2</code> 的獨立存取規則，並保留原本的 <code>whitelist</code>、<code>users</code> 等設定。不要為修復照片上傳而公開整個資料庫。</p>
+   <p>設定完成後按上方「↻ 重新同步」。若顯示連線逾時或網路錯誤，請改用其他網路後重試。</p>
+  </div>
+ </details>
  <div class="photo-controls">
   <div class="photo-tabs" role="group" aria-label="照片分類篩選">
    <button type="button" class="photo-tab" data-filter="all" aria-pressed="true">全部 <small id="count-all">0</small></button>
@@ -65,7 +74,7 @@
    <div id="grid-receipt" class="photo-gallery"><div class="photo-empty"><span class="emoji">🧾</span>目前沒有照片，可點選上方「上傳照片」。</div></div>
   </section>
  </div>
- <footer class="hub-footer">照片資料專區 V2.0｜Firebase 共用圖片 · 依授權碼各自設定最愛置頂｜教育訓練與素材整理用途</footer>
+ <footer class="hub-footer">照片資料專區 V2.1｜Firebase 共用圖片 · 依授權碼各自設定最愛置頂｜教育訓練與素材整理用途</footer>
 </main>
 
 <dialog id="photoEditor" class="photo-dialog" aria-labelledby="editorTitle">
