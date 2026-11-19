@@ -162,6 +162,8 @@
 
 
 /* v2.5：完整保留剪報／長條圖的文字，避免移動後誤以為圖片內容遭截斷 */
+.photo-display-hint{font-size:.8rem;color:#4f735c;line-height:1.72;padding:0 3px;margin:0 0 11px}
+
 .photo-thumb-wrap{background:#f6f8f5}
 .photo-card-duplicate{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:9px 12px;background:#fff9ed;border-top:1px solid #f2dfb7;color:#7b5427;line-height:1.5}
 .photo-card-duplicate span{font-size:.75rem;flex:1 1 140px}
