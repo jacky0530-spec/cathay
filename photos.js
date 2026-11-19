@@ -197,6 +197,7 @@
       render();
       ["addPhoto","importPhotos","exportPhotos","migrateLocal"].forEach(id=>$(id).disabled=false);
       $("createCategory").disabled=Boolean(categoryError);
+      $("manageCategories").disabled=Boolean(categoryError);
       status((notice||"已同步共用照片庫："+state.records.length+" 張；★ 置頂只影響您自己的排序。")+
         (categoryError?" 自訂分類同步失敗："+categoryError.message:""),Boolean(categoryError));
     })();
@@ -314,9 +315,72 @@
     $("photoEditor").showModal();
   }
   function closeEditor(){$("photoEditor").close();}
-  function openCategoryEditor(){
+  function renderCategoryManager(){
+    const container=$("categoryManagerList");
+    if(!container)return;
+    container.replaceChildren();
+    state.categoryOrder.forEach((id,index)=>{
+      const row=create("div","photo-manage-row");
+      const info=create("div","photo-manage-info");
+      const name=create("strong",null,(CATEGORY_META[id]?.emoji||"📁")+" "+CATEGORIES[id]);
+      const count=state.records.filter(photo=>photo.category===id).length;
+      info.append(name,create("small",null,count+" 張照片 · 第 "+(index+1)+" 個專區"));
+      const actions=create("div","photo-manage-actions");
+      const up=button("↑ 上移","",()=>{});
+      up.disabled=index===0||state.busy||Boolean(state.categoryError);
+      up.addEventListener("click",()=>moveCategory(id,-1));
+      const down=button("↓ 下移","",()=>{});
+      down.disabled=index===state.categoryOrder.length-1||state.busy||Boolean(state.categoryError);
+      down.addEventListener("click",()=>moveCategory(id,1));
+      const edit=button("✎ 改名","",()=>openCategoryEditor(id));
+      edit.disabled=state.busy||Boolean(state.categoryError);
+      actions.append(up,down,edit);
+      row.append(info,actions);
+      container.append(row);
+    });
+  }
+  function openCategoryManager(){
     if(state.busy||state.categoryError)return;
+    renderCategoryManager();
+    $("categoryManager").showModal();
+  }
+  async function moveCategory(id,direction){
+    if(state.busy||state.categoryError)return;
+    const current=state.categoryOrder.indexOf(id);
+    const target=current+direction;
+    if(current<0||target<0||target>=state.categoryOrder.length)return;
+    state.busy=true;
+    try{
+      const next=[...state.categoryOrder];
+      [next[current],next[target]]=[next[target],next[current]];
+      const patch={};
+      next.forEach((key,index)=>{patch[key+"/order"]=index;});
+      // Firebase supports atomic multi-path PATCH updates; preserve names and metadata.
+      await api("categories","PATCH",patch);
+      await refresh("已更新全部使用者的專區排列順序。");
+      renderCategoryManager();
+    }catch(error){
+      status("儲存專區排序失敗："+error.message,true);
+      alert("排序儲存失敗："+error.message);
+      renderCategoryManager();
+    }finally{
+      state.busy=false;
+      renderCategoryManager();
+    }
+  }
+  function openCategoryEditor(id=null){
+    if(state.busy||state.categoryError)return;
+    const editId=(typeof id==="string"&&isCat(id))?id:null;
+    state.editingCategoryId=editId;
     $("categoryForm").reset();
+    $("categoryEditId").value=editId||"";
+    $("categoryEditorTitle").textContent=editId?"修改共用資料區":"新增共用資料區";
+    $("saveCategory").textContent=editId?"儲存資料區名稱":"建立共用資料區";
+    if(editId){
+      $("categoryName").value=CATEGORIES[editId];
+      $("categoryIcon").value=CATEGORY_META[editId]?.emoji||"📁";
+      $("categoryDescription").value=CATEGORY_META[editId]?.description||"";
+    }
     $("categoryEditor").showModal();
     $("categoryName").focus();
   }
@@ -326,24 +390,32 @@
     const name=limit($("categoryName").value,24);
     const emoji=limit($("categoryIcon").value,8)||"📁";
     const description=limit($("categoryDescription").value,120);
+    const id=$("categoryEditId").value||null;
     if(!name){alert("請填入資料區名稱");return;}
-    if(Object.values(CATEGORIES).some(label=>label.toLocaleLowerCase()===name.toLocaleLowerCase())){
+    if(id&&!isCat(id)){alert("找不到要修改的資料區，請重新整理後重試。");return;}
+    if(Object.entries(CATEGORIES).some(([key,value])=>key!==id&&value.toLocaleLowerCase()===name.toLocaleLowerCase())){
       alert("同名資料區已存在，請選用其他名稱。");return;
     }
-    if(Object.keys(CATEGORIES).length>=100){alert("目前最多可建立 100 個資料區。");return;}
+    if(!id&&Object.keys(CATEGORIES).length>=100){alert("目前最多可建立 100 個資料區。");return;}
     state.busy=true;$("saveCategory").disabled=true;
     try{
-      const id="custom_"+key().replace(/[^A-Za-z0-9_-]/g,"").slice(0,55);
-      await api("categories/"+id,"PUT",{
-        name,emoji,description,createdAt:new Date().toISOString(),createdBy:state.accountKey
-      });
+      if(id){
+        await api("categories/"+id,"PATCH",{name,emoji,description,updatedAt:new Date().toISOString()});
+      }else{
+        const newId="custom_"+key().replace(/[^A-Za-z0-9_-]/g,"").slice(0,55);
+        await api("categories/"+newId,"PUT",{
+          name,emoji,description,createdAt:new Date().toISOString(),createdBy:state.accountKey
+        });
+      }
       $("categoryEditor").close();
-      await refresh("已建立共用資料區「"+name+"」，其他使用者重新同步後即可看見。");
-      if(isCat(id)){state.filter=id;render();}
+      await refresh(id?"已將專區改名為「"+name+"」，照片會保留在原專區。":"已建立共用資料區「"+name+"」。");
     }catch(error){
-      status("新增資料區失敗："+error.message,true);
-      alert("建立共用資料區失敗："+error.message);
-    }finally{state.busy=false;$("saveCategory").disabled=false;}
+      status((id?"修改":"新增")+"資料區失敗："+error.message,true);
+      alert((id?"修改":"建立")+"共用資料區失敗："+error.message);
+    }finally{
+      state.busy=false;$("saveCategory").disabled=false;
+      if($("categoryManager").open)renderCategoryManager();
+    }
   }
   async function imageToDataURL(file,maxWidth,maxHeight,quality){
     const obj=URL.createObjectURL(file);
@@ -587,7 +659,7 @@
   async function init(){
     if(!ACCOUNT||!SESSION){
       status("請先登入網站再使用共用照片庫。",true);
-      ["addPhoto","createCategory","exportPhotos","importPhotos","migrateLocal","reloadPhotos"].forEach(id=>$(id).disabled=true);
+      ["addPhoto","createCategory","manageCategories","exportPhotos","importPhotos","migrateLocal","reloadPhotos"].forEach(id=>$(id).disabled=true);
       return;
     }
     try{
@@ -600,9 +672,13 @@
       $("exportPhotos").disabled=true;
       $("migrateLocal").disabled=true;
       $("createCategory").disabled=true;
+      $("manageCategories").disabled=true;
     }
   }
-  $("createCategory").addEventListener("click",openCategoryEditor);
+  $("createCategory").addEventListener("click",()=>openCategoryEditor());
+  $("manageCategories").addEventListener("click",openCategoryManager);
+  $("closeCategoryManager").addEventListener("click",()=>$("categoryManager").close());
+  $("doneCategoryManager").addEventListener("click",()=>$("categoryManager").close());
   $("closeCategoryEditor").addEventListener("click",()=>$("categoryEditor").close());
   $("cancelCategoryEditor").addEventListener("click",()=>$("categoryEditor").close());
   $("categoryForm").addEventListener("submit",saveCategory);
