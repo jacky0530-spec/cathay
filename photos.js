@@ -65,7 +65,7 @@
   const state={records:[],pins:{},accountKey:"",filter:"all",query:"",busy:false,
     viewIds:[],viewIndex:0,viewCache:new Map(),lastLoaded:0,refreshPromise:null,categoryError:null,
     categoryOrder:[],categoryRecords:{},categorySignature:"",editingCategoryId:null,movingPhotoId:null,
-    deleteRequests:{},batchMode:false,selectedIds:new Set(),bulkMoveIds:null};
+    photoCounts:null,deleteRequests:{},batchMode:false,selectedIds:new Set(),bulkMoveIds:null};
   const isCat = x => Object.hasOwn(CATEGORIES,x);
   const limit = (s,n) => String(s||"").trim().slice(0,n);
   const safeDate = x => Number.isFinite(new Date(x).getTime()) ? new Date(x).toLocaleDateString("zh-TW") : "";
@@ -212,13 +212,20 @@
     if(state.refreshPromise) return state.refreshPromise;
     state.refreshPromise=(async()=>{
       let categoryError=null;
-      const [catalog,pins,customCategories,deleteRequests]=await Promise.all([
+      const [catalog,pins,customCategories,deleteRequests,photoCounts]=await Promise.all([
         api("catalog"),
         api("pins/"+state.accountKey),
         api("categories").catch(error=>{categoryError=error;return null;}),
-        api("deleteRequests").catch(()=>({}))
+        api("deleteRequests").catch(()=>({})),
+        api("photoCounts").then(data=>data||{}).catch(()=>null)
       ]);
       state.deleteRequests=deleteRequests||{};
+      if(photoCounts!==null){
+        state.photoCounts??={};
+        for(const [id,count] of Object.entries(photoCounts)){
+          state.photoCounts[id]=Math.max(state.photoCounts[id]||0,count);
+        }
+      }
       mergeSharedCategories(customCategories);
       // Don't lose a photo if its custom category metadata is temporarily unavailable.
       for(const photo of Object.values(catalog||{})){
@@ -255,15 +262,45 @@
     }
     return refresh(notice);
   }
-  function button(txt,cls,fn){
+  function button(txt,cls,fn,action){
     const el=create("button","photo-btn small "+(cls||""),txt);
-    el.type="button";el.addEventListener("click",fn);
+    el.type="button";el.addEventListener("click",()=>{
+      if(action)void trackUsage(action);
+      fn();
+    });
     return el;
   }
   function selectedRecords(){
     return state.records.filter(record=>state.selectedIds.has(record.id));
   }
   const pendingDeletion=id=>state.deleteRequests[id]?.status==="pending";
+  const countText=id=>state.photoCounts===null?"點選次數暫無法讀取":
+    "點選 "+Number(state.photoCounts[id]||0).toLocaleString("zh-TW")+" 次";
+  const increment={".sv":{"increment":1}};
+  async function trackUsage(action,photoId){
+    if(!state.accountKey)return;
+    const eventId=key();
+    const event={account:state.accountKey,action,at:{".sv":"timestamp"}};
+    const updates={["usageCounts/"+state.accountKey+"/"+action]:increment};
+    if(photoId){
+      event.photoId=photoId;
+      updates["photoCounts/"+photoId]=increment;
+      updates["photoClickLog/"+eventId]=event;
+    }
+    try{
+      await api("","PATCH",updates);
+      if(!photoId)return;
+      // Read the resolved value separately because the REST PATCH response can echo the increment placeholder.
+      const count=await api("photoCounts/"+photoId);
+      if(state.photoCounts===null)state.photoCounts={};
+      state.photoCounts[photoId]=Math.max(state.photoCounts[photoId]||0,count||0);
+      for(const label of document.querySelectorAll("[data-photo-click-count]")){
+        if(label.dataset.photoClickCount===photoId)label.textContent=countText(photoId);
+      }
+    }catch(error){
+      console.warn("圖庫使用紀錄同步失敗",error.message);
+    }
+  }
   function eligibleForDelete(){
     return selectedRecords().filter(photo=>photo.uploadedBy===state.accountKey&&!pendingDeletion(photo.id));
   }
@@ -371,7 +408,11 @@
         open.type="button";open.setAttribute("aria-label","放大查看 "+(p.title||p.fileName||"圖片"));
         const im=create("img");im.loading="lazy";im.alt=p.title||p.fileName||"照片";im.src=p.thumb;
         open.append(im);
-        open.addEventListener("click",()=>state.batchMode?togglePhotoSelection(p.id):openViewer(p.id,ids));
+        open.addEventListener("click",()=>{
+          if(state.batchMode){togglePhotoSelection(p.id);return;}
+          openViewer(p.id,ids);
+          void trackUsage("openPhoto",p.id);
+        });
         thumb.append(open);
         const selectLabel=create("label","photo-batch-choice");
         const selectBox=create("input");
@@ -385,13 +426,16 @@
         body.append(create("h3","photo-card-title",p.title||p.fileName||"未命名照片"));
         if(p.description)body.append(create("div","photo-card-note",p.description));
         body.append(create("div","photo-card-meta",safeDate(p.createdAt)));
+        const count=create("div","photo-card-meta",countText(p.id));
+        count.dataset.photoClickCount=p.id;
+        body.append(count);
         const tools=create("div","photo-card-actions");
-        tools.append(button(pinned?"★ 取消置頂":"☆ 我的置頂",pinned?"pin-on":"",()=>togglePin(p.id)));
-        tools.append(button("📂 移動","",()=>openMovePhoto(p.id)));
+        tools.append(button(pinned?"★ 取消置頂":"☆ 我的置頂",pinned?"pin-on":"",()=>togglePin(p.id),"pin"));
+        tools.append(button("📂 移動","",()=>openMovePhoto(p.id),"move"));
         // Content editing remains limited in UI to the uploader. Favorites are always personal.
         if(p.uploadedBy===state.accountKey){
-          tools.append(button("編輯","",()=>openEditor(p.id)));
-          const remove=button("刪除","danger",()=>deletePhoto(p.id));
+          tools.append(button("編輯","",()=>openEditor(p.id),"edit"));
+          const remove=button("刪除","danger",()=>deletePhoto(p.id),"deleteRequest");
           remove.disabled=pendingDeletion(p.id);
           tools.append(remove);
         }
@@ -403,7 +447,7 @@
           const duplicateNote=create("div","photo-card-duplicate");
           duplicateNote.append(create("span",null,"⚠ 相同影像有 "+copies.length+" 筆上傳紀錄；移動其中一筆不會刪掉另一筆。"));
           if(p.uploadedBy===state.accountKey&&duplicatesOwned.length>0){
-            duplicateNote.append(button("保留此張、整理重複","",()=>removeDuplicateCopies(p.id)));
+            duplicateNote.append(button("保留此張、整理重複","",()=>removeDuplicateCopies(p.id),"duplicateCleanup"));
           }
           card.append(duplicateNote);
         }
@@ -946,6 +990,17 @@
       $("manageCategories").disabled=true;
     }
   }
+  const usageControls={
+    createCategory:"createCategory",manageCategories:"manageCategories",batchModeToggle:"batchSelect",
+    batchSelectVisible:"batchSelectAll",batchMove:"batchMove",batchDelete:"batchDelete",
+    addPhoto:"upload",exportPhotos:"export",importPhotos:"import",migrateLocal:"migrate",reloadPhotos:"sync"
+  };
+  for(const [id,action] of Object.entries(usageControls)){
+    $(id).addEventListener("click",()=>void trackUsage(action));
+  }
+  $("photoSearch").addEventListener("change",event=>{
+    if(event.target.value.trim())void trackUsage("search");
+  });
   $("createCategory").addEventListener("click",()=>openCategoryEditor());
   $("manageCategories").addEventListener("click",openCategoryManager);
   $("closeCategoryManager").addEventListener("click",()=>$("categoryManager").close());
@@ -973,6 +1028,7 @@
     if(!button||!document.querySelector(".photo-tabs").contains(button))return;
     if(button.dataset.filter!=="all"&&!isCat(button.dataset.filter))return;
     state.filter=button.dataset.filter;render();
+    void trackUsage("filter");
   });
   $("closeViewer").addEventListener("click",()=>$("photoViewer").close());
   $("viewerPrev").addEventListener("click",()=>moveViewer(-1));

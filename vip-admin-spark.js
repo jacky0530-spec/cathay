@@ -79,13 +79,14 @@ function reportError(error){
 // connection for admin verification and list loading. On some browsers the SDK
 // read can remain pending after Firebase Authentication succeeds.
 // Firebase officially accepts its ID token as the REST "auth" query parameter.
-async function firebaseRest(path,method="GET",body){
+async function firebaseRest(path,method="GET",body,query={}){
  if(!auth.currentUser)throw new Error('login_required');
  const idToken=await auth.currentUser.getIdToken();
  const ctrl=new AbortController();
  const timeout=setTimeout(()=>ctrl.abort(),10000);
  try{
   const endpoint=new URL(config.databaseURL+'/'+path+'.json');
+  for(const [name,value] of Object.entries(query))endpoint.searchParams.set(name,value);
   endpoint.searchParams.set('auth',idToken);
   const response=await fetch(endpoint.toString(),{
    method,cache:'no-store',referrerPolicy:'no-referrer',
@@ -163,6 +164,74 @@ function refreshPhotoReviews(){
  return loadPhotoReviews().catch(error=>photoReviewStatus(reportError(error)));
 }
 el('refreshPhotoReviews').addEventListener('click',refreshPhotoReviews);
+const photoUsageActions={
+ openPhoto:'點選照片',pin:'置頂／取消置頂',move:'移動照片',edit:'編輯照片',
+ deleteRequest:'刪除',duplicateCleanup:'整理重複照片',createCategory:'新增資料區',
+ manageCategories:'管理資料區',batchSelect:'切換多選',batchSelectAll:'全選',
+ batchMove:'批次移動',batchDelete:'批次刪除',upload:'新增照片',export:'匯出備份',
+ import:'匯入備份',migrate:'搬移舊版照片',sync:'重新同步',search:'搜尋',filter:'切換資料區'
+};
+let photoUsage=null;
+function usageRow(body,values){
+ const row=body.insertRow();
+ for(const value of values)row.insertCell().textContent=value;
+}
+function renderPhotoUsage(){
+ const filter=el('photoUsageAccount').value;
+ const counts=el('photoUsageCounts'),log=el('photoUsageLog');
+ counts.replaceChildren();log.replaceChildren();
+ if(!photoUsage)return;
+ const {users,events,countsByUser,catalog}=photoUsage;
+ for(const [account,name] of users){
+  if(filter&&account!==filter)continue;
+  for(const [action,count] of Object.entries(countsByUser[account]||{})){
+   if(Object.hasOwn(photoUsageActions,action))usageRow(counts,[name,photoUsageActions[action],count]);
+  }
+ }
+ for(const event of events){
+  if(filter&&event.account!==filter)continue;
+  const photo=catalog[event.photoId];
+  usageRow(log,[new Date(event.at).toLocaleString('zh-TW',{timeZone:'Asia/Taipei'}),
+   users.get(event.account),photo?.title||photo?.fileName||event.photoId]);
+ }
+ el('photoUsageStatus').textContent='顯示 '+counts.rows.length+' 筆功能統計、'+log.rows.length+' 筆照片點選紀錄。';
+}
+el('photoUsageAccount').addEventListener('change',renderPhotoUsage);
+el('loadPhotoUsage').addEventListener('click',async()=>{
+ const button=el('loadPhotoUsage');
+ const user=auth.currentUser;
+ button.disabled=true;
+ el('photoUsageStatus').textContent='正在載入使用分析…';
+ try{
+  await checkAdmin();
+  const [counts,log,catalog,profiles]=await Promise.all([
+   readFirebaseRest(photoRoot+'/usageCounts'),
+   firebaseRest(photoRoot+'/photoClickLog','GET',undefined,{orderBy:'"at"',limitToLast:100}),
+   readFirebaseRest(photoRoot+'/catalog'),
+   readFirebaseRest('vipProfiles').catch(()=>({}))
+  ]);
+  const labels=new Map(await Promise.all(Object.entries(profiles||{}).map(async([code,label])=>{
+   const raw=new TextEncoder().encode('cathay-photos-v2:'+code.toUpperCase());
+   const digest=await crypto.subtle.digest('SHA-256',raw);
+   const hash=Array.from(new Uint8Array(digest),x=>x.toString(16).padStart(2,'0')).join('');
+   return [hash,label];
+  })));
+  if(auth.currentUser!==user)return;
+  const events=Object.values(log||{}).sort((a,b)=>b.at-a.at);
+  const accounts=new Set([...Object.keys(counts||{}),...events.map(event=>event.account)]);
+  const users=new Map(Array.from(accounts,account=>[account,
+   (labels.get(account)||'未命名帳號')+' · '+account.slice(0,8)]));
+  photoUsage={users,events,countsByUser:counts||{},catalog:catalog||{}};
+  const select=el('photoUsageAccount');
+  const current=select.value;
+  select.replaceChildren(new Option('全部使用者',''));
+  for(const [account,name] of users)select.add(new Option(name,account));
+  select.value=users.has(current)?current:'';
+  renderPhotoUsage();
+ }catch(error){
+  el('photoUsageStatus').textContent=reportError(error);
+ }finally{button.disabled=false;}
+});
 function clearIssued(){justCreated='';el('issuedValue').textContent='';el('issued').hidden=true;}
 let accountRows=[];
 function applyAccountFilter(){
@@ -396,6 +465,9 @@ el('copy').addEventListener('click',async()=>{
 });
 el('logout').addEventListener('click',async()=>{
  clearIssued();el('rows').replaceChildren();
+ photoUsage=null;renderPhotoUsage();
+ el('photoUsageAccount').replaceChildren(new Option('全部使用者',''));
+ el('photoUsageStatus').textContent='';
  accountRows=[];el('accountFilter').value='';applyAccountFilter();
  await signOut(auth);el('manageArea').hidden=true;el('loginArea').hidden=false;say('已安全登出。');
 });

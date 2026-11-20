@@ -1,0 +1,40 @@
+{
+  "photoCounts": {
+    ".read": true,
+    "$photo": {
+      ".write": "root.child('photoLibraryV2/catalog/' + $photo).exists() && newData.isNumber() && ((!data.exists() && newData.val() === 1) || (data.isNumber() && newData.val() === data.val() + 1))"
+    }
+  },
+  "usageCounts": {
+    ".read": "auth != null && root.child('members/' + auth.uid + '/active').val() === true && root.child('members/' + auth.uid + '/role').val() === 'admin'",
+    "$account": {
+      "$action": {
+        ".write": "$account.matches(/^[a-f0-9]{64}$/) && $action.matches(/^(openPhoto|pin|move|edit|deleteRequest|duplicateCleanup|createCategory|manageCategories|batchSelect|batchSelectAll|batchMove|batchDelete|upload|export|import|migrate|sync|search|filter)$/) && newData.isNumber() && ((!data.exists() && newData.val() === 1) || (data.isNumber() && newData.val() === data.val() + 1))"
+      }
+    }
+  },
+  "photoClickLog": {
+    ".read": "auth != null && root.child('members/' + auth.uid + '/active').val() === true && root.child('members/' + auth.uid + '/role').val() === 'admin'",
+    ".indexOn": [
+      "at"
+    ],
+    "$event": {
+      ".write": "!data.exists() && newData.hasChildren(['account', 'action', 'photoId', 'at'])",
+      "account": {
+        ".validate": "newData.isString() && newData.val().matches(/^[a-f0-9]{64}$/)"
+      },
+      "action": {
+        ".validate": "newData.val() === 'openPhoto'"
+      },
+      "photoId": {
+        ".validate": "newData.isString() && newData.val().matches(/^[A-Za-z0-9_-]{4,140}$/) && root.child('photoLibraryV2/catalog/' + newData.val()).exists()"
+      },
+      "at": {
+        ".validate": "newData.isNumber() && newData.val() === now"
+      },
+      "$other": {
+        ".validate": false
+      }
+    }
+  }
+}
