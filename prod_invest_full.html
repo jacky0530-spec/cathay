@@ -209,6 +209,7 @@
             font-weight: bold;
         }
     </style>
+<script type="module" src="hub-usage.mjs"></script>
 </head>
 <body>
 
@@ -242,7 +243,7 @@
         </div>
     </div>
 
-    <button type="button" class="calc-btn" id="calcBtn">更新試算結果</button>
+    <button data-usage-action="calculate" type="button" class="calc-btn" id="calcBtn">更新試算結果</button>
     <div class="source-note">匯率參考：國泰世華銀行即期賣出匯率</div>
 
     <div id="resultSection" class="result-section">

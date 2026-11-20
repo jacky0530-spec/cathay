@@ -217,6 +217,7 @@
             line-height: 1.5;
         }
     </style>
+<script type="module" src="hub-usage.mjs"></script>
 </head>
 <body>
 
@@ -264,7 +265,7 @@
             <input type="text" id="fyc" placeholder="輸入金額 (例如: 42000)" inputmode="numeric">
         </div>
 
-        <button class="btn" onclick="calculate()">計算獎金與潛力 ➔</button>
+        <button data-usage-action="calculate" class="btn" onclick="calculate()">計算獎金與潛力 ➔</button>
     </div>
 
     <div id="result-section" class="card" style="display:none;">

@@ -248,6 +248,7 @@
             .summary-label { margin-bottom: 5px; width: 100%; text-align: left;}
         }
     </style>
+<script type="module" src="hub-usage.mjs"></script>
 </head>
 <body>
 
@@ -280,7 +281,7 @@
         </div>
     </div>
 
-    <button class="btn-update" onclick="calculate()">更新試算結果</button>
+    <button data-usage-action="calculate" class="btn-update" onclick="calculate()">更新試算結果</button>
 
     <div class="ref-link">
         匯率參考：<a href="https://www.cathaybk.com.tw/cathaybk/personal/product/deposit/currency-billboard/" target="_blank">國泰世華銀行即期賣出匯率</a>

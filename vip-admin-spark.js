@@ -171,6 +171,31 @@ const photoUsageActions={
  batchMove:'批次移動',batchDelete:'批次刪除',upload:'新增照片',export:'匯出備份',
  import:'匯入備份',migrate:'搬移舊版照片',sync:'重新同步',search:'搜尋',filter:'切換資料區'
 };
+const hubUsagePages={
+ "prod_rider":"附約比較表",
+ "calc": "財務試算工具",
+ "calc_ah": "116年日本東北高峰會",
+ "calc_business": "業務員薪資試算器 Pro (UI優化版)",
+ "calc_combo": "勞保+國保 雙年金試算表",
+ "calc_labor": "勞保年金進階試算：提早退休與總額分析",
+ "calc_plan": "遺產稅規劃工具 (含估價提示版)",
+ "calc_retire": "退休儲蓄目標試算表 (萬元版)",
+ "prod_accident": "國泰人壽 - 傷害險全方位比較與試算 (更新XB費率)",
+ "prod_accident_history": "國泰人壽意外險歷代商品比較表",
+ "prod_bone": "新金骨力(XJ2) 精細骨骼試算",
+ "prod_cancer_protect": "國泰人壽防癌保障整合試算",
+ "prod_full_heart": "滿溢鍾心",
+ "prod_good_health": "國泰人壽 豪/好康愛 全方位保障試算",
+ "prod_invest_enjoy": "國泰人壽月月(享)溢 - 配息與費用試算",
+ "prod_invest_forever": "國泰人壽月月永溢 - 配息模擬試算",
+ "prod_invest_full": "國泰人壽月月滿溢 - 配息模擬試算",
+ "prod_invest_taifu": "國泰人壽月月泰富 - 撥回與費用試算",
+ "prod_lifetime_medical": "國泰好順心 (四主約-新配色版)",
+ "prod_overflow_love": "國泰人壽滿溢康愛防癌定期健康保險（外溢型）試算",
+ "prod_surgery": "國泰人壽手術險全系列進化比較表",
+ "products": "商品試算與保障工具"
+};
+const hubUsageActions={open:'開啟頁面',calculate:'執行試算',adjust:'調整條件',activate:'操作功能'};
 let photoUsage=null;
 function usageRow(body,values){
  const row=body.insertRow();
@@ -180,10 +205,18 @@ function renderPhotoUsage(){
  const filter=el('photoUsageAccount').value;
  const counts=el('photoUsageCounts'),log=el('photoUsageLog');
  counts.replaceChildren();log.replaceChildren();
+ const hubRows=el("hubUsageRows");hubRows.replaceChildren();
  if(!photoUsage)return;
- const {users,events,countsByUser,catalog}=photoUsage;
+ const {users,events,countsByUser,catalog,hubCounts}=photoUsage;
  for(const [account,name] of users){
   if(filter&&account!==filter)continue;
+  for(const [page,actions] of Object.entries(hubCounts[account]||{})){
+   if(!Object.hasOwn(hubUsagePages,page))continue;
+   const section=page.startsWith('prod')?'商品區':'試算區';
+   for(const [action,count] of Object.entries(actions)){
+    if(Object.hasOwn(hubUsageActions,action))usageRow(hubRows,[name,section,hubUsagePages[page],hubUsageActions[action],count]);
+   }
+  }
   for(const [action,count] of Object.entries(countsByUser[account]||{})){
    if(Object.hasOwn(photoUsageActions,action))usageRow(counts,[name,photoUsageActions[action],count]);
   }
@@ -194,7 +227,7 @@ function renderPhotoUsage(){
   usageRow(log,[new Date(event.at).toLocaleString('zh-TW',{timeZone:'Asia/Taipei'}),
    users.get(event.account),photo?.title||photo?.fileName||event.photoId]);
  }
- el('photoUsageStatus').textContent='顯示 '+counts.rows.length+' 筆功能統計、'+log.rows.length+' 筆照片點選紀錄。';
+ el('photoUsageStatus').textContent='顯示 '+counts.rows.length+' 筆功能統計、'+log.rows.length+' 筆照片點選紀錄、'+hubRows.rows.length+' 筆商品與試算統計。'+photoUsage.unavailable.join(' ');
 }
 el('photoUsageAccount').addEventListener('change',renderPhotoUsage);
 el('loadPhotoUsage').addEventListener('click',async()=>{
@@ -204,11 +237,14 @@ el('loadPhotoUsage').addEventListener('click',async()=>{
  el('photoUsageStatus').textContent='正在載入使用分析…';
  try{
   await checkAdmin();
-  const [counts,log,catalog,profiles]=await Promise.all([
-   readFirebaseRest(photoRoot+'/usageCounts'),
-   firebaseRest(photoRoot+'/photoClickLog','GET',undefined,{orderBy:'"at"',limitToLast:100}),
-   readFirebaseRest(photoRoot+'/catalog'),
-   readFirebaseRest('vipProfiles').catch(()=>({}))
+  const unavailable=[];
+  const optional=(promise,message)=>promise.catch(()=>{unavailable.push(message);return {};});
+  const [counts,log,catalog,profiles,hubCounts]=await Promise.all([
+   optional(readFirebaseRest(photoRoot+'/usageCounts'),'照片功能統計暫無法讀取。'),
+   optional(firebaseRest(photoRoot+'/photoClickLog','GET',undefined,{orderBy:'"at"',limitToLast:100}),'照片點選紀錄暫無法讀取。'),
+   optional(readFirebaseRest(photoRoot+'/catalog'),'照片名稱暫無法讀取。'),
+   readFirebaseRest('vipProfiles').catch(()=>({})),
+   optional(readFirebaseRest(photoRoot+'/hubUsageCounts'),'商品與試算區統計暫無法讀取。')
   ]);
   const labels=new Map(await Promise.all(Object.entries(profiles||{}).map(async([code,label])=>{
    const raw=new TextEncoder().encode('cathay-photos-v2:'+code.toUpperCase());
@@ -218,10 +254,10 @@ el('loadPhotoUsage').addEventListener('click',async()=>{
   })));
   if(auth.currentUser!==user)return;
   const events=Object.values(log||{}).sort((a,b)=>b.at-a.at);
-  const accounts=new Set([...Object.keys(counts||{}),...events.map(event=>event.account)]);
+  const accounts=new Set([...Object.keys(counts||{}),...Object.keys(hubCounts||{}),...events.map(event=>event.account)]);
   const users=new Map(Array.from(accounts,account=>[account,
    (labels.get(account)||'未命名帳號')+' · '+account.slice(0,8)]));
-  photoUsage={users,events,countsByUser:counts||{},catalog:catalog||{}};
+  photoUsage={users,events,countsByUser:counts||{},catalog:catalog||{},hubCounts:hubCounts||{},unavailable};
   const select=el('photoUsageAccount');
   const current=select.value;
   select.replaceChildren(new Option('全部使用者',''));

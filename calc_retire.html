@@ -177,6 +177,7 @@
         .dot { width: 10px; height: 10px; border-radius: 50%; }
 
     </style>
+<script type="module" src="hub-usage.mjs"></script>
 </head>
 <body>
 
@@ -229,7 +230,7 @@
         <small style="color:#888; font-size: 0.8em;">保守 3-5%，積極 6-8%</small>
     </div>
 
-    <button onclick="calculate()">開始試算</button>
+    <button data-usage-action="calculate" onclick="calculate()">開始試算</button>
 
     <div id="resultSection" class="result-section">
         <div class="result-title">為了達成目標，您每月需要存入</div>

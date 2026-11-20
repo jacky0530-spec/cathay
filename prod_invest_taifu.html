@@ -259,6 +259,7 @@
         .fund-type {font-size:12px;color:#607469;text-align:right;margin-top:4px;}
         @media (max-width: 520px) {body{padding:10px;} .container{padding:16px;}h1{font-size:23px;} .card{padding:15px;} .payout-section{padding:12px;} }
     </style>
+<script type="module" src="hub-usage.mjs"></script>
 </head>
 <body>
 <div class="container">
@@ -276,7 +277,7 @@
       </select></div>
     <div class="input-group"><label for="nav" id="navLabel">投資帳戶單位淨值（USD）</label><input id="nav" type="number" min="0.00001" step="0.01" value="10.3"></div>
   </div>
-  <button class="btn-update" onclick="calculate()">更新試算結果</button>
+  <button data-usage-action="calculate" class="btn-update" onclick="calculate()">更新試算結果</button>
   <div class="ref-link">匯率參考：<a href="https://www.cathaybk.com.tw/cathaybk/personal/product/deposit/currency-billboard/" target="_blank" rel="noopener noreferrer">國泰世華銀行即期賣出匯率</a>（本頁不自動更新）</div>
 
   <div class="details-grid">

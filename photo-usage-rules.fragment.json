@@ -36,5 +36,15 @@
         ".validate": false
       }
     }
+  },
+  "hubUsageCounts": {
+    ".read": "auth != null && root.child('members/' + auth.uid + '/active').val() === true && root.child('members/' + auth.uid + '/role').val() === 'admin'",
+    "$account": {
+      "$page": {
+        "$action": {
+          ".write": "$account.matches(/^[a-f0-9]{64}$/) && $page.matches(/^(prod_rider|calc|calc_ah|calc_business|calc_combo|calc_labor|calc_plan|calc_retire|prod_accident|prod_accident_history|prod_bone|prod_cancer_protect|prod_full_heart|prod_good_health|prod_invest_enjoy|prod_invest_forever|prod_invest_full|prod_invest_taifu|prod_lifetime_medical|prod_overflow_love|prod_surgery|products)$/) && $action.matches(/^(open|calculate|adjust|activate)$/) && newData.isNumber() && ((!data.exists() && newData.val() === 1) || (data.isNumber() && newData.val() === data.val() + 1))"
+        }
+      }
+    }
   }
 }

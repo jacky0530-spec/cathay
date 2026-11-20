@@ -76,6 +76,7 @@
         }
         @media(prefers-reduced-motion:reduce){.card-anim{animation:none}}
     </style>
+<script type="module" src="hub-usage.mjs"></script>
 </head>
 <body class="bg-slate-100 text-slate-800">
 
@@ -294,7 +295,7 @@
                                             tabIndex={0}
                                             aria-label={`選擇${bone.label}，完全骨折比例 ${bone.pct}%`}
                                             aria-pressed={Boolean(isSelected)}
-                                            onClick={() => toggleItem(bone)}
+                                            data-usage-action="activate" onClick={() => toggleItem(bone)}
                                             onKeyDown={(e) => {
                                                 if (e.key === 'Enter' || e.key === ' ') {
                                                     e.preventDefault();

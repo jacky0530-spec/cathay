@@ -133,6 +133,7 @@
             line-height: 1.6;
         }
     </style>
+<script type="module" src="hub-usage.mjs"></script>
 </head>
 <body>
 
@@ -176,7 +177,7 @@
         </div>
     </div>
 
-    <button class="btn" onclick="calculate()">開始合併試算</button>
+    <button data-usage-action="calculate" class="btn" onclick="calculate()">開始合併試算</button>
 
     <div id="resultArea">
         <table id="resultTable">

@@ -154,6 +154,7 @@
             border-radius: 6px;
         }
     </style>
+<script type="module" src="hub-usage.mjs"></script>
 </head>
 <body>
 
@@ -175,7 +176,7 @@
         </div>
     </div>
 
-    <button class="btn" onclick="calculateAll()">開始分析比較</button>
+    <button data-usage-action="calculate" class="btn" onclick="calculateAll()">開始分析比較</button>
 
     <div id="resultArea">
         <h3>📊 試算結果與未來模擬</h3>

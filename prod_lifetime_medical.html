@@ -95,6 +95,7 @@
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
+<script type="module" src="hub-usage.mjs"></script>
 </head>
 <body>
 
@@ -166,7 +167,7 @@
                 套用轉帳+外溢折扣 (約2%)
             </label>
         </div>
-        <button class="btn-calc" onclick="calculate()">更新試算結果</button>
+        <button data-usage-action="calculate" class="btn-calc" onclick="calculate()">更新試算結果</button>
     </div>
 
     <div id="result-area" style="display:none;">
