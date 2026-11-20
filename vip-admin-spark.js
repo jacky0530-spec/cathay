@@ -79,7 +79,7 @@ function reportError(error){
 // connection for admin verification and list loading. On some browsers the SDK
 // read can remain pending after Firebase Authentication succeeds.
 // Firebase officially accepts its ID token as the REST "auth" query parameter.
-async function readFirebaseRest(path){
+async function firebaseRest(path,method="GET",body){
  if(!auth.currentUser)throw new Error('login_required');
  const idToken=await auth.currentUser.getIdToken();
  const ctrl=new AbortController();
@@ -88,8 +88,9 @@ async function readFirebaseRest(path){
   const endpoint=new URL(config.databaseURL+'/'+path+'.json');
   endpoint.searchParams.set('auth',idToken);
   const response=await fetch(endpoint.toString(),{
-   method:'GET',cache:'no-store',referrerPolicy:'no-referrer',
-   headers:{Accept:'application/json'},signal:ctrl.signal
+   method,cache:'no-store',referrerPolicy:'no-referrer',
+   headers:{Accept:'application/json',...(body===undefined?{}:{'Content-Type':'application/json'})},
+   body:body===undefined?undefined:JSON.stringify(body),signal:ctrl.signal
   });
   if(!response.ok){
    if(response.status===401||response.status===403)throw new Error('member_access_denied');
@@ -102,12 +103,66 @@ async function readFirebaseRest(path){
   throw error;
  }finally{clearTimeout(timeout);}
 }
+const readFirebaseRest=path=>firebaseRest(path);
 async function checkAdmin(){
  const uid=auth.currentUser?.uid;
  if(!uid)throw new Error('login_required');
  const m=await readFirebaseRest('members/'+encodeURIComponent(uid));
  if(!m||m.active!==true||m.role!=='admin')throw new Error('not_admin');
 }
+const photoRoot='photoLibraryV2';
+const photoReviewStatus=message=>{el('photoReviewStatus').textContent=message;};
+async function loadPhotoReviews(){
+ const rows=el('photoReviewRows');
+ rows.replaceChildren();
+ photoReviewStatus('正在載入待審照片…');
+ await checkAdmin();
+ const requests=await readFirebaseRest(photoRoot+'/deleteRequests');
+ const pending=Object.entries(requests||{}).filter(([id,request])=>
+  /^[\w-]{4,140}$/.test(id)&&request?.status==='pending');
+ const catalog=pending.length?await readFirebaseRest(photoRoot+'/catalog'):{};
+ if(!auth.currentUser)return;
+ rows.replaceChildren();
+ for(const [id,request] of pending){
+  const photo=catalog?.[id];
+  const row=document.createElement('li');
+  const title=document.createElement('strong');
+  title.textContent=photo?.title||photo?.fileName||'照片 '+id;
+  row.append(title);
+  if(/^data:image\/(jpeg|png|gif|webp);base64,[A-Za-z0-9+/=]+$/.test(photo?.thumb||'')){
+   const image=document.createElement('img');
+   image.src=photo.thumb;image.alt='';image.width=140;image.loading='lazy';
+   row.append(document.createElement('br'),image,document.createElement('br'));
+  }
+  for(const [decision,label] of [['approved','核准刪除'],['rejected','駁回']]){
+   const button=document.createElement('button');
+   button.type='button';button.textContent=label;
+   button.addEventListener('click',async()=>{
+    if(!confirm(label+'「'+title.textContent+'」？'))return;
+    row.querySelectorAll('button').forEach(item=>{item.disabled=true;});
+    try{
+     await checkAdmin();
+     const patch={['deleteRequests/'+id]:{...request,status:decision,
+      reviewedBy:auth.currentUser.uid,reviewedAt:{'.sv':'timestamp'}}};
+     if(decision==='approved'){
+      patch['catalog/'+id]=null;
+      patch['images/'+id]=null;
+     }
+     await firebaseRest(photoRoot,'PATCH',patch);
+     await loadPhotoReviews();
+     photoReviewStatus(decision==='approved'?'已核准刪除。':'已駁回，照片仍保留。');
+    }catch(error){photoReviewStatus('請重新整理待審照片以確認結果。'+reportError(error));}
+   });
+   row.append(button);
+  }
+  rows.append(row);
+ }
+ photoReviewStatus(pending.length?'待審 '+pending.length+' 張照片。':'目前沒有待審照片。');
+}
+function refreshPhotoReviews(){
+ return loadPhotoReviews().catch(error=>photoReviewStatus(reportError(error)));
+}
+el('refreshPhotoReviews').addEventListener('click',refreshPhotoReviews);
 function clearIssued(){justCreated='';el('issuedValue').textContent='';el('issued').hidden=true;}
 let accountRows=[];
 function applyAccountFilter(){
@@ -284,6 +339,7 @@ el('loginForm').addEventListener('submit',async event=>{
   say('步驟 2／3：帳號驗證成功，正在確認管理員權限…');
   await withDeadline(checkAdmin(),15000,'membership');
   el('loginArea').hidden=true;el('manageArea').hidden=false;
+  void refreshPhotoReviews();
   say('步驟 3／3：管理員登入成功，正在載入 VIP 授權清單…');
   // The admin UI is usable even when the optional list read fails or stalls.
   void withDeadline(refresh(),15000,'list').then(

@@ -1,4 +1,4 @@
-/* Cathay photo library v2.6 | Shared Firebase RTDB gallery, separate per-user favorites.
+/* Cathay photo library v2.7 | Shared Firebase RTDB gallery, separate per-user favorites.
  * Static hosting + existing login code; RTDB permissions must be configured separately.
  * Large originals are retained in previous v1 local IndexedDB until manual migration.
  */
@@ -65,7 +65,7 @@
   const state={records:[],pins:{},accountKey:"",filter:"all",query:"",busy:false,
     viewIds:[],viewIndex:0,viewCache:new Map(),lastLoaded:0,refreshPromise:null,categoryError:null,
     categoryOrder:[],categoryRecords:{},categorySignature:"",editingCategoryId:null,movingPhotoId:null,
-    batchMode:false,selectedIds:new Set(),bulkMoveIds:null};
+    deleteRequests:{},batchMode:false,selectedIds:new Set(),bulkMoveIds:null};
   const isCat = x => Object.hasOwn(CATEGORIES,x);
   const limit = (s,n) => String(s||"").trim().slice(0,n);
   const safeDate = x => Number.isFinite(new Date(x).getTime()) ? new Date(x).toLocaleDateString("zh-TW") : "";
@@ -212,11 +212,13 @@
     if(state.refreshPromise) return state.refreshPromise;
     state.refreshPromise=(async()=>{
       let categoryError=null;
-      const [catalog,pins,customCategories]=await Promise.all([
+      const [catalog,pins,customCategories,deleteRequests]=await Promise.all([
         api("catalog"),
         api("pins/"+state.accountKey),
-        api("categories").catch(error=>{categoryError=error;return null;})
+        api("categories").catch(error=>{categoryError=error;return null;}),
+        api("deleteRequests").catch(()=>({}))
       ]);
+      state.deleteRequests=deleteRequests||{};
       mergeSharedCategories(customCategories);
       // Don't lose a photo if its custom category metadata is temporarily unavailable.
       for(const photo of Object.values(catalog||{})){
@@ -261,8 +263,9 @@
   function selectedRecords(){
     return state.records.filter(record=>state.selectedIds.has(record.id));
   }
+  const pendingDeletion=id=>state.deleteRequests[id]?.status==="pending";
   function eligibleForDelete(){
-    return selectedRecords().filter(photo=>photo.uploadedBy===state.accountKey);
+    return selectedRecords().filter(photo=>photo.uploadedBy===state.accountKey&&!pendingDeletion(photo.id));
   }
   function updateBatchUI(){
     const total=state.selectedIds.size;
@@ -273,7 +276,7 @@
     $("photoBatchToolbar").classList.toggle("is-active",state.batchMode);
     $("gallerySections").classList.toggle("photo-batch-active",state.batchMode);
     $("batchSelectedCount").textContent=state.batchMode
-      ? "已選 "+total+" 張"+(total>0?"（其中 "+allowed+" 張可刪除）":"")
+      ? "已選 "+total+" 張"+(total>0?"（其中 "+allowed+" 張可送審）":"")
       : "選取多張照片後可批次移動／刪除";
     $("batchSelectVisible").disabled=!state.batchMode||state.busy||state.records.length===0;
     $("batchClear").disabled=!state.batchMode||state.busy||total===0;
@@ -388,12 +391,15 @@
         // Content editing remains limited in UI to the uploader. Favorites are always personal.
         if(p.uploadedBy===state.accountKey){
           tools.append(button("編輯","",()=>openEditor(p.id)));
-          tools.append(button("刪除","danger",()=>deletePhoto(p.id)));
+          const remove=button("刪除","danger",()=>deletePhoto(p.id));
+          remove.disabled=pendingDeletion(p.id);
+          tools.append(remove);
         }
+        if(pendingDeletion(p.id))body.append(create("div","photo-card-meta","刪除待管理者審核"));
         card.append(thumb,body,tools);
         const copies=copiesByThumb.get(p.thumb)||[];
         if(copies.length>1){
-          const duplicatesOwned=copies.filter(item=>item.id!==p.id&&item.uploadedBy===state.accountKey);
+          const duplicatesOwned=copies.filter(item=>item.id!==p.id&&item.uploadedBy===state.accountKey&&!pendingDeletion(item.id));
           const duplicateNote=create("div","photo-card-duplicate");
           duplicateNote.append(create("span",null,"⚠ 相同影像有 "+copies.length+" 筆上傳紀錄；移動其中一筆不會刪掉另一筆。"));
           if(p.uploadedBy===state.accountKey&&duplicatesOwned.length>0){
@@ -488,35 +494,30 @@
       alert(committed?"批次移動成功，但請重新同步確認。":"批次移動失敗："+error.message);
     }finally{state.busy=false;updateBatchUI();}
   }
-  async function deleteSelectedPhotos(){
-    if(state.busy||!state.batchMode)return;
-    const selected=selectedRecords();
-    const eligible=eligibleForDelete();
-    if(!eligible.length){alert("您選取的照片沒有自己上傳的項目，因此無法批次刪除。");return;}
-    const notOwned=selected.length-eligible.length;
-    const label="確定永久刪除自己上傳的 "+eligible.length+" 張照片？\n\n所有使用者都會看不到這些共用圖片，刪除後無法復原。"+
-      (notOwned?"\n\n另有 "+notOwned+" 張是其他人上傳的照片，本次會跳過、不會刪除。":"");
-    if(!confirm(label))return;
+  async function requestPhotoDeletion(records, label){
+    if(state.busy||!records.length||!confirm(label+"\n\n照片會保留，直到管理者核准刪除。"))return;
     state.busy=true;updateBatchUI();
-    let committed=false;
+    const requests={};
+    for(const photo of records){
+      requests[photo.id]={status:"pending",requestId:key(),requestedAt:{".sv":"timestamp"},requestedBy:state.accountKey};
+    }
     try{
-      const updates={};
-      for(const photo of eligible){
-        updates["catalog/"+photo.id]=null;
-        updates["images/"+photo.id]=null;
-        updates["pins/"+state.accountKey+"/"+photo.id]=null;
-      }
-      // One atomic multi-location update: catalog and image deletion cannot partially commit.
-      await api("","PATCH",updates);
-      committed=true;
-      for(const photo of eligible){state.viewCache.delete(photo.id);state.selectedIds.delete(photo.id);}
+      await api("deleteRequests","PATCH",requests);
+      for(const photo of records)state.selectedIds.delete(photo.id);
       if(state.selectedIds.size===0)state.batchMode=false;
-      if($("photoViewer").open)$("photoViewer").close();
-      await refreshAfterMutation("已批次刪除 "+eligible.length+" 張共用照片"+(notOwned?"，另外 "+notOwned+" 張非本人上傳照片未刪除。":"。"));
+      Object.assign(state.deleteRequests,requests);
+      render();
+      await refreshAfterMutation("已送出 "+records.length+" 張照片的刪除申請，等待管理者審核。");
     }catch(error){
-      status(committed?"照片已刪除，但重新載入失敗："+error.message:"批次刪除失敗，照片未刪除："+error.message,true);
-      alert(committed?"刪除已完成，請按重新同步確認。":"批次刪除失敗："+error.message);
+      status("刪除申請同步未完成："+error.message+"。請重新同步確認。",true);
     }finally{state.busy=false;updateBatchUI();}
+  }
+  async function deleteSelectedPhotos(){
+    if(!state.batchMode)return;
+    const eligible=eligibleForDelete();
+    const skipped=selectedRecords().length-eligible.length;
+    await requestPhotoDeletion(eligible,"確定申請刪除 "+eligible.length+" 張照片？"+
+      (skipped?" 另外 "+skipped+" 張未列入申請。":""));
   }
   async function saveMovePhoto(event){
     event.preventDefault();
@@ -726,7 +727,7 @@
   }
   async function uploadOne({file,category,title,description,pinned,id}){
     const image=await prepareImage(file);
-    const uid=id||key();
+    const uid=id&&state.deleteRequests[id]?.status!=="approved"?id:key();
     const now=new Date().toISOString();
     const record={
       category,title:limit(title||file.name||"未命名照片",120),
@@ -734,10 +735,7 @@
       uploadedBy:state.accountKey,createdAt:now,updatedAt:now,thumb:image.thumb,
       size:file.size
     };
-    // Save large image first, then publish in catalog. Catalog entries only show completed uploads.
-    await api("images/"+uid,"PUT",{data:image.image});
-    try{await api("catalog/"+uid,"PUT",record);}
-    catch(err){await api("images/"+uid,"DELETE").catch(()=>{});throw err;}
+    await api("","PATCH",{["images/"+uid]:{data:image.image},["catalog/"+uid]:record});
     if(pinned)await api("pins/"+state.accountKey+"/"+uid,"PUT",Date.now());
     return uid;
   }
@@ -797,60 +795,14 @@
     if(state.busy)return;
     const keeper=state.records.find(p=>p.id===keepId);
     if(!keeper||keeper.uploadedBy!==state.accountKey)return;
-    const same=state.records.filter(p=>p.thumb===keeper.thumb);
-    const removable=same.filter(p=>p.id!==keepId&&p.uploadedBy===state.accountKey);
-    if(!removable.length){
-      alert("沒有其他可以刪除的本人上傳副本。");
-      return;
-    }
-    const locations=removable.map(p=>CATEGORIES[p.category]||p.category).join("、");
-    if(!confirm(
-      "要保留「"+(keeper.title||keeper.fileName||"這張照片")+"」（"+(CATEGORIES[keeper.category]||"目前專區")+"）並刪除另外 "+removable.length+" 筆完全相同的上傳紀錄嗎？"+
-      "\n\n將刪除的副本位於："+locations+
-      "\n\n這只會處理您自己上傳的重複圖片，不影響其他人上傳的副本；所有使用者都會看見刪除結果。"
-    ))return;
-    state.busy=true;updateBatchUI();
-    let committed=false;
-    try{
-      const patch={};
-      for(const record of removable){
-        patch["catalog/"+record.id]=null;
-        patch["images/"+record.id]=null;
-        patch["pins/"+state.accountKey+"/"+record.id]=null;
-      }
-      // If the old duplicate was a personal favorite, transfer its personal pin to the retained one.
-      if(!state.pins[keeper.id]&&removable.some(p=>Boolean(state.pins[p.id]))){
-        patch["pins/"+state.accountKey+"/"+keepId]=Date.now();
-      }
-      await api("","PATCH",patch);
-      committed=true;
-      for(const record of removable){
-        state.selectedIds.delete(record.id);
-        state.viewCache.delete(record.id);
-      }
-      if($("photoViewer").open)$("photoViewer").close();
-      await refreshAfterMutation("已保留「"+(CATEGORIES[keeper.category]||"目前專區")+"」的照片，清除 "+removable.length+" 筆重複上傳紀錄。");
-    }catch(err){
-      status(committed?"清理已成功，但重新載入失敗："+err.message:"重複照片清理失敗："+err.message,true);
-      alert(committed?"請重新同步確認重複照片清理結果。":"清理失敗："+err.message);
-    }finally{state.busy=false;updateBatchUI();}
+    const removable=state.records.filter(p=>p.thumb===keeper.thumb&&p.id!==keepId&&
+      p.uploadedBy===state.accountKey&&!pendingDeletion(p.id));
+    await requestPhotoDeletion(removable,"保留「"+(keeper.title||keeper.fileName||"這張照片")+"」，並申請刪除 "+removable.length+" 筆重複上傳紀錄？");
   }
   async function deletePhoto(id){
     const record=state.records.find(x=>x.id===id);
-    if(!record||record.uploadedBy!==state.accountKey||state.busy)return;
-    if(!confirm("確定刪除「"+(record.title||"這張照片")+"」？\n這是共用照片，刪除後所有使用者都看不到。"))return;
-    state.busy=true;
-    try{
-      await api("catalog/"+id,"DELETE");
-      await Promise.all([
-        api("images/"+id,"DELETE").catch(()=>{}),
-        api("pins/"+state.accountKey+"/"+id,"DELETE").catch(()=>{})
-      ]);
-      state.viewCache.delete(id);
-      if($("photoViewer").open)$("photoViewer").close();
-      await refreshAfterMutation("照片已從共用圖庫刪除。");
-    }catch(err){status("共用刪除失敗："+err.message,true);}
-    finally{state.busy=false;}
+    if(!record||record.uploadedBy!==state.accountKey||pendingDeletion(id))return;
+    await requestPhotoDeletion([record],"確定申請刪除「"+(record.title||"這張照片")+"」？");
   }
   async function showViewer(){
     const id=state.viewIds[state.viewIndex];
@@ -929,6 +881,7 @@
         const file=await dataURLtoFile(rec.data,limit(rec.fileName||"backup.jpg",200));
         const newId=await uploadOne({file,category:rec.category,title:rec.title,description:rec.description,pinned:!!rec.pinned,id:sourceId});
         existing.add(newId);
+        if(sourceId)existing.add(sourceId);
         saved++;status("正在匯入共用照片… "+saved+"/"+obj.photos.length);
       }
       await refreshAfterMutation("備份上傳完成："+saved+" 張；跳過 "+skipped+" 張。");
@@ -967,6 +920,7 @@
         const file=new File([rec.original],rec.fileName||"local-photo.jpg",{type:rec.original.type||"image/jpeg"});
         const newId=await uploadOne({file,category:rec.category,title:rec.title,description:rec.description,pinned:!!rec.pinned,id:sourceId});
         existing.add(newId);
+        existing.add(rec.id);
         n++;status("正在同步本機舊照片… "+n+"/"+local.length);
       }
       await refreshAfterMutation("成功搬移 "+n+" 張舊照片，略過 "+skipped+" 張已存在的照片；本機舊照片仍保留。");

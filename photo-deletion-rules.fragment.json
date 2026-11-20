@@ -1,0 +1,40 @@
+{
+  "catalog": {
+    "$id": {
+      ".write": "(newData.exists() && newData.hasChildren(['category', 'thumb', 'uploadedBy']) && ((data.exists() && newData.child('thumb').val() === data.child('thumb').val() && newData.child('uploadedBy').val() === data.child('uploadedBy').val()) || (!data.exists() && root.child('photoLibraryV2/deleteRequests/' + $id).child('status').val() !== 'approved'))) || (!newData.exists() && auth != null && root.child('members/' + auth.uid + '/active').val() === true && root.child('members/' + auth.uid + '/role').val() === 'admin' && root.child('photoLibraryV2/deleteRequests/' + $id).child('status').val() === 'pending' && newData.parent().parent().child('deleteRequests/' + $id).child('status').val() === 'approved' && newData.parent().parent().child('deleteRequests/' + $id).child('requestId').val() === root.child('photoLibraryV2/deleteRequests/' + $id).child('requestId').val())"
+    }
+  },
+  "images": {
+    "$id": {
+      ".write": "(!data.exists() && newData.child('data').isString() && root.child('photoLibraryV2/deleteRequests/' + $id).child('status').val() !== 'approved') || (!newData.exists() && auth != null && root.child('members/' + auth.uid + '/active').val() === true && root.child('members/' + auth.uid + '/role').val() === 'admin' && root.child('photoLibraryV2/deleteRequests/' + $id).child('status').val() === 'pending' && newData.parent().parent().child('deleteRequests/' + $id).child('status').val() === 'approved' && newData.parent().parent().child('deleteRequests/' + $id).child('requestId').val() === root.child('photoLibraryV2/deleteRequests/' + $id).child('requestId').val())"
+    }
+  },
+  "deleteRequests": {
+    ".read": true,
+    "$id": {
+      ".write": "(( !data.exists() || data.child('status').val() === 'rejected' ) && newData.child('status').val() === 'pending' && root.child('photoLibraryV2/catalog/' + $id).exists() && newData.child('requestedBy').val() === root.child('photoLibraryV2/catalog/' + $id).child('uploadedBy').val() && !newData.hasChild('reviewedAt') && !newData.hasChild('reviewedBy')) || (auth != null && root.child('members/' + auth.uid + '/active').val() === true && root.child('members/' + auth.uid + '/role').val() === 'admin' && data.child('status').val() === 'pending' && newData.child('requestId').val() === data.child('requestId').val() && newData.child('requestedAt').val() === data.child('requestedAt').val() && newData.child('requestedBy').val() === data.child('requestedBy').val() && newData.child('reviewedBy').val() === auth.uid && newData.child('reviewedAt').isNumber() && (newData.child('status').val() === 'rejected' || (newData.child('status').val() === 'approved' && !newData.parent().parent().child('catalog/' + $id).exists() && !newData.parent().parent().child('images/' + $id).exists())))",
+      ".validate": "newData.hasChildren(['requestId', 'status', 'requestedBy', 'requestedAt'])",
+      "requestId": {
+        ".validate": "newData.isString() && newData.val().length <= 140"
+      },
+      "status": {
+        ".validate": "newData.isString()"
+      },
+      "requestedBy": {
+        ".validate": "newData.isString() && newData.val().length === 64"
+      },
+      "requestedAt": {
+        ".validate": "newData.isNumber() && newData.val() <= now"
+      },
+      "reviewedBy": {
+        ".validate": "newData.isString()"
+      },
+      "reviewedAt": {
+        ".validate": "newData.isNumber() && newData.val() <= now"
+      },
+      "$other": {
+        ".validate": false
+      }
+    }
+  }
+}
