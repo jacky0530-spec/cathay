@@ -6,9 +6,9 @@
 <title>滿溢鍾心｜保費與先領後保障動態試算｜國泰雲端學習站</title>
 <link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="hub-ui.css">
-<link rel="stylesheet" href="prod_full_heart.css">
+<link rel="stylesheet" href="prod_full_heart.css?v=timeline">
 <script type="module" src="auth.js"></script>
-<script defer src="prod_full_heart.js"></script>
+<script defer src="prod_full_heart.js?v=timeline"></script>
 </head>
 <body class="hub-page">
 <main class="hub-shell heart-shell">
@@ -74,7 +74,7 @@
   </div>
  </section>
  <section class="heart-panel heart-cases" aria-labelledby="scenarioHeading">
-  <div class="heart-panel-title"><h2 id="scenarioHeading">④ 情境模擬｜保障怎麼走？</h2><span>情境互斥，不可把不同事故理賠重複加總</span></div>
+  <div class="heart-panel-title"><h2 id="scenarioHeading">④ 情境模擬｜理賠與給付時間軸</h2><span>情境互斥，不可把不同事故理賠重複加總</span></div>
   <div class="heart-scenario-fields">
    <div class="heart-field"><label for="heartScenario">選擇情境</label>
     <select id="heartScenario">
@@ -104,8 +104,8 @@
     <p id="heartStoryDescription">繳費期滿後十年先領 50%，持續有效至 90 歲再領 50%。</p>
    </div>
   </div>
-  <div class="heart-flow-cards" id="heartEventCards"></div>
-  <div class="heart-scenario-amount"><span id="heartScenarioAmountLabel">本情境生存給付示意合計</span><strong id="heartScenarioAmount">—</strong></div>
+  <ol class="heart-flow-cards" id="heartEventCards" role="list" aria-label="本情境的繳費與給付時間軸"></ol>
+  <div class="heart-scenario-amount" aria-live="polite"><span id="heartScenarioAmountLabel">本情境生存給付示意合計</span><strong id="heartScenarioAmount">—</strong></div>
   <p id="heartScenarioNote" class="heart-scenario-note">以上為生存且契約持續有效的教育示例，非報酬率或保證投資收益。</p>
  </section>
  <section class="heart-panel heart-terms" aria-labelledby="rulesHeading">

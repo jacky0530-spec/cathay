@@ -20,7 +20,7 @@
   const money=n=>Number.isFinite(n)?number(n)+" 元":"—";
   const typedInt=(id)=>Number($(id).value);
   const card=(step,title,value,desc,kind="")=>{
-    const el=document.createElement("div");
+    const el=document.createElement("li");
     el.className="heart-flow-item"+(kind?" is-"+kind:"");
     const top=document.createElement("span");top.className="heart-flow-step";top.textContent=step;
     const label=document.createElement("strong");label.textContent=title;
@@ -99,6 +99,7 @@
       set("heartRateStatus","輸入條件尚未成立，請修正紅色提示後再試算。");
       $("heartRateStatus").classList.add("warning");
       $("heartEventCards").replaceChildren();
+      set("heartScenarioNote","");
       return;
     }
     setError("");
@@ -151,8 +152,8 @@
       set("heartStoryDescription","先繳費、再等十年領第一階段滿期金，之後在保單持續有效且 90 歲仍生存時再領第二階段。");
       out.append(
         card("第 1～"+q.term+" 年","繳費期間","累計 "+money(q.total),"第 "+q.term+" 年末繳清，非領回日","done"),
-        card("第 "+q.earlyYear+" 年末","第一階段生存給付",money(q.first),"滿期紀錄期間屆滿仍生存、保單有效","payout"),
-        card("90 歲保單期滿","第二階段生存給付",money(q.last),"保險期間屆滿仍生存、契約有效","payout")
+        card("第 "+q.earlyYear+" 年末 · 約 "+q.earlyAge+" 歲","第一階段生存給付",money(q.first),"滿期紀錄期間屆滿仍生存、保單有效","payout"),
+        card("第 "+q.finalYear+" 年末 · 90 歲","第二階段生存給付",money(q.last),"保險期間屆滿仍生存、契約有效","payout")
       );
       sum=q.first+q.last;
       set("heartScenarioAmountLabel","本情境兩階段生存給付示意合計");
@@ -162,12 +163,16 @@
       const names={critical:"一般重大傷病",chronic:"慢性精神病重大傷病",specific:"四項特定心血管疾病",death:"身故／完全失能"};
       const icons={critical:"🏥",chronic:"🧠",specific:"❤️",death:"🛡️"};
       set("heartStoryIcon",icons[scenario]||"🏥");
-      set("heartStoryTag","情境 · 第 "+year+" 年（約 "+(q.age+year)+" 歲）");
+      set("heartStoryTag","事故給付情境");
       set("heartStoryTitle","如果遇到"+(names[scenario]||"保障事件"));
       let amount;
       try{amount=payout(q,scenario,year);}
       catch(err){
-        setError(err.message);out.replaceChildren();
+        setError(err.message);
+        $("heartBenefitBasis").hidden=true;
+        set("heartStoryDescription","請輸入第 1～"+q.finalYear+" 保單年度查看試算。");
+        set("heartScenarioAmountLabel","本情境給付試算");
+        set("heartScenarioNote","");
         set("heartScenarioAmount","—");
         return;
       }
@@ -186,18 +191,28 @@
       }else{
         set("heartStoryDescription","依您提供的契約定義，以事故／初次診斷日與原定繳費期滿日較早者計算應計年繳保費；第 1 年與第 2 年起的保障比較規則不同。");
       }
+      out.append(card(
+        "第 1～"+basis.years+" 年",
+        year<=q.term?"至事故年度應計保費":"原定繳費期間",
+        "累計 "+money(basis.sum),
+        "按年繳 "+money(q.annual)+" × "+basis.years+" 期試算",
+        "done"
+      ));
+      if(afterEarly){
+        out.append(card("第 "+q.earlyYear+" 年末 · 約 "+q.earlyAge+" 歲",
+          "第一階段生存給付",money(firstReceived),"假設當時仍生存且契約有效","payout"));
+      }
       out.append(
-        card("第 "+q.earlyYear+" 年末","是否先領生存金",afterEarly?money(q.first):"尚未領取",
-          afterEarly?"假設當時保單有效且仍生存，已完成第一階段給付":"事件發生在第一階段生存給付之前",""+(afterEarly?"payout":"disabled")),
-        card("第 "+year+" 年","本次事件理賠",amount===null?"需依條款":money(amount),
-          amount===null?"未滿 16 歲之給付規則不同，不適用成人試算。":
-          year===1?"第 1 年：年繳應繳保費總額 × 1.05":calcName,
-          "done"),
-        card("後續","契約效力", "依條款終止",
-          "此情境假設已符合一次性保險金申領條件；90 歲生存給付不再列入","disabled")
+        card("第 "+year+" 保單年度","本次"+names[scenario]+"給付",amount===null?"需依條款":money(amount),
+          amount===null?"未滿 16 歲的給付須依適用條款核算。":
+          year===1&&scenario!=="death"?"第 1 年按年繳應繳保費總額 × 1.05":calcName,
+          "payout"),
+        card("事故給付後","後續契約與生存給付","依條款辦理",
+          afterEarly?"本次試算截至事故給付，90 歲生存給付未列入。":
+          "事故在第一階段生存給付前，本次試算未計入兩階段生存給付。","disabled")
       );
       sum=amount===null?null:firstReceived+amount;
-      set("heartScenarioAmountLabel",amount===null?"本情境給付金額":"本情境已發生給付示意合計");
+      set("heartScenarioAmountLabel",afterEarly&&amount!==null?"本情境給付試算合計（先領生存金＋本次事故給付）":"本次事故給付試算");
       notes="本情境事故發生於第 "+year+" 保單年度，年繳應繳保險費總額按 "+basis.years+" 期 × "+money(q.annual)+" ＝ "+money(basis.sum)+" 計算，並以事故／診斷日與原定繳費期屆滿日較早者為準。年度模擬假設該年保費已到期，實際計算須按保單日期核對。第 "+q.earlyYear+" 年末先領生存金需符合生存及契約有效條件；事故給付與先領生存金能否合併、給付扣抵、未滿16歲及契約終止等，仍以條款為準。";
     }
     set("heartScenarioAmount",sum===null?"請依條款核算":money(sum));

@@ -57,10 +57,12 @@
 .heart-story-kicker{color:#168251;font-size:.76rem;font-weight:760}
 .heart-story-text h3{margin:3px 0 5px;font-size:1.1rem;color:#1c5137}
 .heart-story-text p{margin:0;color:#526d5d;font-size:.84rem;line-height:1.7}
-.heart-flow-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-.heart-flow-item{position:relative;display:flex;flex-direction:column;gap:5px;border:1px solid #d8e6dd;border-radius:14px;padding:16px 13px;background:#f9fcfa}
-.heart-flow-item:after{content:"➜";position:absolute;right:-14px;top:45%;z-index:1;color:#159358;background:#fff;border-radius:50%;padding:0 3px}
-.heart-flow-item:last-child:after{display:none}
+.heart-flow-cards{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:12px;list-style:none;margin:0;padding:20px 0 0}
+.heart-flow-item{position:relative;display:flex;flex-direction:column;gap:5px;border:1px solid #d8e6dd;border-radius:14px;padding:16px 13px;background:#f9fcfa;overflow-wrap:anywhere}
+.heart-flow-item::before{content:"";position:absolute;top:-21px;left:calc(50% - 6px);width:12px;height:12px;border-radius:50%;background:#198256;z-index:1}
+.heart-flow-item::after{content:"";position:absolute;top:-16px;left:50%;width:calc(100% + 14px);height:2px;background:#93c5ab}
+.heart-flow-item:last-child::after{display:none}
+.heart-scenario-fields>[hidden]{display:none}
 .heart-flow-item>.heart-flow-step{font-size:.73rem;font-weight:760;color:#2d7b54}
 .heart-flow-item strong{font-size:.98rem;color:#28533a}
 .heart-flow-item b{font-size:1.25rem;color:#0b794b;line-height:1.4}
@@ -69,7 +71,8 @@
 .heart-flow-item.is-payout b{color:#c84a46}
 .heart-flow-item.is-done{background:#eef6ff;border-color:#d7e7f7}
 .heart-flow-item.is-done b{color:#186dac}
-.heart-flow-item.is-disabled{opacity:.53;background:#f6f7f6}
+.heart-flow-item.is-disabled{background:#f6f7f6}
+.heart-flow-item.is-disabled::before{background:#788b80}
 .heart-scenario-amount{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:18px;padding:16px 18px;background:#0b754b;color:#fff;border-radius:14px}
 .heart-scenario-amount span{font-size:.88rem}
 .heart-scenario-amount strong{font-size:clamp(1.4rem,2.3vw,2rem);font-variant-numeric:tabular-nums}
@@ -98,8 +101,9 @@
  .heart-periods{grid-template-columns:1fr;gap:8px;margin-top:18px}
  .heart-period{padding:11px 12px}
  .heart-scenario-fields{grid-template-columns:1fr;gap:3px}
- .heart-flow-cards{grid-template-columns:1fr}
- .heart-flow-item:after{content:"↓";right:auto;left:calc(50% - 12px);top:auto;bottom:-15px}
+ .heart-flow-cards{grid-auto-flow:row;grid-template-columns:1fr;padding:0 0 0 24px}
+ .heart-flow-item::before{left:-22px;top:23px}
+ .heart-flow-item::after{left:-17px;top:29px;width:2px;height:calc(100% + 14px)}
  .heart-story{padding:12px;gap:10px}
  .heart-story-illustration{width:62px;height:62px;flex-basis:62px;font-size:1.95rem}
  .heart-terms-grid{grid-template-columns:1fr}
