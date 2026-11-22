@@ -16,35 +16,33 @@ function actionFor(event){
 if(account&&session&&/^(products|prod_[a-z_]+|calc(?:_[a-z_]+)?)$/.test(page)){
  const accountKey=crypto.subtle.digest('SHA-256',new TextEncoder().encode('cathay-photos-v2:'+account.toUpperCase()))
   .then(digest=>Array.from(new Uint8Array(digest),byte=>byte.toString(16).padStart(2,'0')).join(''));
- async function count(action){
+ function eventKey(){
+  return typeof crypto.randomUUID==='function'
+   ? crypto.randomUUID()
+   : 'hub-'+Date.now()+'-'+Math.random().toString(36).slice(2);
+ }
+ async function track(action){
   try{
    const key=await accountKey;
-   const response=await fetch(database+'/photoLibraryV2/hubUsageCounts/'+key+'/'+page+'/'+action+'.json',{
-    method:'PUT',headers:{'Content-Type':'application/json'},keepalive:true,
-    body:JSON.stringify({'.sv':{increment:1}})
+   const eventId=eventKey();
+   const updates={
+    ['hubUsageCounts/'+key+'/'+page+'/'+action]:{'.sv':{increment:1}},
+    ['hubUsageLog/'+eventId]:{account:key,page,action,at:{'.sv':'timestamp'}}
+   };
+   const response=await fetch(database+'/photoLibraryV2.json',{
+    method:'PATCH',headers:{'Content-Type':'application/json'},keepalive:true,
+    body:JSON.stringify(updates)
    });
    if(!response.ok)throw new Error('HTTP '+response.status);
-  }catch(error){console.warn('使用統計同步失敗',error.message);}
+  }catch(error){console.warn('網站使用紀錄同步失敗',error.message);}
  }
- async function log(action){
-  try{
-   const key=await accountKey;
-   const eventId=crypto.randomUUID();
-   const response=await fetch(database+'/photoLibraryV2/hubUsageLog/'+eventId+'.json',{
-    method:'PUT',headers:{'Content-Type':'application/json'},keepalive:true,
-    body:JSON.stringify({account:key,page,action,at:{'.sv':'timestamp'}})
-   });
-   if(!response.ok)throw new Error('HTTP '+response.status);
-  }catch(error){console.warn('操作紀錄同步失敗',error.message);}
- }
- function track(action){void count(action);void log(action);}
- track('open');
+ void track('open');
  if(page!=='products'&&page!=='calc'){
   for(const type of ['click','change']){
    document.addEventListener(type,event=>{
     if(!event.isTrusted||!(event.target instanceof Element)||event.target.closest('header,nav,footer'))return;
     const action=actionFor(event);
-    if(action)track(action);
+    if(action)void track(action);
    },true);
   }
  }
