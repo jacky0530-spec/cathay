@@ -45,35 +45,31 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .card-anim { animation: fadeIn 0.3s ease-out forwards; }
 
-        /* XJ2 v1.1：手機上下排列；平板及電腦骨骼圖在左、理賠清單在右 */
-        .xj2-app{min-height:100dvh;width:100%;overflow:visible}
-        .xj2-main{width:100%;min-width:0}
-        .xj2-workspace{width:min(100%,1320px);margin:0 auto;padding:20px 18px 145px;display:grid;grid-template-columns:minmax(0,1fr);gap:20px;align-items:start}
-        .xj2-anatomy-pane{position:relative;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start}
-        .xj2-results-pane{min-width:0;width:100%;display:flex;flex-direction:column;gap:14px}
-        .xj2-result-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
-        .xj2-results-list{min-width:0;width:100%}
-        .xj2-results-list>div{min-width:0}
-        .xj2-reset{position:fixed;left:0;right:0;bottom:calc(80px + env(safe-area-inset-bottom));display:flex;justify-content:center;z-index:30;pointer-events:none}
-        @media(min-width:768px){
-          .xj2-workspace{grid-template-columns:minmax(305px,.8fr) minmax(0,1.2fr);gap:24px}
-          .xj2-anatomy-pane{position:sticky;top:18px;background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:18px 12px;box-shadow:0 5px 18px rgba(15,23,42,.05)}
-          .xj2-reset{bottom:105px}
-        }
-        @media(min-width:1024px){
-          .xj2-workspace{grid-template-columns:minmax(340px,.83fr) minmax(0,1.35fr);gap:28px}
-          .xj2-anatomy-pane{top:105px}
-          .xj2-reset{bottom:20px}
-        }
-        @media(min-width:1200px){
-          .xj2-results-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
-          .xj2-results-list>div{height:100%}
-          .xj2-results-list>:not([hidden])~:not([hidden]){margin-top:0}
-        }
-        @media(max-width:767px){
-          .xj2-workspace{padding:16px 13px 145px;gap:13px}
-          .xj2-results-pane{max-width:480px;margin-inline:auto}
-        }
+        .xj2-app { min-height:100vh; background:#f2f6f3; color:#203e32; padding:22px clamp(12px,3vw,36px) 36px; }
+        .xj2-header,.xj2-workspace { max-width:1160px; margin:auto; }
+        .xj2-back { color:#35674f; font-size:.88rem; }
+        .xj2-banner { margin:12px 0 18px; padding:18px clamp(16px,3vw,32px); border-radius:18px; background:#144e3b; color:white; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+        .xj2-banner h1 { font-size:clamp(1.45rem,3vw,2.15rem); font-weight:750; line-height:1.3; }
+        .xj2-banner label { display:block; color:#d9ede2; font-size:.85rem; margin-bottom:4px; }
+        .amount-input { display:flex; align-items:center; gap:8px; }
+        .amount-input input { width:10ch; min-height:44px; padding:5px 10px; border-radius:8px; color:#183e2c; background:white; font-size:1.2rem; font-weight:700; }
+        .xj2-workspace { display:grid; grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr); gap:18px; align-items:start; }
+        .xj2-anatomy-pane,.xj2-results-pane { min-width:0; background:white; border:1px solid #d3e1d8; border-radius:16px; padding:clamp(12px,2vw,22px); }
+        .xj2-anatomy-pane { position:sticky; top:12px; }
+        .xj2-anatomy-pane h2,.xj2-result-heading h2 { font-size:1.15rem; font-weight:750; }
+        .legend,.xj2-result-heading { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+        .legend { margin:4px 0 10px; color:#566b60; font-size:.82rem; }
+        .xj2-result-heading { margin-bottom:14px; }
+        .xj2-clear { margin-left:auto; color:#77534a; font-size:.85rem; min-height:44px; padding:4px 8px; }
+        .claim-card { border:1px solid #d9e5de; border-radius:12px; overflow:hidden; }
+        .claim-values { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); text-align:center; padding:10px 4px; }
+        .claim-values > div { min-width:0; padding:2px; }
+        .claim-values > div + div { border-left:1px solid #e0e9e4; }
+        .claim-values strong { display:block; font-size:clamp(.92rem,2vw,1.28rem); color:#155a40; overflow-wrap:anywhere; font-variant-numeric:tabular-nums; }
+        .claim-values small { color:#51655a; }
+        .xj2-note { font-size:.82rem; color:#536a5d; margin-top:14px; }
+        @media(min-width:1024px) { .xj2-anatomy-pane { top:90px; } }
+        @media(max-width:767px) { .xj2-workspace { grid-template-columns:1fr; gap:12px; } .xj2-anatomy-pane { position:static; } }
         @media(prefers-reduced-motion:reduce){.card-anim{animation:none}}
     </style>
 <script type="module" src="hub-usage.mjs"></script>
@@ -253,21 +249,21 @@
         const formatCurrency = (val) => new Intl.NumberFormat('zh-TW').format(Math.round(val));
 
         return (
-            <div className="xj2-app flex flex-col bg-slate-50">
-                {/* Header */}
-                <div className="bg-white shadow-sm p-3 z-10 text-center">
-                    <h1 className="text-lg font-bold text-teal-700">新金骨力(XJ2) 精細試算</h1>
-                    <div className="mt-2 flex justify-center items-center text-sm">
-                        <span className="text-gray-500 mr-2">保額:</span>
-                        <input 
-                            type="number" 
-                            value={insuranceAmount}
-                            onChange={(e) => setInsuranceAmount(Number(e.target.value))}
-                            className="w-24 text-center font-bold text-lg border-b border-teal-500 outline-none bg-transparent"
-                        />
-                        <span className="text-gray-500 ml-1">元</span>
+            <div className="xj2-app">
+                <header className="xj2-header">
+                    <a className="xj2-back" href="products.html">‹ 返回商品區</a>
+                    <div className="xj2-banner">
+                        <h1>新金骨力（XJ2）精細試算</h1>
+                        <div>
+                            <label htmlFor="insuranceAmount">投保金額</label>
+                            <div className="amount-input">
+                                <input id="insuranceAmount" type="number" value={insuranceAmount}
+                                    onChange={(e) => setInsuranceAmount(Number(e.target.value))} />
+                                <span>元</span>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                </header>
 
                 {/* Main Content */}
                 <main className="xj2-main flex-1 relative">
@@ -275,10 +271,11 @@
                         
                         {/* 骨骼圖互動區 */}
                         <section className="xj2-anatomy-pane" aria-label="互動人體骨骼圖">
-                            <div className="absolute top-0 right-0 bg-white/80 p-2 rounded text-xs text-gray-400 shadow backdrop-blur-sm pointer-events-none">
+                            <h2>選擇骨折部位</h2>
+                            <div className="legend">
                                 <div><span className="inline-block w-2 h-2 bg-green-400 rounded-full mr-1"></span>頭部</div>
                                 <div><span className="inline-block w-2 h-2 bg-red-400 rounded-full mr-1"></span>軀幹</div>
-                                <div><span className="inline-block w-2 h-2 bg-blue-400 rounded-full mr-1"></span>四肢</div>
+                                <div><span className="inline-block w-2 h-2 bg-blue-400 rounded-full mr-1"></span>骨盆與四肢</div>
                             </div>
                             <svg viewBox="0 0 260 540" className="xj2-skeleton-svg touch-none select-none" aria-label="可點選各骨骼部位的正面骨架示意圖">
                                 <title>新金骨力 XJ2 骨骼部位選擇</title>
@@ -318,6 +315,7 @@
                             <div className="xj2-result-heading">
                                 <h2 className="font-bold text-teal-800 text-lg">已選理賠項目</h2>
                                 <span className="text-xs text-slate-500">{selectedItems.length} 個部位</span>
+                                {selectedItems.length > 0 && <button className="xj2-clear" onClick={() => setSelectedItems([])}>清除全部</button>}
                             </div>
                             <div className="xj2-results-list space-y-3" ref={resultListRef}>
                             {selectedItems.length === 0 ? (
@@ -326,7 +324,7 @@
                                 </div>
                             ) : (
                                 selectedItems.map((item) => (
-                                    <div key={item.id} className="card-anim bg-white rounded-xl shadow border border-slate-100 overflow-hidden">
+                                    <div key={item.id} className="card-anim claim-card">
                                         <div className={`px-4 py-2 flex justify-between items-center ${
                                             item.type === 'green' ? 'bg-green-50 text-green-800' :
                                             item.type === 'red' ? 'bg-red-50 text-red-800' : 'bg-blue-50 text-blue-800'
@@ -335,37 +333,13 @@
                                                 <span className="font-bold text-lg">{item.label}</span>
                                                 <span className="text-xs ml-2 opacity-75">{item.note}</span>
                                             </div>
-                                            <button onClick={() => toggleItem(item)} className="text-xl font-bold opacity-50 hover:opacity-100">×</button>
+                                            <button aria-label={`移除${item.label}`} onClick={() => toggleItem(item)} className="min-w-11 min-h-11 text-xl font-bold">×</button>
                                         </div>
                                         
-                                        <div className="p-3 grid grid-cols-3 gap-2 text-center text-sm">
-                                            <div className="bg-slate-50 p-2 rounded">
-                                                <div className="text-xs text-gray-400 mb-1">完全骨折</div>
-                                                <div className="font-bold text-slate-700 text-lg">
-                                                    {item.pct}%
-                                                </div>
-                                                <div className="text-teal-600 font-bold text-xs mt-1">
-                                                    ${formatCurrency(insuranceAmount * item.pct / 100)}
-                                                </div>
-                                            </div>
-                                            <div className="bg-slate-50 p-2 rounded">
-                                                <div className="text-xs text-gray-400 mb-1">不完全(1/2)</div>
-                                                <div className="font-bold text-slate-700">
-                                                    {item.pct / 2}%
-                                                </div>
-                                                <div className="text-teal-600 font-bold text-xs mt-1">
-                                                    ${formatCurrency(insuranceAmount * item.pct / 100 / 2)}
-                                                </div>
-                                            </div>
-                                            <div className="bg-slate-50 p-2 rounded">
-                                                <div className="text-xs text-gray-400 mb-1">龜裂(1/4)</div>
-                                                <div className="font-bold text-slate-700">
-                                                    {item.pct / 4}%
-                                                </div>
-                                                <div className="text-teal-600 font-bold text-xs mt-1">
-                                                    ${formatCurrency(insuranceAmount * item.pct / 100 / 4)}
-                                                </div>
-                                            </div>
+                                        <div className="claim-values">
+                                            <div>完全骨折<strong>${formatCurrency(insuranceAmount * item.pct / 100)}</strong><small>{item.pct}%</small></div>
+                                            <div>不完全骨折<strong>${formatCurrency(insuranceAmount * item.pct / 100 / 2)}</strong><small>{item.pct / 2}%</small></div>
+                                            <div>龜裂<strong>${formatCurrency(insuranceAmount * item.pct / 100 / 4)}</strong><small>{item.pct / 4}%</small></div>
                                         </div>
                                     </div>
                                 ))
@@ -374,7 +348,7 @@
 
                             {/* 警語區塊 */}
                             <div className="w-full text-center mt-4">
-                                <p className="text-red-500 font-bold text-sm bg-red-50 border border-red-200 rounded p-2">
+                                <p className="xj2-note">
                                     ※ 本試算畫面僅供內部教育訓練，實際理賠數值 請按照保單條款為準。
                                 </p>
                             </div>
@@ -382,20 +356,6 @@
                     </div>
                 </main>
 
-                {/* 底部重置按鈕 */}
-                {selectedItems.length > 0 && (
-                    <div className="xj2-reset">
-                        <button 
-                            onClick={() => setSelectedItems([])}
-                            className="pointer-events-auto bg-slate-800 text-white px-6 py-3 rounded-full shadow-lg font-bold hover:bg-slate-700 active:scale-95 transition-all flex items-center gap-2"
-                        >
-                            <span>清除全部</span>
-                            <span className="bg-white text-slate-800 rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                                {selectedItems.length}
-                            </span>
-                        </button>
-                    </div>
-                )}
             </div>
         );
     }
