@@ -7,9 +7,9 @@
 <title>共用照片資料專區｜國泰雲端學習站</title>
 <link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="hub-ui.css">
-<link rel="stylesheet" href="photos.css">
+<link rel="stylesheet" href="photos.css?v=compact-gallery">
 <script type="module" src="auth.js"></script>
-<script defer src="photos.js?v=20261120-usage"></script>
+<script defer src="photos.js?v=20261122-compact-gallery"></script>
 </head>
 <body class="hub-page">
 <main class="hub-shell photo-shell">
@@ -20,30 +20,24 @@
   </div>
   <a class="hub-logout" href="index.html" style="display:inline-flex;align-items:center;text-decoration:none">⌂ 返回首頁</a>
  </header>
- <section class="hub-hero hub-hero--small" aria-labelledby="gallery-title">
-  <div class="hub-kicker">PHOTO RESOURCE LIBRARY</div>
-  <h1 id="gallery-title">共用照片資料庫</h1>
-  <p>所有使用者共享新聞剪報、癌症議題、醫療收據與老化議題照片，也能自行新增資料區；每個人可獨立設定最愛置頂。</p>
- </section>
+ <h1 id="gallery-title" class="gallery-heading">共用照片資料庫</h1>
  <div id="galleryStatus" class="photo-status" role="status" aria-live="polite">正在檢查 Firebase 共用照片庫連線…</div>
  <div class="photo-banner">
-  <div><strong>📷 團隊共用照片庫</strong><p>所有人看同一份圖片；每位使用者的「★ 我的置頂」只改變自己的顯示順序。</p></div>
   <div class="photo-actions">
    <button id="addPhoto" class="photo-btn primary" type="button">＋ 上傳共用照片</button>
-   <button id="createCategory" class="photo-btn" type="button">＋ 新增資料區</button>
+   <input id="backupInput" type="file" accept=".json,application/json" hidden>
+  </div>
+ </div>
+ <details class="gallery-guide"><summary>照片工具與使用說明</summary>
+  <p>照片與分類由團隊共享，置頂依授權碼儲存。刪除申請由管理者審核。</p>
+  <div class="photo-actions">   <button id="createCategory" class="photo-btn" type="button">＋ 新增資料區</button>
    <button id="manageCategories" class="photo-btn" type="button">↕ 專區改名／排序</button>
    <button id="reloadPhotos" class="photo-btn" type="button">↻ 檢查連線／重新同步</button>
    <button id="migrateLocal" class="photo-btn" type="button">⇧ 搬移舊版照片</button>
    <button id="exportPhotos" class="photo-btn" type="button">↓ 匯出備份</button>
    <button id="importPhotos" class="photo-btn" type="button">↑ 匯入備份</button>
-   <input id="backupInput" type="file" accept=".json,application/json" hidden>
-  </div>
- </div>
- <div class="photo-note">
-  <strong>共用方式：</strong>所有使用者讀取同一份 Firebase Realtime Database 照片清單；上傳、移動、編輯或刪除共用圖片，以及改名、新增和調整專區順序，都會同步給所有使用者；只有「★ 我的置頂」是各自獨立。<strong>使用相同授權碼登入的人，會共用同一組置頂偏好。</strong><br>
-  <strong>首次啟用：</strong>共用圖庫必須先開通 Firebase 對應資料路徑的存取權限；若看到「權限不足」，表示後端尚未完成設定，照片不會假裝已同步。舊版瀏覽器照片可透過「搬移舊版照片」手動上傳。
- </div>
-
+</div>
+ </details>
  <details class="photo-connection-help" id="photoConnectionHelp" hidden>
   <summary>共用照片無法連線？查看排除方式</summary>
   <div class="photo-help-inner">
@@ -60,7 +54,7 @@
   <button id="batchMove" class="photo-btn primary" type="button" disabled>📂 批次移動</button>
   <button id="batchDelete" class="photo-btn danger" type="button" disabled>🗑 批次刪除</button>
  </div>
- <p class="photo-display-hint">圖片縮圖現在會完整顯示，不再裁掉左右文字。若同一圖片原本被上傳兩次，系統會標示「相同影像有多筆上傳紀錄」，可選擇要保留的那一張，再確認清理重複；一般「移動」只更改分類、不新增副本。</p>
+
  <div class="photo-controls">
   <div class="photo-tabs" role="group" aria-label="照片分類篩選">
    <button type="button" class="photo-tab" data-filter="all" aria-pressed="true">全部 <small id="count-all">0</small></button>

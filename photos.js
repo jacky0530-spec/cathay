@@ -423,12 +423,19 @@
         selectLabel.append(selectBox);thumb.append(selectLabel);
         if(pinned)thumb.append(create("span","photo-pin-flag","★ 我的最愛"));
         const body=create("div","photo-card-body");
-        body.append(create("h3","photo-card-title",p.title||p.fileName||"未命名照片"));
-        if(p.description)body.append(create("div","photo-card-note",p.description));
-        body.append(create("div","photo-card-meta",safeDate(p.createdAt)));
-        const count=create("div","photo-card-meta",countText(p.id));
+        const title=create("h3","photo-card-title",p.title||p.fileName||"未命名照片");
+        title.title=title.textContent;
+        body.append(title);
+        if(p.description){
+          const note=create("div","photo-card-note",p.description);
+          note.title=p.description;
+          body.append(note);
+        }
+        const meta=create("div","photo-card-meta");
+        const count=create("span",null,countText(p.id));
         count.dataset.photoClickCount=p.id;
-        body.append(count);
+        meta.append(create("span",null,safeDate(p.createdAt)),count);
+        body.append(meta);
         const tools=create("div","photo-card-actions");
         tools.append(button(pinned?"★ 取消置頂":"☆ 我的置頂",pinned?"pin-on":"",()=>togglePin(p.id),"pin"));
         tools.append(button("📂 移動","",()=>openMovePhoto(p.id),"move"));
