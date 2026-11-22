@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cathay-app-v62-hub-usage-network';
+const CACHE_NAME = 'cathay-app-v63-auth-tracker';
 const urlsToCache = [
   './',
   'index.html',
@@ -54,7 +54,7 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
-  if (url.origin === self.location.origin && url.pathname.endsWith('/hub-usage.mjs')) {
+  if (url.origin === self.location.origin && (url.pathname.endsWith('/hub-usage.mjs') || url.pathname.endsWith('/auth.js'))) {
     event.respondWith(fetch(event.request).then(response => {
       if (response.ok) {
         const copy = response.clone();
