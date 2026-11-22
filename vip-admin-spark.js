@@ -216,11 +216,11 @@ function usageRow(body,values){
 }
 function renderPhotoUsage(){
  const filter=el('photoUsageAccount').value;
- const counts=el('photoUsageCounts'),log=el('photoUsageLog');
- counts.replaceChildren();log.replaceChildren();
+ const counts=el('photoUsageCounts'),log=el('photoUsageLog'),hubLog=el('hubUsageLog');
+ counts.replaceChildren();log.replaceChildren();hubLog.replaceChildren();
  const hubRows=el("hubUsageRows");hubRows.replaceChildren();
  if(!photoUsage)return;
- const {users,events,countsByUser,catalog,hubCounts}=photoUsage;
+ const {users,events=[],hubEvents=[],countsByUser={},catalog={},hubCounts={}}=photoUsage;
  for(const [account,name] of users){
   if(filter&&account!==filter)continue;
   for(const [page,actions] of Object.entries(hubCounts[account]||{})){
