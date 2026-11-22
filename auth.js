@@ -63,73 +63,164 @@ document.addEventListener("DOMContentLoaded", async function() {
     }
 });
 
+function ensureLoginStyles() {
+    if (document.getElementById('auth-login-theme')) return;
+    const style = document.createElement('style');
+    style.id = 'auth-login-theme';
+    style.textContent = `
+.auth-login-screen{position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(145deg,#eef8f2 0%,#f8fbf9 48%,#eef4f0 100%);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft JhengHei",sans-serif;color:#17392a}
+.auth-login-card{width:min(100%,430px);background:#fff;border:1px solid #dce9e1;border-radius:24px;box-shadow:0 22px 60px rgba(14,74,44,.15);padding:30px}
+.auth-login-brand{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+.auth-login-icon{display:grid;place-items:center;width:48px;height:48px;border-radius:15px;background:#e8f7ed;font-size:23px}
+.auth-login-title{font-size:22px;font-weight:800;letter-spacing:.02em;color:#0b7044}
+.auth-login-subtitle{font-size:13px;color:#718078;margin-top:3px}
+.auth-login-heading{font-size:18px;font-weight:750;margin:0 0 8px}
+.auth-login-help{font-size:14px;line-height:1.65;color:#65756c;margin:0 0 20px}
+.auth-login-label{display:block;font-size:13px;font-weight:700;margin:0 0 7px}
+.auth-login-field{position:relative}
+.auth-login-input{box-sizing:border-box;width:100%;height:52px;border:1.5px solid #cbdcd2;border-radius:13px;background:#fff;padding:0 48px 0 15px;font-size:17px;color:#17392a;outline:none;transition:border-color .18s,box-shadow .18s}
+.auth-login-input:focus{border-color:#15945d;box-shadow:0 0 0 4px rgba(21,148,93,.12)}
+.auth-login-toggle{position:absolute;right:7px;top:7px;width:39px;height:38px;border:0;border-radius:9px;background:transparent;color:#65756c;font-size:17px;cursor:pointer}
+.auth-login-status{min-height:23px;margin-top:9px;font-size:13px;line-height:1.5;color:#bf3b35}
+.auth-login-status.is-ok{color:#087b48}
+.auth-login-button{width:100%;height:50px;border:0;border-radius:13px;background:#0b7a49;color:#fff;font-size:16px;font-weight:750;cursor:pointer;margin-top:8px;box-shadow:0 8px 20px rgba(11,122,73,.18)}
+.auth-login-button:disabled{opacity:.58;cursor:wait}
+.auth-login-note{margin:15px 0 0;text-align:center;color:#89958f;font-size:12px}
+@media(max-width:520px){.auth-login-screen{padding:16px}.auth-login-card{padding:24px 20px;border-radius:20px}}
+@media(prefers-reduced-motion:reduce){.auth-login-input{transition:none}}
+`;
+    document.head.appendChild(style);
+}
+
+function renderLoginScreen() {
+    ensureLoginStyles();
+    let screen = document.getElementById('auth-login-screen');
+    if (screen) return screen;
+
+    screen = document.createElement('div');
+    screen.id = 'auth-login-screen';
+    screen.className = 'auth-login-screen';
+    screen.setAttribute('role', 'dialog');
+    screen.setAttribute('aria-modal', 'true');
+    screen.setAttribute('aria-labelledby', 'auth-login-heading');
+    screen.innerHTML = `
+      <form class="auth-login-card" id="auth-login-form" novalidate>
+        <div class="auth-login-brand">
+          <div class="auth-login-icon" aria-hidden="true">🔐</div>
+          <div>
+            <div class="auth-login-title">安全管制</div>
+            <div class="auth-login-subtitle">國泰雲端學習站</div>
+          </div>
+        </div>
+        <h1 class="auth-login-heading" id="auth-login-heading">登入後才能瀏覽</h1>
+        <p class="auth-login-help">請輸入您的密碼／專屬授權碼。驗證成功後，本裝置會保留登入狀態；閒置 30 分鐘會自動登出。</p>
+        <label class="auth-login-label" for="auth-login-code">密碼</label>
+        <div class="auth-login-field">
+          <input id="auth-login-code" class="auth-login-input" type="password" autocomplete="current-password" autocapitalize="off" spellcheck="false" enterkeyhint="go" required aria-describedby="auth-login-status">
+          <button class="auth-login-toggle" id="auth-login-toggle" type="button" aria-label="顯示密碼" title="顯示／隱藏密碼">👁</button>
+        </div>
+        <div class="auth-login-status" id="auth-login-status" role="status" aria-live="polite"></div>
+        <button class="auth-login-button" id="auth-login-submit" type="submit">登入</button>
+        <p class="auth-login-note">僅限授權人員使用</p>
+      </form>
+    `;
+    document.body.appendChild(screen);
+    document.body.style.overflow = 'hidden';
+    showContent();
+
+    const input = screen.querySelector('#auth-login-code');
+    const toggle = screen.querySelector('#auth-login-toggle');
+    toggle.addEventListener('click', () => {
+        const show = input.type === 'password';
+        input.type = show ? 'text' : 'password';
+        toggle.setAttribute('aria-label', show ? '隱藏密碼' : '顯示密碼');
+        toggle.textContent = show ? '🙈' : '👁';
+        input.focus();
+    });
+    setTimeout(() => input.focus(), 80);
+    return screen;
+}
+
 async function performLogin() {
-    let isAuthorized = false;
-    
-    while (!isAuthorized) {
-        let inputCode = prompt("【安全管制】\n本頁面需要登入才能瀏覽。\n請輸入您的專屬授權碼：");
-        
-        if (inputCode === null) {
-            document.body.innerHTML = "<h2 style='text-align:center;margin-top:50px;'>存取被拒絕，請重新整理網頁。</h2>";
-            showContent(); 
+    const screen = renderLoginScreen();
+    const form = screen.querySelector('#auth-login-form');
+    const input = screen.querySelector('#auth-login-code');
+    const status = screen.querySelector('#auth-login-status');
+    const submit = screen.querySelector('#auth-login-submit');
+
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        if (submit.disabled) return;
+
+        const inputCode = input.value.toUpperCase().trim();
+        if (!inputCode) {
+            status.className = 'auth-login-status';
+            status.textContent = '請輸入密碼。';
+            input.focus();
             return;
         }
-        
-        inputCode = inputCode.toUpperCase().trim();
 
-        // 🌟 關鍵修改：加入本地無敵密碼，不怕 Firebase 阻擋
-        const localCodes = { 
-            "VIP888": true, 
-            "CATHAY2025": true 
+        submit.disabled = true;
+        submit.textContent = '驗證中…';
+        status.className = 'auth-login-status';
+        status.textContent = '';
+
+        // 保留既有本機授權碼相容性。
+        const localCodes = {
+            "VIP888": true,
+            "CATHAY2025": true
         };
 
         try {
-            let isValid = false;
+            let isValid = Boolean(localCodes[inputCode]);
 
-            // 1. 先檢查是不是無敵密碼
-            if (localCodes[inputCode]) {
-                isValid = true;
-            } 
-            // 2. 如果不是，才去問 Firebase 資料庫
-            else {
-                const response = await fetch(`${FIREBASE_URL}/whitelist/${inputCode}.json`);
+            if (!isValid) {
+                const response = await fetch(`${FIREBASE_URL}/whitelist/${encodeURIComponent(inputCode)}.json`, { cache: 'no-store' });
+                if (!response.ok) throw new Error('AUTH_LOOKUP_FAILED');
                 const data = await response.json();
-                if (data === true) isValid = true;
+                isValid = data === true;
             }
 
-            // --- 驗證成功的後續動作 ---
-            if (isValid) {
-                alert("驗證成功！歡迎使用。");
-                
-                const newSessionID = generateUUID();
-                const timeString = new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
-                
-                // 寫入登入紀錄 (背景執行，出錯也不影響登入)
-                fetch(`${FIREBASE_URL}/users/${inputCode}.json`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        session: newSessionID,
-                        lastLogin: timeString,
-                        device: navigator.userAgent
-                    })
-                }).catch(e => console.log("寫入紀錄失敗，但允許登入"));
-
-                localStorage.setItem('currentUser', inputCode);
-                localStorage.setItem('currentSession', newSessionID);
-                isAuthorized = true;
-                
-                window.location.reload(); // 重新整理進入正式畫面
-            } else {
-                alert("授權碼錯誤，請重新輸入。");
+            if (!isValid) {
+                status.className = 'auth-login-status';
+                status.textContent = '密碼錯誤，請重新輸入。';
+                input.value = '';
+                input.focus();
+                return;
             }
+
+            const newSessionID = generateUUID();
+            const timeString = new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
+
+            fetch(`${FIREBASE_URL}/users/${encodeURIComponent(inputCode)}.json`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    session: newSessionID,
+                    lastLogin: timeString,
+                    device: navigator.userAgent
+                })
+            }).catch(e => console.log("寫入紀錄失敗，但允許登入"));
+
+            localStorage.setItem('currentUser', inputCode);
+            localStorage.setItem('currentSession', newSessionID);
+            status.className = 'auth-login-status is-ok';
+            status.textContent = '驗證成功，正在進入…';
+            submit.textContent = '登入成功';
+            setTimeout(() => window.location.reload(), 250);
         } catch (error) {
-            alert("網路異常：無法連線至資料庫，請確認您的網路狀況。");
-            showContent();
-            return;
+            status.className = 'auth-login-status';
+            status.textContent = '目前無法連線驗證，請確認網路後再試。';
+            console.error('Login verification failed', error);
+        } finally {
+            if (!localStorage.getItem('currentSession')) {
+                submit.disabled = false;
+                submit.textContent = '登入';
+            }
         }
-    }
+    }, { once: false });
 }
+
 // --- 5. 響應式全站導覽（不變動驗證流程） ---
 function buildNavigation() {
     if (document.querySelector('.site-nav')) return;
