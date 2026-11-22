@@ -14,6 +14,18 @@ function showContent() {
     }
 }
 
+function ensureHubUsageTracker() {
+    const page = location.pathname.split('/').pop()?.replace(/\.html$/, '');
+    if (!/^(products|prod_[a-z_]+|calc(?:_[a-z_]+)?)$/.test(page || '')) return;
+    import('./hub-usage.mjs?v=20261122-4').catch(error => {
+        try {
+            localStorage.setItem('hubUsageTrackerStatus', 'load-error:' + String(error?.message || error));
+            localStorage.setItem('hubUsageTrackerStatusAt', String(Date.now()));
+        } catch (_) {}
+        console.warn('網站使用追蹤模組載入失敗', error);
+    });
+}
+
 // --- 2. 核心設定 (HTTPS REST API) ---
 const FIREBASE_URL = "https://cathay-app-5889a-default-rtdb.firebaseio.com";
 const AUTO_LOGOUT_MINUTES = 30; 
@@ -60,6 +72,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         showContent();        // 顯示畫面
         setupAutoLogout();    // 啟動閒置偵測
         buildNavigation();    // 產生底部選單
+        ensureHubUsageTracker(); // 主動載入最新版使用追蹤
     }
 });
 
