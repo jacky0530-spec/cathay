@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cathay-app-v63-auth-tracker';
+const CACHE_NAME = 'cathay-app-v64-accident-denture';
 const urlsToCache = [
   './',
   'index.html',
