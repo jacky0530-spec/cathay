@@ -197,6 +197,19 @@ const hubUsagePages={
 };
 const hubUsageActions={open:'開啟頁面',calculate:'執行試算',adjust:'調整條件',activate:'操作功能'};
 let photoUsage=null;
+let activeUsageLogTab='hub';
+function setUsageLogTab(tab){
+ activeUsageLogTab=tab==='photo'?'photo':'hub';
+ const hub=activeUsageLogTab==='hub';
+ el('hubUsageLogTab').classList.toggle('is-active',hub);
+ el('photoUsageLogTab').classList.toggle('is-active',!hub);
+ el('hubUsageLogTab').setAttribute('aria-selected',String(hub));
+ el('photoUsageLogTab').setAttribute('aria-selected',String(!hub));
+ el('hubUsageLogPanel').hidden=!hub;
+ el('photoUsageLogPanel').hidden=hub;
+}
+el('hubUsageLogTab').addEventListener('click',()=>setUsageLogTab('hub'));
+el('photoUsageLogTab').addEventListener('click',()=>setUsageLogTab('photo'));
 function usageRow(body,values){
  const row=body.insertRow();
  for(const value of values)row.insertCell().textContent=value;
@@ -221,13 +234,21 @@ function renderPhotoUsage(){
    if(Object.hasOwn(photoUsageActions,action))usageRow(counts,[name,photoUsageActions[action],count]);
   }
  }
+ for(const event of hubEvents){
+  if(filter&&event.account!==filter)continue;
+  if(!Object.hasOwn(hubUsagePages,event.page)||!Object.hasOwn(hubUsageActions,event.action))continue;
+  const section=event.page.startsWith('prod')?'商品區':'試算區';
+  usageRow(hubLog,[new Date(event.at).toLocaleString('zh-TW',{timeZone:'Asia/Taipei'}),
+   users.get(event.account)||'未命名帳號 · '+String(event.account||'').slice(0,8),
+   section,hubUsagePages[event.page],hubUsageActions[event.action]]);
+ }
  for(const event of events){
   if(filter&&event.account!==filter)continue;
   const photo=catalog[event.photoId];
   usageRow(log,[new Date(event.at).toLocaleString('zh-TW',{timeZone:'Asia/Taipei'}),
    users.get(event.account),photo?.title||photo?.fileName||event.photoId]);
  }
- el('photoUsageStatus').textContent='顯示 '+counts.rows.length+' 筆功能統計、'+log.rows.length+' 筆照片點選紀錄、'+hubRows.rows.length+' 筆商品與試算統計。'+photoUsage.unavailable.join(' ');
+ el('photoUsageStatus').textContent='顯示 '+hubRows.rows.length+' 筆商品與試算統計、'+counts.rows.length+' 筆照片功能統計、'+hubLog.rows.length+' 筆操作畫面紀錄、'+log.rows.length+' 筆照片點選紀錄。'+photoUsage.unavailable.join(' ');
 }
 el('photoUsageAccount').addEventListener('change',renderPhotoUsage);
 el('loadPhotoUsage').addEventListener('click',async()=>{
@@ -239,12 +260,13 @@ el('loadPhotoUsage').addEventListener('click',async()=>{
   await checkAdmin();
   const unavailable=[];
   const optional=(promise,message)=>promise.catch(()=>{unavailable.push(message);return {};});
-  const [counts,log,catalog,profiles,hubCounts]=await Promise.all([
+  const [counts,log,catalog,profiles,hubCounts,hubLog]=await Promise.all([
    optional(readFirebaseRest(photoRoot+'/usageCounts'),'照片功能統計暫無法讀取。'),
    optional(firebaseRest(photoRoot+'/photoClickLog','GET',undefined,{orderBy:'"at"',limitToLast:100}),'照片點選紀錄暫無法讀取。'),
    optional(readFirebaseRest(photoRoot+'/catalog'),'照片名稱暫無法讀取。'),
    readFirebaseRest('vipProfiles').catch(()=>({})),
-   optional(readFirebaseRest(photoRoot+'/hubUsageCounts'),'商品與試算區統計暫無法讀取。')
+   optional(readFirebaseRest(photoRoot+'/hubUsageCounts'),'商品與試算區統計暫無法讀取。'),
+   optional(firebaseRest(photoRoot+'/hubUsageLog','GET',undefined,{orderBy:'"at"',limitToLast:100}),'操作畫面紀錄暫無法讀取。')
   ]);
   const labels=new Map(await Promise.all(Object.entries(profiles||{}).map(async([code,label])=>{
    const raw=new TextEncoder().encode('cathay-photos-v2:'+code.toUpperCase());
@@ -254,10 +276,11 @@ el('loadPhotoUsage').addEventListener('click',async()=>{
   })));
   if(auth.currentUser!==user)return;
   const events=Object.values(log||{}).sort((a,b)=>b.at-a.at);
-  const accounts=new Set([...Object.keys(counts||{}),...Object.keys(hubCounts||{}),...events.map(event=>event.account)]);
+  const hubEvents=Object.values(hubLog||{}).sort((a,b)=>b.at-a.at);
+  const accounts=new Set([...Object.keys(counts||{}),...Object.keys(hubCounts||{}),...events.map(event=>event.account),...hubEvents.map(event=>event.account)]);
   const users=new Map(Array.from(accounts,account=>[account,
    (labels.get(account)||'未命名帳號')+' · '+account.slice(0,8)]));
-  photoUsage={users,events,countsByUser:counts||{},catalog:catalog||{},hubCounts:hubCounts||{},unavailable};
+  photoUsage={users,events,hubEvents,countsByUser:counts||{},catalog:catalog||{},hubCounts:hubCounts||{},unavailable};
   const select=el('photoUsageAccount');
   const current=select.value;
   select.replaceChildren(new Option('全部使用者',''));
@@ -504,6 +527,7 @@ el('logout').addEventListener('click',async()=>{
  photoUsage=null;renderPhotoUsage();
  el('photoUsageAccount').replaceChildren(new Option('全部使用者',''));
  el('photoUsageStatus').textContent='';
+ setUsageLogTab('hub');
  accountRows=[];el('accountFilter').value='';applyAccountFilter();
  await signOut(auth);el('manageArea').hidden=true;el('loginArea').hidden=false;say('已安全登出。');
 });
