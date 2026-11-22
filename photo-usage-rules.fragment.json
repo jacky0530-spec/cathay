@@ -46,5 +46,29 @@
         }
       }
     }
+  },
+  "hubUsageLog": {
+    ".read": "auth != null && root.child('members/' + auth.uid + '/active').val() === true && root.child('members/' + auth.uid + '/role').val() === 'admin'",
+    ".indexOn": [
+      "at"
+    ],
+    "$event": {
+      ".write": "!data.exists() && newData.hasChildren(['account', 'page', 'action', 'at'])",
+      "account": {
+        ".validate": "newData.isString() && newData.val().matches(/^[a-f0-9]{64}$/)"
+      },
+      "page": {
+        ".validate": "newData.isString() && newData.val().matches(/^(prod_rider|calc|calc_ah|calc_business|calc_combo|calc_labor|calc_plan|calc_retire|prod_accident|prod_accident_history|prod_bone|prod_cancer_protect|prod_full_heart|prod_good_health|prod_invest_enjoy|prod_invest_forever|prod_invest_full|prod_invest_taifu|prod_lifetime_medical|prod_overflow_love|prod_surgery|products)$/)"
+      },
+      "action": {
+        ".validate": "newData.isString() && newData.val().matches(/^(open|calculate|adjust|activate)$/)"
+      },
+      "at": {
+        ".validate": "newData.isNumber() && newData.val() === now"
+      },
+      "$other": {
+        ".validate": false
+      }
+    }
   }
 }
