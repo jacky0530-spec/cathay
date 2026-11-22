@@ -1,3 +1,11 @@
+const TRACKER_VERSION='20261122-4';
+if (!window.__cathayHubUsageStarted) {
+ window.__cathayHubUsageStarted=true;
+ try{
+  localStorage.setItem('hubUsageTrackerVersion',TRACKER_VERSION);
+  localStorage.setItem('hubUsageTrackerStatus','started');
+  localStorage.setItem('hubUsageTrackerStatusAt',String(Date.now()));
+ }catch(_){}
 // Count trusted browser interactions without collecting field values or labels.
 const account=localStorage.getItem('currentUser')?.trim();
 const session=localStorage.getItem('currentSession');
@@ -34,7 +42,17 @@ if(account&&session&&/^(products|prod_[a-z_]+|calc(?:_[a-z_]+)?)$/.test(page)){
     body:JSON.stringify(updates)
    });
    if(!response.ok)throw new Error('HTTP '+response.status);
-  }catch(error){console.warn('網站使用紀錄同步失敗',error.message);}
+   try{
+    localStorage.setItem('hubUsageTrackerStatus','ok');
+    localStorage.setItem('hubUsageTrackerStatusAt',String(Date.now()));
+   }catch(_){}
+  }catch(error){
+   try{
+    localStorage.setItem('hubUsageTrackerStatus','error:'+String(error?.message||error));
+    localStorage.setItem('hubUsageTrackerStatusAt',String(Date.now()));
+   }catch(_){}
+   console.warn('網站使用紀錄同步失敗',error.message);
+  }
  }
  void track('open');
  if(page!=='products'&&page!=='calc'){
@@ -46,4 +64,6 @@ if(account&&session&&/^(products|prod_[a-z_]+|calc(?:_[a-z_]+)?)$/.test(page)){
    },true);
   }
  }
+}
+
 }
