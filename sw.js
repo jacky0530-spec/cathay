@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cathay-app-v61-hub-log-write';
+const CACHE_NAME = 'cathay-app-v62-hub-usage-network';
 const urlsToCache = [
   './',
   'index.html',
@@ -54,6 +54,16 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
+  if (url.origin === self.location.origin && url.pathname.endsWith('/hub-usage.mjs')) {
+    event.respondWith(fetch(event.request).then(response => {
+      if (response.ok) {
+        const copy = response.clone();
+        event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.put(event.request,copy)));
+      }
+      return response;
+    }).catch(() => caches.match(event.request)));
+    return;
+  }
   if (url.origin === self.location.origin && url.pathname.endsWith('/products.html')) {
     event.respondWith(fetch(event.request).then(response => {
       if (response.ok) {
