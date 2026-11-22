@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cathay-app-v59-web-login';
+const CACHE_NAME = 'cathay-app-v60-activity-log';
 const urlsToCache = [
   './',
   'index.html',
