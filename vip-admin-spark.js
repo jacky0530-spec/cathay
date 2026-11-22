@@ -250,6 +250,13 @@ function renderPhotoUsage(){
    users.get(event.account),photo?.title||photo?.fileName||event.photoId]);
  }
  const notes=[...photoUsage.unavailable];
+ const trackerVersion=localStorage.getItem('hubUsageTrackerVersion');
+ const trackerStatus=localStorage.getItem('hubUsageTrackerStatus');
+ const trackerAt=Number(localStorage.getItem('hubUsageTrackerStatusAt')||0);
+ if(trackerVersion||trackerStatus){
+  notes.push('本機追蹤器：版本 '+(trackerVersion||'未知')+'／狀態 '+(trackerStatus||'未知')+
+   (trackerAt?'／'+new Date(trackerAt).toLocaleString('zh-TW',{timeZone:'Asia/Taipei'}):'')+'。');
+ }
  if(!hubLog.rows.length)notes.push('目前沒有操作畫面逐筆紀錄；請先重新整理商品／試算頁並操作一次。若上方次數有增加但此處仍為 0，代表 Firebase hubUsageLog 規則尚未正式發布。');
  if(!log.rows.length&&counts.rows.length)notes.push('照片功能有累積次數但最近照片紀錄為 0；已啟用備援讀取，若仍空白請確認 photoClickLog 讀取規則。');
  el('photoUsageStatus').textContent='顯示 '+hubRows.rows.length+' 筆商品與試算統計、'+counts.rows.length+' 筆照片功能統計、'+hubLog.rows.length+' 筆操作畫面紀錄、'+log.rows.length+' 筆照片點選紀錄。 '+notes.join(' ');
