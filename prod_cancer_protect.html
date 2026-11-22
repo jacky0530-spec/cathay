@@ -175,17 +175,20 @@
             line-height: 1.6;
         }
     </style>
+    <link rel="stylesheet" href="product-combination.css">
 <script type="module" src="hub-usage.mjs"></script>
 </head>
 <body>
 
 <div class="container">
+    <a class="back" href="products.html">‹ 返回商品區</a>
     <h1>國泰人壽 全方位防癌整合試算 (含DQ)</h1>
-    <p style="text-align:center; color:#666;">ZCN 新鍾心 + MFA/FMB 豪好康 + DQ IN康愛</p>
+    <p class="subtitle">ZCN 新鍾心 + MFA/FMB 豪／好康愛 + DQ IN康愛</p>
     
     <div class="input-group">
+        <h2 class="panel-title">投保條件與商品保額</h2>
         <div class="input-item">
-            <label>投保年齡 (0-54歲)</label>
+            <label for="age">投保年齡 (0-54歲)</label>
             <select id="age" onchange="updateAvailability()">
                 </select>
             <div style="margin-top:10px; font-weight:bold; font-size:0.9em;">性別</div>
@@ -196,7 +199,7 @@
         </div>
 
         <div class="input-item" id="divZCN">
-            <label>1. 新鍾心滿福 (ZCN) <span id="badgeZCN" class="status-badge badge-ok">OK</span></label>
+            <label for="amtZCN">1. 新鍾心滿福 (ZCN) <span id="badgeZCN" class="status-badge badge-ok">OK</span></label>
             <div style="display:flex; align-items:center; gap:5px;">
                 <input type="number" id="amtZCN" value="100" min="10" max="500">
                 <span>萬</span>
@@ -205,7 +208,7 @@
         </div>
 
         <div class="input-item" id="divGender">
-            <label id="lblGender">2. 豪/好康愛 <span id="badgeGender" class="status-badge badge-ok">OK</span></label>
+            <label for="amtGender" id="lblGender">2. 豪/好康愛 <span id="badgeGender" class="status-badge badge-ok">OK</span></label>
             <div style="display:flex; align-items:center; gap:5px;">
                 <input type="number" id="amtGender" value="100" min="50" max="200">
                 <span>萬</span>
@@ -214,7 +217,7 @@
         </div>
 
         <div class="input-item" id="divDQ" style="border-color:#ff9800; border-width:2px;">
-            <label style="color:#e65100;">3. IN康愛 (DQ) <span id="badgeDQ" class="status-badge badge-ok">OK</span></label>
+            <label for="amtDQ" style="color:#e65100;">3. IN康愛 (DQ) <span id="badgeDQ" class="status-badge badge-ok">OK</span></label>
             <div style="display:flex; align-items:center; gap:5px;">
                 <input type="number" id="amtDQ" value="100" min="50" max="200">
                 <span>萬</span>
@@ -228,11 +231,11 @@
     </div>
 
     <div id="resultSection" class="results">
-        <h3>📊 整合保障分析 (20年期)</h3>
+        <h3>整合保障分析（20 年期）</h3>
         
         <div class="premium-summary">
-            預估年繳總保費：<span id="totalPremium" style="font-weight:bold; font-size:1.5em; color:#d32f2f;">0</span> 元
-            <div style="font-size:0.75em; color:#666; margin-top:5px;">(未含折扣)</div>
+            預估年繳總保費<br><strong id="totalPremium">0</strong> 元
+            <small>未含折扣</small>
         </div>
 
         <div class="chart-container">
@@ -269,7 +272,7 @@
             </div>
         </div>
 
-        <h3>📑 商品組合明細</h3>
+        <h3>商品組合明細</h3>
         <div class="product-list" id="productList"></div>
 
         <div class="note">
