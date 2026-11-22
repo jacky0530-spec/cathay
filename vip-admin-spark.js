@@ -236,6 +236,7 @@ function renderPhotoUsage(){
   }
  }
  for(const event of hubEvents){
+  if(hubLog.rows.length>=100)break;
   if(filter&&event.account!==filter)continue;
   if(!Object.hasOwn(hubUsagePages,event.page)||!Object.hasOwn(hubUsageActions,event.action))continue;
   const section=event.page.startsWith('prod')?'商品區':'試算區';
@@ -244,6 +245,7 @@ function renderPhotoUsage(){
    section,hubUsagePages[event.page],hubUsageActions[event.action]]);
  }
  for(const event of events){
+  if(log.rows.length>=100)break;
   if(filter&&event.account!==filter)continue;
   const photo=catalog[event.photoId];
   usageRow(log,[new Date(event.at).toLocaleString('zh-TW',{timeZone:'Asia/Taipei'}),
@@ -257,9 +259,9 @@ function renderPhotoUsage(){
   notes.push('本機追蹤器：版本 '+(trackerVersion||'未知')+'／狀態 '+(trackerStatus||'未知')+
    (trackerAt?'／'+new Date(trackerAt).toLocaleString('zh-TW',{timeZone:'Asia/Taipei'}):'')+'。');
  }
- if(!hubLog.rows.length)notes.push('目前沒有操作畫面逐筆紀錄；請先重新整理商品／試算頁並操作一次。若上方次數有增加但此處仍為 0，代表 Firebase hubUsageLog 規則尚未正式發布。');
- if(!log.rows.length&&counts.rows.length)notes.push('照片功能有累積次數但最近照片紀錄為 0；已啟用備援讀取，若仍空白請確認 photoClickLog 讀取規則。');
- el('photoUsageStatus').textContent='顯示 '+hubRows.rows.length+' 筆商品與試算統計、'+counts.rows.length+' 筆照片功能統計、'+hubLog.rows.length+' 筆操作畫面紀錄、'+log.rows.length+' 筆照片點選紀錄。 '+notes.join(' ');
+ if(!photoUsage.period&&!hubLog.rows.length)notes.push('目前沒有操作畫面逐筆紀錄；請先重新整理商品／試算頁並操作一次。若上方次數有增加但此處仍為 0，代表 Firebase hubUsageLog 規則尚未正式發布。');
+ if(!photoUsage.period&&!log.rows.length&&counts.rows.length)notes.push('照片功能有累積次數但最近照片紀錄為 0；已啟用備援讀取，若仍空白請確認 photoClickLog 讀取規則。');
+ el('photoUsageStatus').textContent=(photoUsage.period?photoUsage.period+'（照片區僅點選照片有日期紀錄）。 ':'全部期間。 ')+'顯示 '+hubRows.rows.length+' 筆商品與試算統計、'+counts.rows.length+' 筆照片功能統計、'+hubLog.rows.length+' 筆操作畫面紀錄、'+log.rows.length+' 筆照片點選紀錄。 '+notes.join(' ');
 }
 el('photoUsageAccount').addEventListener('change',renderPhotoUsage);
 el('testHubUsageLog').addEventListener('click',async()=>{
@@ -285,12 +287,34 @@ el('testHubUsageLog').addEventListener('click',async()=>{
   el('photoUsageStatus').textContent='❌ hubUsageLog 測試失敗：'+detail+'。這代表正式 Firebase Rules 尚未允許這個路徑，或規則位置仍不正確。';
  }finally{button.disabled=false;}
 });
-async function readRecentUsageLog(path,label,unavailable){
+const dayMs=86400000;
+function usageRange(days,endDay){
+ if(!days)return null;
+ const midnight=Date.parse(endDay+'T00:00:00+08:00');
+ return {start:midnight-(days-1)*dayMs,end:midnight+dayMs-1};
+}
+function summarizeEvents(events,hubEvents){
+ const counts=Object.create(null),hubCounts=Object.create(null);
+ for(const {account,action} of events){
+  if(action!=='openPhoto')continue;
+  const actions=counts[account]??=Object.create(null);
+  actions[action]=(actions[action]||0)+1;
+ }
+ for(const {account,page,action} of hubEvents){
+  if(!Object.hasOwn(hubUsagePages,page)||!Object.hasOwn(hubUsageActions,action))continue;
+  const pages=hubCounts[account]??=Object.create(null);
+  const actions=pages[page]??=Object.create(null);
+  actions[action]=(actions[action]||0)+1;
+ }
+ return {counts,hubCounts};
+}
+async function readRecentUsageLog(path,label,unavailable,range){
  try{
-  return await firebaseRest(path,'GET',undefined,{orderBy:'"at"',limitToLast:100});
+  return await firebaseRest(path,'GET',undefined,{orderBy:'"at"',...(range?{startAt:range.start,endAt:range.end}:{limitToLast:100})});
  }catch(queryError){
   try{
    const all=await readFirebaseRest(path);
+   if(range)return Object.fromEntries(Object.entries(all||{}).filter(([,event])=>event?.at>=range.start&&event.at<=range.end));
    const latest=Object.entries(all||{}).sort((a,b)=>Number(b[1]?.at||0)-Number(a[1]?.at||0)).slice(0,100);
    return Object.fromEntries(latest);
   }catch(fullError){
@@ -299,7 +323,19 @@ async function readRecentUsageLog(path,label,unavailable){
   }
  }
 }
-el('loadPhotoUsage').addEventListener('click',async()=>{
+const periodSelect=el('usagePeriod'),endDate=el('usageEnd');
+const taipeiDate=ms=>new Date(ms+8*3600000).toISOString().slice(0,10);
+endDate.value=taipeiDate(Date.now());
+periodSelect.addEventListener('change',loadPhotoUsage);
+endDate.addEventListener('change',loadPhotoUsage);
+el('loadPhotoUsage').addEventListener('click',loadPhotoUsage);
+async function loadPhotoUsage(){
+ endDate.value||=taipeiDate(Date.now());
+ const range=usageRange(Number(periodSelect.value),endDate.value);
+ periodSelect.disabled=true;
+ endDate.disabled=true;
+ photoUsage=null;
+ renderPhotoUsage();
  const button=el('loadPhotoUsage');
  const user=auth.currentUser;
  button.disabled=true;
@@ -308,13 +344,13 @@ el('loadPhotoUsage').addEventListener('click',async()=>{
   await checkAdmin();
   const unavailable=[];
   const optional=(promise,message)=>promise.catch(()=>{unavailable.push(message);return {};});
-  const [counts,log,catalog,profiles,hubCounts,hubLog]=await Promise.all([
-   optional(readFirebaseRest(photoRoot+'/usageCounts'),'照片功能統計暫無法讀取。'),
-   readRecentUsageLog(photoRoot+'/photoClickLog','照片點選紀錄',unavailable),
+  let [counts,log,catalog,profiles,hubCounts,hubLog]=await Promise.all([
+   range?{}:optional(readFirebaseRest(photoRoot+'/usageCounts'),'照片功能統計暫無法讀取。'),
+   readRecentUsageLog(photoRoot+'/photoClickLog','照片點選紀錄',unavailable,range),
    optional(readFirebaseRest(photoRoot+'/catalog'),'照片名稱暫無法讀取。'),
    readFirebaseRest('vipProfiles').catch(()=>({})),
-   optional(readFirebaseRest(photoRoot+'/hubUsageCounts'),'商品與試算區統計暫無法讀取。'),
-   readRecentUsageLog(photoRoot+'/hubUsageLog','操作畫面紀錄',unavailable)
+   range?{}:optional(readFirebaseRest(photoRoot+'/hubUsageCounts'),'商品與試算區統計暫無法讀取。'),
+   readRecentUsageLog(photoRoot+'/hubUsageLog','操作畫面紀錄',unavailable,range)
   ]);
   const labels=new Map(await Promise.all(Object.entries(profiles||{}).map(async([code,label])=>{
    const raw=new TextEncoder().encode('cathay-photos-v2:'+code.toUpperCase());
@@ -325,10 +361,12 @@ el('loadPhotoUsage').addEventListener('click',async()=>{
   if(auth.currentUser!==user)return;
   const events=Object.values(log||{}).sort((a,b)=>b.at-a.at);
   const hubEvents=Object.values(hubLog||{}).sort((a,b)=>b.at-a.at);
+  if(range)({counts,hubCounts}=summarizeEvents(events,hubEvents));
   const accounts=new Set([...Object.keys(counts||{}),...Object.keys(hubCounts||{}),...events.map(event=>event.account),...hubEvents.map(event=>event.account)]);
+  if(el('photoUsageAccount').value)accounts.add(el('photoUsageAccount').value);
   const users=new Map(Array.from(accounts,account=>[account,
    (labels.get(account)||'未命名帳號')+' · '+account.slice(0,8)]));
-  photoUsage={users,events,hubEvents,countsByUser:counts||{},catalog:catalog||{},hubCounts:hubCounts||{},unavailable};
+  photoUsage={period:range?taipeiDate(range.start)+' 至 '+taipeiDate(range.end):null,users,events,hubEvents,countsByUser:counts||{},catalog:catalog||{},hubCounts:hubCounts||{},unavailable};
   const select=el('photoUsageAccount');
   const current=select.value;
   select.replaceChildren(new Option('全部使用者',''));
@@ -337,8 +375,8 @@ el('loadPhotoUsage').addEventListener('click',async()=>{
   renderPhotoUsage();
  }catch(error){
   el('photoUsageStatus').textContent=reportError(error);
- }finally{button.disabled=false;}
-});
+ }finally{button.disabled=false;periodSelect.disabled=false;endDate.disabled=!periodSelect.value;}
+}
 function clearIssued(){justCreated='';el('issuedValue').textContent='';el('issued').hidden=true;}
 let accountRows=[];
 function applyAccountFilter(){
