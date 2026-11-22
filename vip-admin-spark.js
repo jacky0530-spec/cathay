@@ -215,26 +215,66 @@ function usageRow(body,values){
  const row=body.insertRow();
  for(const value of values)row.insertCell().textContent=value;
 }
+function renderUsageChart(totals){
+ const chart=el('usageChart');
+ const ranked=totals.sort((a,b)=>b.total-a.total||a.name.localeCompare(b.name,'zh-TW'));
+ const maximum=ranked[0]?.total||1;
+ el('usageChartNote').textContent=(photoUsage.period||'全部期間')+'｜商品、試算與照片區操作合計。'+
+  (photoUsage.period?'照片區僅計入有日期的點選紀錄。':'')+
+  (photoUsage.unavailable.length?'部分資料無法讀取，僅顯示已讀取資料。':'')+
+  (ranked.length?'':'此篩選下沒有使用者資料。');
+ for(const {name,total} of ranked){
+  const row=document.createElement('li');
+  const label=document.createElement('span');
+  label.className='account-name';
+  label.textContent=name;
+  const track=document.createElement('span');
+  track.className='usage-track';
+  track.setAttribute('aria-hidden','true');
+  const bar=document.createElement('span');
+  bar.className='usage-bar';
+  bar.style.width=(total/maximum*100)+'%';
+  track.append(bar);
+  const value=document.createElement('strong');
+  value.className='usage-value';
+  value.textContent=total.toLocaleString('zh-TW')+' 次';
+  row.append(label,track,value);
+  chart.append(row);
+ }
+}
 function renderPhotoUsage(){
  const filter=el('photoUsageAccount').value;
  const counts=el('photoUsageCounts'),log=el('photoUsageLog'),hubLog=el('hubUsageLog');
  counts.replaceChildren();log.replaceChildren();hubLog.replaceChildren();
  const hubRows=el("hubUsageRows");hubRows.replaceChildren();
+ el('usageChart').replaceChildren();
+ el('usageChartNote').textContent='';
+ el('usageChartPanel').hidden=!photoUsage;
  if(!photoUsage)return;
+ const totals=[];
  const {users,events=[],hubEvents=[],countsByUser={},catalog={},hubCounts={}}=photoUsage;
  for(const [account,name] of users){
   if(filter&&account!==filter)continue;
+  let total=0;
   for(const [page,actions] of Object.entries(hubCounts[account]||{})){
    if(!Object.hasOwn(hubUsagePages,page))continue;
    const section=page.startsWith('prod')?'商品區':'試算區';
    for(const [action,count] of Object.entries(actions)){
-    if(Object.hasOwn(hubUsageActions,action))usageRow(hubRows,[name,section,hubUsagePages[page],hubUsageActions[action],count]);
+    if(Object.hasOwn(hubUsageActions,action)){
+     usageRow(hubRows,[name,section,hubUsagePages[page],hubUsageActions[action],count]);
+     total+=Number(count)||0;
+    }
    }
   }
   for(const [action,count] of Object.entries(countsByUser[account]||{})){
-   if(Object.hasOwn(photoUsageActions,action))usageRow(counts,[name,photoUsageActions[action],count]);
+   if(Object.hasOwn(photoUsageActions,action)){
+    usageRow(counts,[name,photoUsageActions[action],count]);
+    total+=Number(count)||0;
+   }
   }
+  totals.push({name,total});
  }
+ renderUsageChart(totals);
  for(const event of hubEvents){
   if(hubLog.rows.length>=100)break;
   if(filter&&event.account!==filter)continue;
@@ -362,7 +402,7 @@ async function loadPhotoUsage(){
   const events=Object.values(log||{}).sort((a,b)=>b.at-a.at);
   const hubEvents=Object.values(hubLog||{}).sort((a,b)=>b.at-a.at);
   if(range)({counts,hubCounts}=summarizeEvents(events,hubEvents));
-  const accounts=new Set([...Object.keys(counts||{}),...Object.keys(hubCounts||{}),...events.map(event=>event.account),...hubEvents.map(event=>event.account)]);
+  const accounts=new Set([...labels.keys(),...Object.keys(counts||{}),...Object.keys(hubCounts||{}),...events.map(event=>event.account),...hubEvents.map(event=>event.account)]);
   if(el('photoUsageAccount').value)accounts.add(el('photoUsageAccount').value);
   const users=new Map(Array.from(accounts,account=>[account,
    (labels.get(account)||'未命名帳號')+' · '+account.slice(0,8)]));
