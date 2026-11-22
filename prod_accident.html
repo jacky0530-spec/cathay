@@ -7,185 +7,69 @@
     <script src="auth.js"></script>
 
     <style>
-        body {
-            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
-            background-color: #f0f2f5;
-            margin: 0;
-            padding: 20px;
-            color: #333;
+        * { box-sizing: border-box; }
+        body { margin:0; background:#f1f6f3; color:#203c32; font:16px/1.55 system-ui,"Microsoft JhengHei",sans-serif; }
+        .container { max-width:1170px; margin:auto; padding:26px clamp(12px,3vw,36px) 40px; }
+        .back { color:#27684e; text-decoration:none; font-size:.88rem; }
+        h1 { margin:12px 0 20px; font-size:clamp(1.55rem,3.3vw,2.4rem); line-height:1.25; }
+        h2 { font-size:1.18rem; margin:0 0 14px; }
+        .workspace { display:grid; grid-template-columns:minmax(0,1.75fr) minmax(230px,1fr); gap:14px; margin-bottom:28px; }
+        .calculator-wrapper,.results { border-radius:18px; padding:clamp(16px,2.5vw,28px); }
+        .calculator-wrapper { background:white; border:1px solid #d5e3db; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px 18px; }
+        .calculator-wrapper h2 { grid-column:1/-1; margin:0; }
+        .input-group + .input-group { margin-top:12px; }
+        label { display:block; margin-bottom:5px; font-size:.86rem; font-weight:650; }
+        select,input { width:100%; min-height:44px; color:#183d30; background:#fafcfb; border:1px solid #a9c2b4; border-radius:8px; padding:8px; font:inherit; }
+        :focus-visible { outline:3px solid #c7831c; outline-offset:2px; }
+        .xb9-note { color:#805215; font-size:.8rem; }
+        .results { color:white; background:#104f3a; display:flex; flex-direction:column; justify-content:center; }
+        .results h2 { color:#daf0df; }
+        .result { padding:10px 0; }
+        .result + .result { border-top:1px solid #59806f; }
+        .result strong { font-size:clamp(1.65rem,3vw,2.4rem); font-variant-numeric:tabular-nums; }
+        .result small { font-size:.88rem; }
+        .table-scroll { overflow-x:auto; background:white; border:1px solid #ccdcd3; border-radius:14px; }
+        .comparison-table { border-collapse:separate; border-spacing:0; width:100%; min-width:730px; font-size:.93rem; }
+        .comparison-table th { background:#17543f; color:white; padding:13px 10px; }
+        .comparison-table td { padding:11px 14px; border-bottom:1px solid #dce6df; }
+        .comparison-table td + td { border-left:1px solid #e2ece5; }
+        .category-row td { background:#dfede4; color:#24563e; font-weight:750; }
+        .comparison-table td:nth-child(2),.comparison-table td:nth-child(3) { text-align:center; }
+        .explain-cell { background:#f8faf8; font-size:.88rem; }
+        .val-super,.explain-highlight { color:#116140; font-weight:750; }
+        .sub-label,.tag-none { color:#597066; font-size:.82rem; }
+        .sub-label { display:block; }
+        .crown-icon { font-size:.8rem; }
+        .total-row td { background:#f6efdb; font-weight:700; }
+        .tag-cheaper { display:inline-block; font-size:.72rem; color:#185c38; background:#e1efdf; border-radius:6px; padding:1px 5px; }
+        .sources { font-size:.8rem; color:#55695e; margin:15px 2px; }
+        .scroll-hint { display:none; }
+        @media(max-width:780px) {
+            .workspace { grid-template-columns:1fr; }
+            .results { display:grid; grid-template-columns:1fr 1fr; gap:0 14px; }
+            .results h2 { grid-column:1/-1; margin:0; }
+            .result + .result { border:0; }
+            .scroll-hint { display:block; font-size:.8rem; color:#536d60; }
         }
-        .container {
-            max-width: 1200px; /* 增加總寬度以容納新欄位 */
-            margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        }
-        h1, h2 {
-            color: #0056b3;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        h2 {
-            font-size: 1.4em;
-            margin-top: 40px;
-            border-left: 5px solid #0056b3;
-            padding-left: 15px;
-            text-align: left;
-        }
-        
-        /* 試算器區域 */
-        .calculator-wrapper {
-            background: linear-gradient(to bottom right, #e3f2fd, #ffffff);
-            padding: 25px;
-            border-radius: 10px;
-            border: 1px solid #bbdefb;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        @media (max-width: 768px) {
-            .calculator-wrapper { grid-template-columns: 1fr; }
-        }
-        .input-group {
-            margin-bottom: 15px;
-        }
-        .input-group label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 5px;
-            color: #444;
-        }
-        .input-group input, .input-group select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 1em;
-            box-sizing: border-box; 
-        }
-        
-        /* 比較表樣式 */
-        .comparison-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            margin-top: 20px;
-            font-size: 0.95em;
-            background-color: #fff;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        .comparison-table th {
-            background-color: #0056b3;
-            color: white;
-            padding: 15px;
-            text-align: center;
-            position: sticky;
-            top: 0;
-            font-size: 1.05em;
-        }
-        .comparison-table td {
-            border-bottom: 1px solid #dee2e6;
-            border-right: 1px solid #dee2e6;
-            padding: 12px 15px;
-            vertical-align: middle;
-        }
-        .comparison-table td:last-child {
-            border-right: none;
-        }
-        .comparison-table tr:last-child td {
-            border-bottom: none;
-        }
-        
-        /* 說明欄位樣式 */
-        .explain-cell {
-            background-color: #f8f9fa;
-            color: #495057;
-            font-size: 0.9em;
-            line-height: 1.5;
-            border-left: 2px solid #e9ecef;
-        }
-        .explain-highlight {
-            color: #d63384;
-            font-weight: bold;
-        }
-
-        /* 數字樣式 */
-        .val-peace { color: #666; }
-        .val-super { color: #0056b3; font-weight: bold; font-size: 1.1em; }
-
-        /* 皇冠閃爍動畫 */
-        @keyframes crown-pulse {
-            0% { transform: scale(1); opacity: 1; filter: drop-shadow(0 0 2px gold); }
-            50% { transform: scale(1.2); opacity: 0.8; filter: drop-shadow(0 0 8px gold); }
-            100% { transform: scale(1); opacity: 1; filter: drop-shadow(0 0 2px gold); }
-        }
-
-        .crown-icon {
-            display: inline-block;
-            font-size: 1.4em; 
-            margin-left: 8px;
-            vertical-align: sub;
-            animation: crown-pulse 1.5s infinite ease-in-out;
-            cursor: default;
-        }
-
-        .diff-tag { 
-            display: inline-block; 
-            padding: 2px 6px; 
-            border-radius: 4px; 
-            font-size: 0.8em; 
-            margin-left: 5px; 
-            vertical-align: middle;
-        }
-        .tag-cheaper { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .tag-none { color: #aaa; font-style: italic; font-size: 0.9em; }
-        
-        /* 分類標題列 */
-        .category-row {
-            background-color: #e2e6ea !important;
-            font-weight: bold;
-            color: #333;
-            text-align: left;
-        }
-        .sub-label {
-            font-size: 0.85em;
-            color: #666;
-            display: block;
-            margin-top: 2px;
-        }
-
-        /* 總保費列樣式 */
-        .total-row {
-            background-color: #fff3cd !important;
-            font-weight: bold;
-            font-size: 1.1em;
-            border-top: 2px solid #ffc107;
-        }
-        .xb9-note {
-            font-size: 0.8em;
-            color: #d63384;
-            margin-top: 5px;
+        @media(max-width:510px) {
+            .calculator-wrapper { grid-template-columns:1fr; }
+            .comparison-table { min-width:660px; }
         }
     </style>
 <script type="module" src="hub-usage.mjs"></script>
 </head>
 <body>
 
-<div class="container">
-    <h1>國泰人壽 - 傷害險全方位比較與試算</h1>
+<main class="container">
+    <a class="back" href="products.html">‹ 返回商品區</a>
+    <h1>傷害險全方位比較與試算</h1>
 
-    <div class="calculator-wrapper">
-        <div style="grid-column: 1 / -1;">
-            <h3 style="margin:0 0 15px 0; color:#0056b3;">步驟 1：設定投保條件</h3>
-        </div>
+    <div class="workspace">
+    <section class="calculator-wrapper"><h2>投保條件</h2>
         
         <div>
             <div class="input-group">
-                <label>職業類別</label>
+                <label for="occupationClass">職業類別</label>
                 <select id="occupationClass" onchange="updateAll()">
                     <option value="0">第一類 (行政/內勤)</option>
                     <option value="1">第二類 (外勤/輕勞力)</option>
@@ -196,14 +80,14 @@
                 </select>
             </div>
             <div class="input-group">
-                <label>被保險人年齡</label>
+                <label for="ageGroup">被保險人年齡</label>
                 <select id="ageGroup" onchange="updateAll()">
                     <option value="adult">16 - 75歲</option>
                     <option value="child">0 - 15歲</option>
                 </select>
             </div>
             <div class="input-group">
-                <label>健保身分</label>
+                <label for="hasHealthIns">健保身分</label>
                 <select id="hasHealthIns" onchange="updateAll()">
                     <option value="yes">具有健保</option>
                     <option value="no">無健保</option>
@@ -213,22 +97,28 @@
 
         <div>
             <div class="input-group">
-                <label>意外身故/失能保額 (萬元)</label>
+                <label for="deathBenefit">意外身故/失能保額 (萬元)</label>
                 <input type="number" id="deathBenefit" value="100" min="0" step="10" oninput="updateAll()">
             </div>
             <div class="input-group">
-                <label>傷害醫療日額 (元)</label>
+                <label for="dailyHospital">傷害醫療日額 (元)</label>
                 <input type="number" id="dailyHospital" value="1000" min="0" step="100" oninput="updateAll()">
             </div>
             <div class="input-group">
-                <label>實支實付限額 (萬元)</label>
+                <label for="medicalReimburse">實支實付限額 (萬元)</label>
                 <input type="number" id="medicalReimburse" value="10" min="0" step="1" oninput="updateAll()">
                 <div class="xb9-note" id="xb9Note"></div>
             </div>
         </div>
+    </section>
+    <section class="results"><h2>預估年繳保費</h2>
+        <div class="result">超全方位傷害附約<br><strong id="summarySuper"></strong> <small>元／年</small></div>
+        <div class="result">平安傷害附約（推估）<br><strong id="summaryPeace"></strong> <small>元／年</small></div>
+    </section>
     </div>
-
-    <h2>商品差異比較 (數字隨設定連動)</h2>
+    <h2>保障項目比較</h2>
+    <p class="scroll-hint">左右滑動可查看完整比較說明。</p>
+    <div class="table-scroll" role="region" aria-label="保障項目比較" tabindex="0">
     <table class="comparison-table">
         <thead>
             <tr>
@@ -434,12 +324,13 @@
             </tr>
         </tbody>
     </table>
-    <div style="text-align: center; margin-top: 20px; font-size: 0.85em; color: #888; line-height: 1.6;">
+    </div>
+    <div class="sources">
         資料來源：(超)全方位與平安傷害附約差異比較表、XB7/XB8/XB9費率表。<br>
         註：XB9費率表僅提供 3~10 萬元之精確費率，輸入其他金額將以比例估算。<br>
         註：平安傷害附約保費為依據標準職業等級係數推算之估計值，實際金額以保險公司報價為準。
     </div>
-</div>
+</main>
 
 <script>
     // 費率資料庫
@@ -514,6 +405,8 @@
         
         elTotalSuper.innerText = Math.round(totalSuper).toLocaleString();
         elTotalPeace.innerText = Math.round(totalPeace).toLocaleString();
+        document.getElementById('summarySuper').innerText = elTotalSuper.innerText;
+        document.getElementById('summaryPeace').innerText = elTotalPeace.innerText;
         
         if (totalSuper < totalPeace) {
             elTotalSuper.innerHTML += ' <span class="diff-tag tag-cheaper">較便宜</span>';
