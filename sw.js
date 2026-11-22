@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cathay-app-v65-history-limits';
+const CACHE_NAME = 'cathay-app-v66-history-premiums';
 const urlsToCache = [
   './',
   'index.html',
