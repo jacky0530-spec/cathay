@@ -68,6 +68,12 @@ a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{o
   .matrix .benefit-line{flex-direction:column;gap:1px}
   .matrix .claim-free-badge{white-space:normal}
 }
+.matrix tr.denture-row > th,.matrix tr.denture-row:nth-child(n) > td{
+  background:#fff6df;border-block:2px solid #bf8727;color:#593b12
+}
+.matrix .denture-row th.row-label{border-left:4px solid #bf8727;font-size:1rem}
+.matrix .denture-row strong{white-space:nowrap;font-size:1rem}
+.matrix .denture-row .higher-limit{color:#86320f;text-decoration:underline;text-underline-offset:3px}
 </style>
 <script type="module" src="hub-usage.mjs"></script>
 </head>
@@ -82,12 +88,12 @@ a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{o
  <h1 id="comparison-title">國泰人壽意外型商品<br>六款保障比較表</h1>
  <p>依提供的「國泰人壽意外型商品彙整表」圖片，整理歷代六款商品的身故失能、傷害醫療、年齡與保費示例。</p>
 </section>
-<div class="notice" role="note"><strong>資料性質：</strong>本表是使用者提供的歷史教材圖片重製，不代表現行銷售或正式契約權益。圖片右上角標明：以個人型 100 萬／日額 1,000 元／限額 3～5 萬、職業類別第一類為例。遇圖片遮擋、雙數值或未註明的條件均保留標記，請以商品條款、投保規則與正式費率核對。</div>
+<div class="notice" role="note"><strong>資料性質：</strong>本表是使用者提供的歷史教材圖片重製，不代表現行銷售或正式契約權益。本表傷害醫療實支實付以每次 10 萬元比較。歷史保費沿用原圖條件：以個人型 100 萬／日額 1,000 元／限額 3～5 萬、職業類別第一類為例。遇圖片遮擋、雙數值或未註明的條件均保留標記，請以商品條款、投保規則與正式費率核對。</div>
 <div class="data-section">
  <div class="toolbar"><h2>六款商品橫向對照</h2><button type="button" class="toolbar-btn" onclick="resetProducts()">顯示全部商品</button></div>
  <details class="filters"><summary>選擇顯示的商品（可自訂比較欄位）</summary><div class="filter-options"><label class="filter-pill"><input type="checkbox" data-toggle-col="0" checked><span>新－傷害給付</span></label><label class="filter-pill"><input type="checkbox" data-toggle-col="1" checked><span>金－平安附約</span></label><label class="filter-pill"><input type="checkbox" data-toggle-col="2" checked><span>全方位</span></label><label class="filter-pill"><input type="checkbox" data-toggle-col="3" checked><span>新全方位</span></label><label class="filter-pill"><input type="checkbox" data-toggle-col="4" checked><span>真／好全方位</span></label><label class="filter-pill"><input type="checkbox" data-toggle-col="5" checked><span>超全方位</span></label></div><p class="hint">至少保留一款；手機或平板可左右滑動表格，最左側「給付項目」會固定，便於逐項比較。</p></details>
  <div class="table-scroll" role="region" aria-label="六款意外險商品保障比較表（可橫向捲動）" tabindex="0">
- <table class="matrix"><caption style="text-align:left;padding:12px;color:#537061;font-size:.8rem">圖片來源：國泰人壽意外型商品彙整表（使用者提供截圖）｜金額及保障內容依圖片呈現</caption>
+ <table class="matrix"><caption style="text-align:left;padding:12px;color:#537061;font-size:.8rem">圖片來源：國泰人壽意外型商品彙整表（使用者提供截圖）｜實支實付以 10 萬元為例</caption>
  <thead><tr><th scope="col" class="row-label">保障與給付項目</th><th scope="col" data-product="0">新－傷害給付<span class="name-small">57.09～84.07</span></th><th scope="col" data-product="1">金－平安附約<span class="name-small">84.07～93.12</span></th><th scope="col" data-product="2">全方位<span class="name-small">93.12～101.02</span></th><th scope="col" data-product="3">新全方位<span class="name-small">101.02～105.12</span></th><th scope="col" data-product="4">真／好全方位<span class="name-small">106.01～113.08</span></th><th scope="col" data-product="5">超全方位<span class="name-small">113.08～（原圖標示）</span></th></tr></thead>
  <tbody>
 <tr class="section-row"><th scope="rowgroup" colspan="7">銷售期間</th></tr>
@@ -139,13 +145,13 @@ a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{o
 <td class="product-col" data-product="5">50萬</td></tr>
 
 <tr class="section-row"><th scope="rowgroup" colspan="7">傷害醫療與住院</th></tr>
-<tr><th scope="row" class="row-label">義齒限額</th>
-<td class="product-col" data-product="0">最高 5,000 元</td>
-<td class="product-col" data-product="1">最高 5,000 元</td>
-<td class="product-col" data-product="2">最高 5,000 元</td>
-<td class="product-col" data-product="3">最高 5,000 元</td>
-<td class="product-col" data-product="4">真全方位：最高 5,000 元<br>好全方位：最高 10,000 元</td>
-<td class="product-col" data-product="5">最高 10,000 元</td></tr>
+<tr class="denture-row"><th scope="row" class="row-label">義齒限額</th>
+<td class="product-col" data-product="0">最高 <strong>5,000 元</strong></td>
+<td class="product-col" data-product="1">最高 <strong>5,000 元</strong></td>
+<td class="product-col" data-product="2">最高 <strong>5,000 元</strong></td>
+<td class="product-col" data-product="3">最高 <strong>5,000 元</strong></td>
+<td class="product-col" data-product="4">真全方位：最高 <strong>5,000 元</strong><br>好全方位：最高 <strong class="higher-limit">10,000 元</strong></td>
+<td class="product-col" data-product="5">最高 <strong class="higher-limit">10,000 元</strong></td></tr>
 <tr><th scope="row" class="row-label">傷害住院日額</th><td class="product-col" data-product="0">2,000元／日</td>
 <td class="product-col" data-product="1">1,000元／日</td>
 <td class="product-col" data-product="2">1,000元／日</td>
@@ -184,12 +190,12 @@ a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{o
 <td class="product-col" data-product="5"><div class="benefit-lines"><div class="benefit-line">第8～30日<span class="benefit-amount">500元／日</span></div><div class="benefit-line">第31日起<span class="benefit-amount">1,000元／日</span></div></div></td></tr>
 
 <tr class="section-row"><th scope="rowgroup" colspan="7">投保資訊與保費示例</th></tr>
-<tr><th scope="row" class="row-label">傷害限額</th><td class="product-col" data-product="0"><span class="none">—</span></td>
-<td class="product-col" data-product="1">3萬元／次</td>
-<td class="product-col" data-product="2">3萬元／次</td>
-<td class="product-col" data-product="3">5萬元／次</td>
-<td class="product-col" data-product="4">5萬元／次</td>
-<td class="product-col" data-product="5"><div class="claim-limit"><strong>5萬元／次</strong><span class="claim-free-badge">3年無理賠 <b>＋30%</b></span><small>原圖註記，實際適用依條款</small></div></td></tr>
+<tr><th scope="row" class="row-label">傷害醫療實支實付限額<small>以每次 10 萬元試算</small></th><td class="product-col" data-product="0"><span class="none">—</span></td>
+<td class="product-col" data-product="1">10 萬元／次</td>
+<td class="product-col" data-product="2">10 萬元／次</td>
+<td class="product-col" data-product="3">10 萬元／次</td>
+<td class="product-col" data-product="4">10 萬元／次</td>
+<td class="product-col" data-product="5"><div class="claim-limit"><strong>10 萬元／次</strong><span class="claim-free-badge">3年無理賠 <b>＋30%</b></span><small>符合條件時，限額為 13 萬元／次</small></div></td></tr>
 <tr><th scope="row" class="row-label">承保年齡</th><td class="product-col" data-product="0">0～70歲</td>
 <td class="product-col" data-product="1">0～70歲</td>
 <td class="product-col" data-product="2">15～75歲</td>
@@ -206,7 +212,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{o
 </div>
 <section class="note-panel">
  <strong>閱讀提醒</strong>
- <div>本頁僅做原圖資料對照，不對各商品額度作相同承保條件的保證。例如第一類保費可能受保額、性別、職業類別、年齡或附約選擇影響；保障實際給付、等待期間、給付上限及事故定義，均以原保單條款及核保結果為準。</div>
+ <div>本頁以歷史教材搭配指定額度示例；各商品可投保的額度依原契約而定。例如第一類保費可能受保額、性別、職業類別、年齡或附約選擇影響；保障實際給付、等待期間、給付上限及事故定義，均以原保單條款及核保結果為準。</div>
  <div style="margin-top:10px"><a href="prod_accident.html">前往原有「意外險動態試算」</a>（功能與公式保留）</div>
 </section>
 <footer class="hub-footer">意外險歷代商品比較表 v1.2｜2026-11-18｜僅供教育訓練及歷史保障查閱。</footer>

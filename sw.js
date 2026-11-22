@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cathay-app-v64-accident-denture';
+const CACHE_NAME = 'cathay-app-v65-history-limits';
 const urlsToCache = [
   './',
   'index.html',
