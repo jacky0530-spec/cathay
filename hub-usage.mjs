@@ -26,13 +26,25 @@ if(account&&session&&/^(products|prod_[a-z_]+|calc(?:_[a-z_]+)?)$/.test(page)){
    if(!response.ok)throw new Error('HTTP '+response.status);
   }catch(error){console.warn('使用統計同步失敗',error.message);}
  }
- void count('open');
+ async function log(action){
+  try{
+   const key=await accountKey;
+   const eventId=crypto.randomUUID();
+   const response=await fetch(database+'/photoLibraryV2/hubUsageLog/'+eventId+'.json',{
+    method:'PUT',headers:{'Content-Type':'application/json'},keepalive:true,
+    body:JSON.stringify({account:key,page,action,at:{'.sv':'timestamp'}})
+   });
+   if(!response.ok)throw new Error('HTTP '+response.status);
+  }catch(error){console.warn('操作紀錄同步失敗',error.message);}
+ }
+ function track(action){void count(action);void log(action);}
+ track('open');
  if(page!=='products'&&page!=='calc'){
   for(const type of ['click','change']){
    document.addEventListener(type,event=>{
     if(!event.isTrusted||!(event.target instanceof Element)||event.target.closest('header,nav,footer'))return;
     const action=actionFor(event);
-    if(action)void count(action);
+    if(action)track(action);
    },true);
   }
  }
