@@ -6,200 +6,70 @@
     <title>國泰人壽 豪/好康愛 全方位保障試算</title>
 <script type="module" src="auth.js"></script>
     <style>
-        :root {
-            --cathay-green: #008844;
-            --male-color: #1976d2;
-            --female-color: #c2185b;
-            --bg-gray: #f4f6f8;
-            --card-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        * { box-sizing:border-box; }
+        :root { color-scheme:light; font-family:system-ui,"Microsoft JhengHei",sans-serif; color:#203d32; background:#f3f7f4; }
+        body { margin:0; }
+        .container { max-width:1090px; margin:auto; padding:24px clamp(14px,4vw,44px) 40px; }
+        .back { color:#28664d; font-size:.88rem; text-decoration:none; }
+        h1 { font-size:clamp(1.55rem,3vw,2.35rem); line-height:1.3; margin:14px 0 22px; }
+        h2 { font-size:1.16rem; margin:0 0 14px; }
+        .workspace { display:grid; grid-template-columns:minmax(0,1.6fr) minmax(220px,1fr); gap:14px; }
+        .controls,.premium-display,.benefit-card,.rank-list { border-radius:16px; }
+        .controls { background:white; border:1px solid #d5e3d9; padding:clamp(16px,2vw,24px); }
+        .fields { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+        .control-group:first-child { grid-column:1/-1; }
+        label,.control-label { display:block; font-size:.85rem; font-weight:650; margin-bottom:5px; }
+        .gender-toggle { display:flex; gap:4px; background:#edf3ef; padding:4px; border-radius:12px; }
+        .gender-btn { flex:1; background:transparent; border:0; border-radius:9px; font:inherit; font-weight:650; color:#435e51; cursor:pointer; min-height:42px; }
+        .gender-btn.active-male,.gender-btn.active-female { background:#196347; color:white; }
+        select,input { width:100%; min-height:44px; border:1px solid #abc2b3; border-radius:8px; padding:8px; color:#173f2d; background:white; font:inherit; }
+        :focus-visible { outline:3px solid #b77a13; outline-offset:2px; }
+        .premium-display { background:#124e38; color:white; padding:24px; display:flex; flex-direction:column; justify-content:center; }
+        .premium-display h2 { color:#e1efe6; margin:0; font-size:1rem; }
+        .premium-val { font-size:clamp(2.2rem,5vw,3.5rem); letter-spacing:-.03em; }
+        .premium-display small { color:#d3e6da; }
+        .benefit-section { margin-top:26px; }
+        .benefit-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-bottom:26px; }
+        .benefit-card { background:white; border:1px solid #d5e3d9; padding:16px; }
+        .b-title { font-weight:650; } .b-value { margin:6px 0; font-weight:750; font-size:1.5rem; color:#15583e; }
+        .b-desc,.note { font-size:.85rem; color:#51685c; line-height:1.6; }
+        .rank-list { border:1px solid #cfdfd4; overflow:hidden; background:white; }
+        .rank-header,.rank-row { display:grid; grid-template-columns:3em minmax(0,1fr) auto; align-items:center; gap:10px; padding:10px clamp(10px,2vw,22px); }
+        .rank-header { background:#e0ece4; font-weight:700; }
+        .rank-row + .rank-row { border-top:1px solid #e3ece5; }
+        .rank-row.is-specific { background:#fff6e3; }
+        .col-rank { text-align:center; } .col-payout { text-align:right; font-weight:700; font-variant-numeric:tabular-nums; }
+        .specific-label { font-size:.8em; color:#844b16; }
+        .note { margin-top:20px; } .note p { margin:0; } .note ul { margin:6px 0; padding-left:1.4em; }
+        @media(max-width:680px) {
+            .workspace { grid-template-columns:1fr; }
+            .premium-display { padding:15px 20px; }
+            .benefit-grid { grid-template-columns:1fr; gap:8px; }
+            .benefit-card { display:grid; grid-template-columns:1fr auto; align-items:center; column-gap:8px; padding:12px 14px; }
+            .b-value { grid-column:2; grid-row:1/3; font-size:1.24rem; }
         }
-
-        body {
-            font-family: "Microsoft JhengHei", Arial, sans-serif;
-            background-color: var(--bg-gray);
-            margin: 0;
-            padding: 20px;
-            color: #333;
-        }
-
-        .container {
-            max-width: 950px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 5px 25px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-
-        /* Header */
-        .header {
-            background-color: var(--cathay-green);
-            color: white;
-            padding: 25px;
-            text-align: center;
-        }
-        .header h1 { margin: 0; font-size: 1.8em; }
-        .header p { margin: 8px 0 0; opacity: 0.9; }
-
-        /* Controls Grid */
-        .controls {
-            padding: 25px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            background: #fff;
-            border-bottom: 1px solid #eee;
-        }
-
-        .control-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        
-        label { font-weight: bold; font-size: 0.95em; color: #444; }
-        
-        /* Gender Toggle */
-        .gender-toggle {
-            display: flex;
-            background: #eee;
-            border-radius: 8px;
-            padding: 4px;
-        }
-        .gender-btn {
-            flex: 1;
-            padding: 10px;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 1em;
-            transition: 0.3s;
-        }
-        .gender-btn.active-male { background-color: var(--male-color); color: white; }
-        .gender-btn.active-female { background-color: var(--female-color); color: white; }
-
-        select, input {
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            width: 100%;
-            box-sizing: border-box;
-            background: #fdfdfd;
-        }
-
-        /* Premium Highlight */
-        .premium-display {
-            grid-column: 1 / -1;
-            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
-            padding: 20px;
-            border-radius: 12px;
-            text-align: center;
-            color: #1b5e20;
-            margin-top: 10px;
-        }
-        .premium-val { font-size: 2em; font-weight: 800; margin: 0 5px; }
-
-        /* Extra Benefits Section (New) */
-        .benefit-section {
-            padding: 25px;
-            background: #fff;
-        }
-        .section-title {
-            text-align: center;
-            color: var(--cathay-green);
-            margin-bottom: 20px;
-            font-size: 1.3em;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 10px;
-            display: inline-block;
-        }
-        .center-title { text-align: center; }
-
-        .benefit-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .benefit-card {
-            background: #fff;
-            border: 1px solid #e0e0e0;
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            transition: transform 0.2s;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        .benefit-card:hover { transform: translateY(-3px); border-color: var(--cathay-green); }
-        
-        .b-icon { font-size: 2em; margin-bottom: 10px; display: block; }
-        .b-title { font-weight: bold; color: #555; margin-bottom: 5px; font-size: 1.1em; }
-        .b-value { font-size: 1.4em; font-weight: bold; color: #333; margin: 5px 0; }
-        .b-desc { font-size: 0.85em; color: #777; line-height: 1.4; }
-
-        /* Cancer Ranking */
-        .rank-list {
-            border: 1px solid #eee;
-            border-radius: 12px;
-            overflow: hidden;
-        }
-        .rank-header {
-            display: flex;
-            background: #f5f5f5;
-            padding: 12px;
-            font-weight: bold;
-            color: #666;
-        }
-        .rank-row {
-            display: flex;
-            padding: 15px 12px;
-            border-bottom: 1px solid #f9f9f9;
-            align-items: center;
-        }
-        .is-specific {
-            background-color: #fff8e1; /* Light Gold */
-            border-left: 4px solid #ffc107;
-        }
-        .is-specific .col-name { color: #e65100; font-weight: bold; }
-        .is-specific .col-payout { color: #d32f2f; font-weight: 800; font-size: 1.1em; }
-
-        .col-rank { width: 50px; text-align: center; font-weight: bold; color: #aaa; }
-        .col-name { flex: 1; }
-        .col-payout { width: 150px; text-align: right; font-weight: bold; }
-
-        .note {
-            font-size: 0.8em;
-            color: #666;
-            padding: 20px 25px;
-            background: #fafafa;
-            border-top: 1px solid #eee;
-            line-height: 1.6;
-        }
+        @media(max-width:400px) { .fields { grid-template-columns:repeat(2,minmax(0,1fr)); } .control-group:last-child { grid-column:1/-1; } }
     </style>
 <script type="module" src="hub-usage.mjs"></script>
 </head>
 <body>
 
-<div class="container">
-    <div class="header">
-        <h1>豪/好康愛 全方位保障試算</h1>
-        <p>整合 癌症排行、特定手術、骨折保障 與 滿期保費退還</p>
-    </div>
-
-    <div class="controls">
+<main class="container">
+    <a class="back" href="products.html">‹ 返回商品區</a>
+    <h1>豪／好康愛 全方位保障試算</h1>
+    <div class="workspace">
+    <section class="controls"><h2>投保條件</h2>
+    <div class="fields">
         <div class="control-group">
-            <label>1. 選擇商品 (性別)</label>
-            <div class="gender-toggle">
-                <button class="gender-btn active-male" id="btnMale" onclick="setGender('male')">男性 (豪康愛)</button>
-                <button class="gender-btn" id="btnFemale" onclick="setGender('female')">女性 (好康愛)</button>
+            <span class="control-label" id="productLabel">選擇商品</span>
+            <div class="gender-toggle" role="group" aria-labelledby="productLabel">
+                <button class="gender-btn active-male" id="btnMale" aria-pressed="true" onclick="setGender('male')">男性 (豪康愛)</button>
+                <button class="gender-btn" id="btnFemale" aria-pressed="false" onclick="setGender('female')">女性 (好康愛)</button>
             </div>
         </div>
 
         <div class="control-group">
-            <label>2. 繳費年期</label>
+            <label for="term">繳費年期</label>
             <select id="term" onchange="updateAgeOptions(); render();">
                 <option value="20">20年期</option>
                 <option value="10">10年期</option>
@@ -207,53 +77,46 @@
         </div>
 
         <div class="control-group">
-            <label>3. 投保年齡</label>
+            <label for="age">投保年齡</label>
             <select id="age" onchange="render()">
                 </select>
         </div>
 
         <div class="control-group">
-            <label>4. 投保保額 (萬元)</label>
+            <label for="coverage">投保保額（萬元）</label>
             <input type="number" id="coverage" value="100" step="10" min="50" max="200" oninput="render()">
         </div>
 
-        <div class="premium-display">
-            年繳保費：<span class="premium-val" id="premiumLabel">0</span> 元
-            <div style="font-size:0.8em; margin-top:5px; opacity:0.8;">(未含自動轉帳/健康促進折扣)</div>
-        </div>
+    </div></section>
+    <section class="premium-display"><h2>預估年繳保費</h2>
+        <div><strong class="premium-val" id="premiumLabel">0</strong> 元</div>
+        <small>未含自動轉帳及健康促進折扣</small>
+    </section>
     </div>
-
     <div class="benefit-section">
-        <div class="center-title">
-            <span class="section-title">✨ 額外加值保障</span>
-        </div>
+        <h2>額外加值保障</h2>
         
         <div class="benefit-grid">
             <div class="benefit-card">
-                <span class="b-icon">🩺</span>
                 <div class="b-title">特定手術保險金</div>
                 <div class="b-value" id="valSurgery">0 萬</div>
                 <div class="b-desc" id="descSurgery">針對特定部位手術定額給付</div>
             </div>
 
             <div class="benefit-card">
-                <span class="b-icon">🦴</span>
                 <div class="b-title">骨折保險金</div>
                 <div class="b-value" id="valFracture">最高 0 萬</div>
                 <div class="b-desc">依骨折程度給付<br>(最高保額 8%)</div>
             </div>
 
-            <div class="benefit-card" style="border-color: #90caf9; background: #e3f2fd;">
-                <span class="b-icon">🛡️</span>
+            <div class="benefit-card">
                 <div class="b-title">身故/滿期保險金</div>
-                <div class="b-value" id="valDeath" style="color:#1565c0;">約 0 萬</div>
-                <div class="b-desc">保費有去有回<br>(總繳保費 1.06倍)</div>
+                <div class="b-value" id="valDeath">約 0 萬</div>
+                <div class="b-desc">總繳保費 × 1.06，須扣除已領保險金</div>
             </div>
         </div>
 
-        <div class="center-title">
-            <span class="section-title">📊 常見癌症排行理賠</span>
-        </div>
+        <h2>常見癌症排行理賠</h2>
         
         <div class="rank-list">
             <div class="rank-header">
@@ -278,7 +141,7 @@
             <li><strong>特定癌症 (1.5倍)：</strong> 男性針對攝護腺/結腸直腸/生殖器官；女性針對乳癌/婦科器官提供 50% 額外加給。</li>
         </ul>
     </div>
-</div>
+</main>
 
 <script>
     // --- 1. Rate Data (MFA / FMB) ---
@@ -324,6 +187,8 @@
 
     function setGender(gender) {
         currentGender = gender;
+        document.getElementById('btnMale').setAttribute('aria-pressed', gender === 'male');
+        document.getElementById('btnFemale').setAttribute('aria-pressed', gender === 'female');
         document.getElementById('btnMale').className = gender === 'male' ? 'gender-btn active-male' : 'gender-btn';
         document.getElementById('btnFemale').className = gender === 'female' ? 'gender-btn active-female' : 'gender-btn';
         render();
@@ -400,7 +265,7 @@
             
             // Add specific label if specific
             const nameHtml = item.isSpecific ? 
-                `${item.name} <span style="font-size:0.8em; color:#e65100;">(特定)</span>` : 
+                `${item.name} <span class="specific-label">(特定)</span>` :
                 item.name;
 
             row.innerHTML = `
