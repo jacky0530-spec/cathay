@@ -248,9 +248,26 @@ function renderPhotoUsage(){
   usageRow(log,[new Date(event.at).toLocaleString('zh-TW',{timeZone:'Asia/Taipei'}),
    users.get(event.account),photo?.title||photo?.fileName||event.photoId]);
  }
- el('photoUsageStatus').textContent='顯示 '+hubRows.rows.length+' 筆商品與試算統計、'+counts.rows.length+' 筆照片功能統計、'+hubLog.rows.length+' 筆操作畫面紀錄、'+log.rows.length+' 筆照片點選紀錄。'+photoUsage.unavailable.join(' ');
+ const notes=[...photoUsage.unavailable];
+ if(!hubLog.rows.length)notes.push('目前沒有操作畫面逐筆紀錄；請先重新整理商品／試算頁並操作一次。若上方次數有增加但此處仍為 0，代表 Firebase hubUsageLog 規則尚未正式發布。');
+ if(!log.rows.length&&counts.rows.length)notes.push('照片功能有累積次數但最近照片紀錄為 0；已啟用備援讀取，若仍空白請確認 photoClickLog 讀取規則。');
+ el('photoUsageStatus').textContent='顯示 '+hubRows.rows.length+' 筆商品與試算統計、'+counts.rows.length+' 筆照片功能統計、'+hubLog.rows.length+' 筆操作畫面紀錄、'+log.rows.length+' 筆照片點選紀錄。 '+notes.join(' ');
 }
 el('photoUsageAccount').addEventListener('change',renderPhotoUsage);
+async function readRecentUsageLog(path,label,unavailable){
+ try{
+  return await firebaseRest(path,'GET',undefined,{orderBy:'"at"',limitToLast:100});
+ }catch(queryError){
+  try{
+   const all=await readFirebaseRest(path);
+   const latest=Object.entries(all||{}).sort((a,b)=>Number(b[1]?.at||0)-Number(a[1]?.at||0)).slice(0,100);
+   return Object.fromEntries(latest);
+  }catch(fullError){
+   unavailable.push(label+'暫無法讀取（Firebase 規則或索引尚未開放）。');
+   return {};
+  }
+ }
+}
 el('loadPhotoUsage').addEventListener('click',async()=>{
  const button=el('loadPhotoUsage');
  const user=auth.currentUser;
@@ -262,11 +279,11 @@ el('loadPhotoUsage').addEventListener('click',async()=>{
   const optional=(promise,message)=>promise.catch(()=>{unavailable.push(message);return {};});
   const [counts,log,catalog,profiles,hubCounts,hubLog]=await Promise.all([
    optional(readFirebaseRest(photoRoot+'/usageCounts'),'照片功能統計暫無法讀取。'),
-   optional(firebaseRest(photoRoot+'/photoClickLog','GET',undefined,{orderBy:'"at"',limitToLast:100}),'照片點選紀錄暫無法讀取。'),
+   readRecentUsageLog(photoRoot+'/photoClickLog','照片點選紀錄',unavailable),
    optional(readFirebaseRest(photoRoot+'/catalog'),'照片名稱暫無法讀取。'),
    readFirebaseRest('vipProfiles').catch(()=>({})),
    optional(readFirebaseRest(photoRoot+'/hubUsageCounts'),'商品與試算區統計暫無法讀取。'),
-   optional(firebaseRest(photoRoot+'/hubUsageLog','GET',undefined,{orderBy:'"at"',limitToLast:100}),'操作畫面紀錄暫無法讀取。')
+   readRecentUsageLog(photoRoot+'/hubUsageLog','操作畫面紀錄',unavailable)
   ]);
   const labels=new Map(await Promise.all(Object.entries(profiles||{}).map(async([code,label])=>{
    const raw=new TextEncoder().encode('cathay-photos-v2:'+code.toUpperCase());
