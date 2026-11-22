@@ -71,6 +71,7 @@ function reportError(error){
  if(error?.message==='db_network_failed')return '無法連接 Firebase Realtime Database。請檢查網路，或使用瀏覽器無痕模式測試。';
  if(error?.message==='member_access_denied')return 'Firebase 資料庫拒絕驗證此管理員的會員資料，請確認 members/UID 規則與帳號角色。';
  if(error?.message?.startsWith('db_http_'))return 'Firebase 資料庫回應錯誤（HTTP '+error.message.slice(8)+'）。';
+ if(error?.message==='hub_log_verify_failed')return 'hubUsageLog 寫入後讀回驗證失敗。';
  if(error?.message==='not_admin')return '登入帳號沒有管理員權限。';
  if(error?.code==='auth/invalid-credential')return '帳號或密碼驗證失敗。';
  return '操作未完成：'+String(error?.code||error?.message||'未知錯誤');
@@ -254,6 +255,29 @@ function renderPhotoUsage(){
  el('photoUsageStatus').textContent='顯示 '+hubRows.rows.length+' 筆商品與試算統計、'+counts.rows.length+' 筆照片功能統計、'+hubLog.rows.length+' 筆操作畫面紀錄、'+log.rows.length+' 筆照片點選紀錄。 '+notes.join(' ');
 }
 el('photoUsageAccount').addEventListener('change',renderPhotoUsage);
+el('testHubUsageLog').addEventListener('click',async()=>{
+ const button=el('testHubUsageLog');
+ button.disabled=true;
+ el('photoUsageStatus').textContent='正在測試 hubUsageLog 寫入…';
+ try{
+  await checkAdmin();
+  const raw=new TextEncoder().encode('cathay-photos-v2:HUB-LOG-SELF-TEST');
+  const digest=await crypto.subtle.digest('SHA-256',raw);
+  const account=Array.from(new Uint8Array(digest),x=>x.toString(16).padStart(2,'0')).join('');
+  const eventId='admin-test-'+Date.now();
+  const payload={account,page:'products',action:'activate',at:{'.sv':'timestamp'}};
+  await firebaseRest(photoRoot+'/hubUsageLog/'+eventId,'PUT',payload);
+  const saved=await readFirebaseRest(photoRoot+'/hubUsageLog/'+eventId);
+  if(!saved||saved.account!==account||saved.page!=='products'||saved.action!=='activate'||!Number(saved.at))
+   throw new Error('hub_log_verify_failed');
+  el('photoUsageStatus').textContent='✅ hubUsageLog 寫入與讀回成功。Firebase Rules 已正確發布；若商品頁仍沒有紀錄，問題在商品／試算頁追蹤程式或快取。';
+ }catch(error){
+  const detail=error?.message?.startsWith('db_http_')
+   ? 'Firebase 回傳 HTTP '+error.message.slice(8)
+   : reportError(error);
+  el('photoUsageStatus').textContent='❌ hubUsageLog 測試失敗：'+detail+'。這代表正式 Firebase Rules 尚未允許這個路徑，或規則位置仍不正確。';
+ }finally{button.disabled=false;}
+});
 async function readRecentUsageLog(path,label,unavailable){
  try{
   return await firebaseRest(path,'GET',undefined,{orderBy:'"at"',limitToLast:100});
