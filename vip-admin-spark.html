@@ -32,6 +32,10 @@ td:last-child,th:last-child{text-align:right}.scroll{overflow:auto}
 .usage-track { height:14px; background:#edf3ef; border-radius:4px; overflow:hidden; }
 .usage-bar { display:block; height:100%; background:#23724f; }
 .usage-value { font-variant-numeric:tabular-nums; white-space:nowrap; }
+.account-list { margin:1.25rem 0; padding:0 .85rem; border:1px solid #ceded4; border-radius:10px; }
+.account-list > summary { padding:.75rem 0; cursor:pointer; color:#17583d; font-weight:700; }
+.account-list > summary:focus-visible { outline:2px solid #16754d; outline-offset:2px; }
+.account-list[open] { padding-bottom:.85rem; }
 </style></head><body><main>
 <h1>VIP 授權管理（Firebase Spark）</h1>
 <p class="notice"><strong>管理頁已獨立部署，授權操作以 Firebase Rules 為準。</strong> 不使用 Cloudflare、D1、付費 Cloud Functions，原有同事仍用相同 VIP 授權碼登入。
@@ -51,7 +55,8 @@ td:last-child,th:last-child{text-align:right}.scroll{overflow:auto}
 <div id="issued" class="notice" hidden><strong>本次由管理員設定的授權碼（只顯示這一次）</strong>
 <p id="issuedValue"></p><button id="copy" type="button" class="secondary">複製</button>
 <button id="hideCode" type="button" class="secondary">隱藏</button></div>
-<h2>現有授權</h2>
+<details class="account-list">
+<summary>現有授權清單</summary>
 <p><small>已啟用及已停用的舊帳號都可以點「修改標籤」補填或更正姓名。僅變更識別文字，不影響原 VIP 授權碼或登入狀態。</small></p>
 <p>您可以啟用、停用 VIP 授權。<strong>永久刪除僅限已停用的授權碼，且需二次確認。</strong> 刪除後該代碼不可重新發行；登入歷史與客戶資料不會刪除。</p>
 <p><small>如未看見「永久刪除」按鈕，代表 Firebase 刪除權限規則尚未發布。登入用的舊版共用通行碼不受白名單停權或刪除影響。</small></p>
@@ -61,6 +66,7 @@ td:last-child,th:last-child{text-align:right}.scroll{overflow:auto}
 <p id="accountCount" aria-live="polite"></p>
 <div class="scroll"><table><thead><tr><th>識別標籤</th><th>授權碼尾碼</th><th>狀態</th><th>操作</th></tr></thead>
 <tbody id="rows"></tbody></table></div>
+</details>
 <h2>照片刪除審核</h2>
 <p><button id="refreshPhotoReviews" type="button" class="secondary">重新整理待審照片</button></p>
 <p id="photoReviewStatus" role="status"></p>
