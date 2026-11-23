@@ -20,13 +20,14 @@
 .coverage{margin:24px 0;padding:clamp(14px,3vw,32px);background:#fff;border:1px solid #cbded4;border-radius:16px;min-width:0}.coverage h2{margin:0 0 15px;color:#183d30}.coverage a{color:#086442;font-weight:700}.graph-scroll{overflow-x:auto;margin-bottom:12px}.graph-scroll svg{display:block;width:100%;min-width:760px;font:18px system-ui,sans-serif;background:#f6faf7;border-radius:12px}.track-title{font-size:23px;font-weight:750}.milestone{font-weight:700;fill:#324c40}.pan-note{display:none}@media(max-width:840px){.pan-note{display:block;color:#485f55;font-size:.9rem}}
 .plan-pickers{display:flex;flex-wrap:wrap;gap:12px 22px;margin:0 0 20px}.plan-pickers label{display:grid;gap:5px;font-size:.9rem;font-weight:700;color:#284c3b}.plan-pickers select{font:inherit;font-size:1rem;min-width:145px;padding:9px 12px;border:1px solid #9bbbab;border-radius:8px;background:white;color:#17482e}
 #materials{margin-top:20px;scroll-margin-top:100px}#materials ol{padding-left:1.8em;line-height:1.75}#materials li{padding:.25em 0}
+.premium{margin-top:20px}.premium-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:10px}.premium-grid p{margin:0;padding:12px;background:#eff7f2;border-radius:10px}.premium-grid strong{display:block;color:#075d40;font-size:1.35rem}.premium details{margin:16px 0}.premium summary{cursor:pointer;color:#075d40;font-weight:700}.rate-table{overflow-x:auto}.rate-table table{width:100%;margin:10px 0;border-collapse:collapse}.rate-table th,.rate-table td{text-align:right;padding:8px;border-bottom:1px solid #d9e6df}.rate-table :is(th,td):first-child{text-align:left}
 </style></head>
 <body class="hub-page"><main class="hub-shell">
 <a href="products.html">← 商品試算與保障</a>
 <header class="hub-hero hub-hero--small"><h1>住院醫療保障時間軸</h1><p>倍愛醫靠 FG3（繳費 20 年）搭配新實全心意 PLUS CV4。選擇主約保額與附約計畫，即可比較各階段的保障。以下假設兩張契約持續有效，附約逐年續保至約定上限。</p></header>
 <section class="coverage" aria-labelledby="coverage-title">
 <h2 id="coverage-title">主約與附約，保障到幾歲？</h2>
-<div class="plan-pickers"><label>FG3 主約保額<select id="fg-plan"><option value="10">10 萬元</option><option value="20">20 萬元</option><option value="30">30 萬元</option></select></label><label>CV4 附約計畫<select id="cv-plan"><option value="10">M10</option><option value="20">M20</option><option value="30">M30</option></select></label></div>
+<div class="plan-pickers"><label>投保保險年齡<select id="entry-age"><option value="0">0 歲</option><option value="1">1 歲</option><option value="2">2 歲</option><option value="3">3 歲</option><option value="4">4 歲</option><option value="5">5 歲</option><option value="6">6 歲</option><option value="7">7 歲</option><option value="8">8 歲</option><option value="9">9 歲</option><option value="10">10 歲</option><option value="11">11 歲</option><option value="12">12 歲</option><option value="13">13 歲</option><option value="14">14 歲</option><option value="15">15 歲</option><option value="16">16 歲</option><option value="17">17 歲</option><option value="18">18 歲</option><option value="19">19 歲</option><option value="20">20 歲</option><option value="21">21 歲</option><option value="22">22 歲</option><option value="23">23 歲</option><option value="24">24 歲</option><option value="25">25 歲</option><option value="26">26 歲</option><option value="27">27 歲</option><option value="28">28 歲</option><option value="29">29 歲</option><option value="30">30 歲</option><option value="31">31 歲</option><option value="32">32 歲</option><option value="33">33 歲</option><option value="34">34 歲</option><option value="35">35 歲</option><option value="36">36 歲</option><option value="37">37 歲</option><option value="38">38 歲</option><option value="39">39 歲</option><option value="40">40 歲</option><option value="41">41 歲</option><option value="42">42 歲</option><option value="43">43 歲</option><option value="44">44 歲</option><option value="45">45 歲</option><option value="46">46 歲</option><option value="47">47 歲</option><option value="48">48 歲</option><option value="49">49 歲</option><option value="50" selected>50 歲</option><option value="51">51 歲</option><option value="52">52 歲</option><option value="53">53 歲</option><option value="54">54 歲</option><option value="55">55 歲</option></select></label><label>性別<select id="rate-sex"><option value="0">男性</option><option value="1">女性</option></select></label><label>FG3 主約保額<select id="fg-plan"><option value="10">10 萬元</option><option value="20">20 萬元</option><option value="30">30 萬元</option></select></label><label>CV4 附約計畫<select id="cv-plan"><option value="10">M10</option><option value="20">M20</option><option value="30">M30</option></select></label></div>
 <p class="pan-note">左右滑動可看完整時間軸 →</p>
 <div class="graph-scroll" tabindex="0" role="region" aria-label="雙層保障時間軸，可橫向捲動">
 <svg viewBox="0 0 960 405" role="img" aria-labelledby="graph-title graph-desc" lang="zh-Hant">
@@ -49,12 +50,16 @@
 </svg></div>
 <a href="#materials">查看繳費期間醫材補助 ↓</a>　<a href="#maturity">查看 90 歲滿期金計算 ↓</a>
 </section>
+<section class="maturity premium" aria-labelledby="premium-heading"><h2 id="premium-heading">年繳保費試算</h2>
+<div class="premium-grid"><p>FG3 固定年繳（共 20 年）<strong id="fg-annual"></strong></p><p>CV4 投保首年<strong id="cv-annual"></strong></p><p>首年合計<strong id="first-annual"></strong></p></div>
+<details><summary>查看 CV4 各年齡級距的年繳保費</summary><div class="rate-table"><table><thead><tr><th>保險年齡</th><th>年數</th><th>年繳保費</th><th>期間小計</th></tr></thead><tbody id="rate-rows"></tbody></table></div></details>
+<p>以費率表的標準年繳保費估算，未計折扣或核保加費。CV4 依續保時的保險年齡查表，每五歲一個級距，80 歲依表另計一年。未來實繳金額依續保當時核可費率計算。</p></section>
 <div class="timeline">
 <section class="phase"><h2>投保起至繳費期滿</h2><p><strong>FG3 主約</strong><br>符合住院給付條件，每日 <span data-benefit="fgDay">1,000</span> 元。</p><p><strong>CV4 附約</strong><br>每日住院經常費用限額 <span data-benefit="cvDay">1,000</span> 元，每次住院醫療費用限額 <span data-benefit="cv">10</span> 萬元。實支與日額每日 <span data-benefit="cvDay">1,000</span> 元擇優給付。</p></section>
 <section class="phase"><h2>繳費期滿後至 80 歲</h2><p><strong>FG3 啟動住院實支</strong><br>每日住院經常費用限額 <span data-benefit="fgDay">1,000</span> 元，每次住院醫療費用一般限額 <span data-benefit="fg">10</span> 萬元，與日額每日 <span data-benefit="fgDay">1,000</span> 元擇優給付。</p><p><strong>癌症住院限額 × 1.2</strong><br>因癌症或直接因癌症本身所引起的併發症住院診療，該次住院醫療費用保險金限額提高至 <span data-benefit="cancer">12</span> 萬元。</p><p><strong>CV4 逐年續保</strong><br>保證續保至保險年齡 80 歲，以主契約保險期間為限。兩張契約的實支理賠皆適用損害填補，同一筆已獲實支補償的費用不可重複申領。</p></section>
 <section class="phase"><h2>CV4 屆滿後至 90 歲</h2><p><strong>FG3 接續住院保障</strong><br>每次住院醫療費用一般限額仍為 <span data-benefit="fg">10</span> 萬元，與日額給付型擇優。符合約定的癌症住院，該次醫療費用限額提高至 <span data-benefit="cancer">12</span> 萬元。</p><p>繳費期滿後，住院及門診手術保險金累計給付上限為 FG3 年繳應繳保險費總額的 3.5 倍。</p></section>
 </div>
-<section class="maturity" id="maturity"><h2>90 歲滿期，可以領多少？</h2><p>FG3 契約有效且於保險年齡達 90 歲的保單週年日仍生存時，以本例計算：</p><strong>FG3 計畫年繳費率 × 20 年 × 1.06 − 按 FG3 條款第 11 至 14 條應申領的累計保險金</strong><p>餘額最低為 0 元。CV4 的保費與理賠均不列入這項計算。</p></section>
+<section class="maturity" id="maturity"><h2>90 歲滿期｜預估總繳保費</h2><div class="premium-grid" aria-live="polite"><p>FG3 固定繳費 20 年<strong id="fg-paid"></strong></p><p>CV4 逐年續保至 80 歲<strong id="cv-paid"></strong></p><p>主附約累計總繳<strong id="all-paid"></strong></p></div><h3>滿期保險金計算</h3><p>FG3 契約有效且於保險年齡達 90 歲的保單週年日仍生存時，以本例計算：</p><strong>FG3 計畫年繳費率 × 20 年 × 1.06 − 按 FG3 條款第 11 至 14 條應申領的累計保險金</strong><p>餘額最低為 0 元。CV4 的保費與理賠均不列入這項計算。</p></section>
 <section class="maturity" id="materials" aria-labelledby="materials-title">
 <h2 id="materials-title">FG3 醫材補助保險金｜繳費期間內適用</h2>
 <p>契約有效且仍在繳費期間，因疾病或傷害，經醫師診斷必須且已實際於醫院或診所接受下列任一項治療，依接受治療當時的保單年度計算補助。</p>
@@ -73,14 +78,125 @@
 <li>「兩個瓣膜換置手術」、「三個瓣膜換置手術」或「主動脈瓣或二尖瓣或三尖瓣之置換手術」</li>
 </ol>
 </section>
-<footer class="hub-footer">資料依據：FG3、CV4 業務員須知｜僅供內部教育訓練，實際給付依契約條款。</footer>
+<footer class="hub-footer">資料依據：FG3、CV4 業務員須知與年繳費率表｜僅供內部教育訓練，實際給付依契約條款。</footer>
 </main><script>
 const fgPlan = document.querySelector('#fg-plan');
 const cvPlan = document.querySelector('#cv-plan');
 const amount = new Intl.NumberFormat('zh-TW');
+// Columns in both rate tables: 10 male/female, 20 male/female, 30 male/female.
+const fgRates = [
+  [29945, 32520, 53202, 59886, 72844, 84309],
+  [30170, 32548, 53601, 59995, 73354, 84565],
+  [31034, 32896, 54612, 60706, 74703, 85646],
+  [31643, 32926, 55693, 60826, 76155, 85899],
+  [32187, 33276, 56283, 61541, 76945, 86984],
+  [32327, 33626, 56950, 62258, 77838, 88077],
+  [32772, 33976, 57693, 62976, 78848, 89176],
+  [32910, 34327, 58506, 63698, 79958, 90281],
+  [33362, 34680, 59371, 64420, 81144, 91390],
+  [33502, 35033, 60279, 65147, 82393, 92503],
+  [33943, 35387, 60773, 65877, 83714, 93620],
+  [34075, 35419, 61067, 66008, 85061, 93893],
+  [34208, 35450, 61361, 66141, 86464, 94163],
+  [34340, 35483, 61655, 66271, 87898, 94437],
+  [34472, 35516, 61947, 66404, 88558, 94707],
+  [34603, 35549, 62245, 66537, 88913, 94980],
+  [35052, 35581, 62530, 66669, 89170, 95251],
+  [35500, 35613, 62814, 66802, 89427, 95525],
+  [35950, 35648, 63108, 66933, 89627, 95800],
+  [36401, 35679, 63400, 67068, 90239, 96073],
+  [36862, 35713, 64489, 67202, 91141, 96345],
+  [37185, 35747, 65714, 67338, 91946, 96624],
+  [37526, 35781, 66963, 67474, 92755, 96902],
+  [37882, 35816, 68210, 67609, 93587, 97183],
+  [38239, 35851, 69461, 67747, 94413, 97458],
+  [38606, 35885, 70739, 67885, 95248, 97738],
+  [38934, 35919, 71332, 68020, 96915, 98017],
+  [39253, 35955, 71928, 68157, 98595, 98295],
+  [39577, 35991, 72534, 68294, 100300, 98575],
+  [39928, 36025, 73129, 68431, 102060, 98854],
+  [40288, 36061, 73723, 68570, 103836, 99134],
+  [40688, 36240, 73919, 69255, 104191, 100074],
+  [41090, 36413, 74124, 69943, 104604, 101017],
+  [41523, 36600, 74344, 70634, 105010, 101960],
+  [41960, 36790, 74592, 71323, 105437, 102904],
+  [42405, 36984, 74850, 72018, 105878, 103850],
+  [42890, 37206, 75118, 72081, 106393, 103888],
+  [43398, 37451, 75424, 72145, 106920, 103928],
+  [43974, 37704, 75749, 72211, 107476, 103967],
+  [44515, 37981, 76353, 72273, 108098, 104004],
+  [45129, 38256, 77719, 72337, 108747, 104038],
+  [45389, 38300, 78276, 72428, 109513, 104128],
+  [45652, 38343, 78831, 72580, 110451, 104359],
+  [45857, 38541, 79389, 72643, 111386, 104471],
+  [46068, 38741, 79943, 72719, 112427, 104632],
+  [46323, 38984, 80501, 72751, 113767, 104949],
+  [46691, 39337, 81051, 73302, 115381, 105389],
+  [47094, 39722, 81606, 73856, 117400, 106006],
+  [47494, 40105, 82159, 74407, 119602, 106610],
+  [47940, 40530, 82709, 74962, 122160, 107210],
+  [48378, 40950, 83947, 75511, 125324, 108049],
+  [48390, 40962, 84147, 76061, 125550, 108521],
+  [48402, 40974, 84359, 76606, 125831, 108866],
+  [48415, 40983, 84900, 77154, 126254, 109305],
+  [48427, 40992, 85218, 77696, 126278, 109335],
+  [48432, 41001, 85754, 77926, 126295, 109342]
+];
+const cvRates = [
+  [2360, 2360, 3850, 3850, 5800, 5800],
+  [2010, 2010, 3335, 3335, 5200, 5200],
+  [2285, 2285, 3700, 3700, 5350, 5350],
+  [2375, 2375, 3890, 3890, 5650, 5650],
+  [2400, 2550, 3900, 4000, 5690, 5800],
+  [2440, 2695, 4095, 4200, 5750, 6200],
+  [2575, 5000, 4335, 7955, 6095, 11300],
+  [3780, 5120, 6560, 8230, 9340, 11720],
+  [5160, 5240, 9105, 8515, 13050, 12150],
+  [6270, 5730, 11045, 9350, 15820, 13350],
+  [7600, 6870, 13165, 11060, 18730, 15860],
+  [9040, 7560, 15395, 12070, 21750, 17400],
+  [11400, 9185, 19100, 14930, 26800, 21500],
+  [14685, 12570, 24455, 19570, 34225, 27200],
+  [18010, 16860, 30050, 26110, 42090, 36100],
+  [23090, 21470, 38570, 33455, 54050, 46300],
+  [23090, 21470, 38570, 33455, 54050, 46300]
+];
+const ageInput = document.querySelector('#entry-age');
+const sexInput = document.querySelector('#rate-sex');
+function premiums(age, sex, fg, cv) {
+  const fgAnnual = fgRates[age][(fg / 10 - 1) * 2 + sex];
+  const cvColumn = (cv / 10 - 1) * 2 + sex;
+  const bands = [];
+  let cvPaid = 0;
+  for (let start = age; start <= 80;) {
+    const index = Math.floor(start / 5);
+    const end = Math.min(index * 5 + 4, 80);
+    const years = end - start + 1;
+    const annual = cvRates[index][cvColumn];
+    const subtotal = annual * years;
+    bands.push({start, end, years, annual, subtotal});
+    cvPaid += subtotal;
+    start = end + 1;
+  }
+  return {fgAnnual, fgPaid: fgAnnual * 20, cvPaid, bands};
+}
+function showPremiums(fg, cv) {
+  const {fgAnnual, fgPaid, cvPaid, bands} = premiums(Number(ageInput.value), Number(sexInput.value), fg, cv);
+  const cvAnnual = bands[0].annual;
+  const amounts = {'fg-annual': fgAnnual, 'cv-annual': cvAnnual, 'first-annual': fgAnnual + cvAnnual,
+    'fg-paid': fgPaid, 'cv-paid': cvPaid, 'all-paid': fgPaid + cvPaid};
+  for (const [id, value] of Object.entries(amounts)) {
+    document.getElementById(id).textContent = amount.format(value) + ' 元';
+  }
+  document.getElementById('rate-rows').innerHTML = bands.map(band => {
+    const ages = band.start === band.end ? band.start : band.start + '～' + band.end;
+    return '<tr><td>' + ages + ' 歲</td><td>' + band.years + '</td><td>' + amount.format(band.annual) + ' 元</td><td>' + amount.format(band.subtotal) + ' 元</td></tr>';
+  }).join('');
+}
 function updateBenefits() {
   const fg = Number(fgPlan.value);
   const cv = Number(cvPlan.value);
+  showPremiums(fg, cv);
   const daily = fg * 100;
   const benefits = {
     fg, cv, fgDay: daily, cvDay: cv * 100,
@@ -91,6 +207,8 @@ function updateBenefits() {
     field.textContent = amount.format(benefits[field.dataset.benefit]);
   }
 }
+ageInput.addEventListener('change', updateBenefits);
+sexInput.addEventListener('change', updateBenefits);
 fgPlan.addEventListener('change', updateBenefits);
 cvPlan.addEventListener('change', updateBenefits);
 window.addEventListener('pageshow', updateBenefits);
