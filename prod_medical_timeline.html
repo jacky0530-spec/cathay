@@ -19,6 +19,7 @@
 @media(max-width:720px){.timeline{grid-template-columns:1fr;gap:10px}.phase{border-top-width:1px;border-left:5px solid #147653}}
 .coverage{margin:24px 0;padding:clamp(14px,3vw,32px);background:#fff;border:1px solid #cbded4;border-radius:16px;min-width:0}.coverage h2{margin:0 0 15px;color:#183d30}.coverage a{color:#086442;font-weight:700}.graph-scroll{overflow-x:auto;margin-bottom:12px}.graph-scroll svg{display:block;width:100%;min-width:760px;font:18px system-ui,sans-serif;background:#f6faf7;border-radius:12px}.track-title{font-size:23px;font-weight:750}.milestone{font-weight:700;fill:#324c40}.pan-note{display:none}@media(max-width:840px){.pan-note{display:block;color:#485f55;font-size:.9rem}}
 .plan-pickers{display:flex;flex-wrap:wrap;gap:12px 22px;margin:0 0 20px}.plan-pickers label{display:grid;gap:5px;font-size:.9rem;font-weight:700;color:#284c3b}.plan-pickers select{font:inherit;font-size:1rem;min-width:145px;padding:9px 12px;border:1px solid #9bbbab;border-radius:8px;background:white;color:#17482e}
+#materials{margin-top:20px;scroll-margin-top:100px}#materials ol{padding-left:1.8em;line-height:1.75}#materials li{padding:.25em 0}
 </style></head>
 <body class="hub-page"><main class="hub-shell">
 <a href="products.html">← 商品試算與保障</a>
@@ -39,21 +40,36 @@
 <g fill="#086442"><text x="75" y="203" class="track-title">倍愛醫靠｜FG3・<tspan data-benefit="fg">10</tspan> 萬元計畫</text>
 <path d="M62 229H900" stroke="#16835a" stroke-width="5"/><circle cx="62" cy="229" r="6"/><circle cx="410" cy="229" r="7"/><circle cx="688" cy="229" r="6"/><circle cx="900" cy="229" r="7"/>
 <text x="75" y="262" font-weight="700">繳費 20 年</text><text x="75" y="290">住院日額 <tspan data-benefit="fgDay">1,000</tspan> 元</text>
-<text x="75" y="319">醫材補助（每次）</text>
-<text x="75" y="345">第 1～2 年　<tspan data-benefit="early">5,000</tspan> 元</text>
-<text x="75" y="371">第 3～20 年　<tspan data-benefit="late">10,000</tspan> 元</text>
 <text x="424" y="262" font-weight="700">期滿後啟動實支</text><text x="424" y="290">每次住院一般限額 <tspan data-benefit="fg">10</tspan> 萬元</text><text x="424" y="317">癌症住院限額 <tspan data-benefit="cancer">12</tspan> 萬元</text>
 <text x="424" y="345">與日額 <tspan data-benefit="fgDay">1,000</tspan> 元擇優</text>
 <text x="702" y="262" font-weight="700">主約接續至 90 歲</text><text x="702" y="290">一般 <tspan data-benefit="fg">10</tspan> 萬／癌症 <tspan data-benefit="cancer">12</tspan> 萬</text><text x="702" y="317">實支與日額仍擇優</text></g>
 </svg></div>
-<a href="#maturity">查看 90 歲滿期金計算 ↓</a>
+<a href="#materials">查看繳費期間醫材補助 ↓</a>　<a href="#maturity">查看 90 歲滿期金計算 ↓</a>
 </section>
 <div class="timeline">
-<section class="phase"><h2>投保起至繳費期滿</h2><p><strong>FG3 主約</strong><br>符合住院給付條件，每日 <span data-benefit="fgDay">1,000</span> 元。</p><p><strong>醫材補助</strong><br>因疾病或傷害，經醫師診斷必須且已實際於醫院或診所接受條款所列治療，第 1～2 保單年度每次 <span data-benefit="early">5,000</span> 元（日額 × 5），第 3 年至繳費期滿每次 <span data-benefit="late">10,000</span> 元（日額 × 10）。整個繳費期間合計以 10 次為限。住院日額與醫材補助合計給付上限為 <span data-benefit="total">100</span> 萬元。</p><p><strong>CV4 附約</strong><br>每日住院經常費用限額 <span data-benefit="cvDay">1,000</span> 元，每次住院醫療費用限額 <span data-benefit="cv">10</span> 萬元。實支與日額每日 <span data-benefit="cvDay">1,000</span> 元擇優給付。</p></section>
+<section class="phase"><h2>投保起至繳費期滿</h2><p><strong>FG3 主約</strong><br>符合住院給付條件，每日 <span data-benefit="fgDay">1,000</span> 元。</p><p><strong>CV4 附約</strong><br>每日住院經常費用限額 <span data-benefit="cvDay">1,000</span> 元，每次住院醫療費用限額 <span data-benefit="cv">10</span> 萬元。實支與日額每日 <span data-benefit="cvDay">1,000</span> 元擇優給付。</p></section>
 <section class="phase"><h2>繳費期滿後至 80 歲</h2><p><strong>FG3 啟動住院實支</strong><br>每日住院經常費用限額 <span data-benefit="fgDay">1,000</span> 元，每次住院醫療費用一般限額 <span data-benefit="fg">10</span> 萬元，與日額每日 <span data-benefit="fgDay">1,000</span> 元擇優給付。</p><p><strong>癌症住院限額 × 1.2</strong><br>因癌症或直接因癌症本身所引起的併發症住院診療，該次住院醫療費用保險金限額提高至 <span data-benefit="cancer">12</span> 萬元。</p><p><strong>CV4 逐年續保</strong><br>保證續保至保險年齡 80 歲，以主契約保險期間為限。兩張契約的實支理賠皆適用損害填補，同一筆已獲實支補償的費用不可重複申領。</p></section>
 <section class="phase"><h2>CV4 屆滿後至 90 歲</h2><p><strong>FG3 接續住院保障</strong><br>每次住院醫療費用一般限額仍為 <span data-benefit="fg">10</span> 萬元，與日額給付型擇優。符合約定的癌症住院，該次醫療費用限額提高至 <span data-benefit="cancer">12</span> 萬元。</p><p>繳費期滿後，住院及門診手術保險金累計給付上限為 FG3 年繳應繳保險費總額的 3.5 倍。</p></section>
 </div>
 <section class="maturity" id="maturity"><h2>90 歲滿期，可以領多少？</h2><p>FG3 契約有效且於保險年齡達 90 歲的保單週年日仍生存時，以本例計算：</p><strong>FG3 計畫年繳費率 × 20 年 × 1.06 − 按 FG3 條款第 11 至 14 條應申領的累計保險金</strong><p>餘額最低為 0 元。CV4 的保費與理賠均不列入這項計算。</p></section>
+<section class="maturity" id="materials" aria-labelledby="materials-title">
+<h2 id="materials-title">FG3 醫材補助保險金｜繳費期間內適用</h2>
+<p>契約有效且仍在繳費期間，因疾病或傷害，經醫師診斷必須且已實際於醫院或診所接受下列任一項治療，依接受治療當時的保單年度計算補助。</p>
+<p><strong>第 1～2 保單年度</strong>　每次 <strong><span data-benefit="early">5,000</span> 元</strong>（住院日額 × 5）<br>
+<strong>第 3 保單年度至繳費期滿</strong>　每次 <strong><span data-benefit="late">10,000</span> 元</strong>（住院日額 × 10）</p>
+<p>整個繳費期間的醫材補助合計最多給付 <strong>10 次</strong>。繳費期間的住院日額保險金與醫材補助保險金累計給付上限為住院日額的 1,000 倍，依所選計畫為 <strong><span data-benefit="total">100</span> 萬元</strong>。</p>
+<h3>適用的八項治療</h3>
+<ol>
+<li>人工水晶體植入術</li>
+<li>全膝關節置換術或人工全膝關節再置換手術</li>
+<li>全股關節置換術或人工全髖關節再置換手術</li>
+<li>心臟血管支架置放術</li>
+<li>心律調節器植入術</li>
+<li>腦室腹腔分流手術</li>
+<li>心室輔助裝置植入術</li>
+<li>「兩個瓣膜換置手術」、「三個瓣膜換置手術」或「主動脈瓣或二尖瓣或三尖瓣之置換手術」</li>
+</ol>
+</section>
 <footer class="hub-footer">資料依據：FG3、CV4 業務員須知｜僅供內部教育訓練，實際給付依契約條款。</footer>
 </main><script>
 const fgPlan = document.querySelector('#fg-plan');
