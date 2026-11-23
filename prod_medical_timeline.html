@@ -39,6 +39,8 @@
 <path d="M62 137H688" fill="none" stroke="currentColor" style="color:#38729d" stroke-width="5"/><circle cx="62" cy="137" r="6"/><circle cx="688" cy="137" r="7"/>
 <text x="688" y="165" text-anchor="end">逐年續保至 80 歲</text></g>
 <g fill="#086442"><text x="75" y="203" class="track-title">倍愛醫靠｜FG3・<tspan data-benefit="fg">10</tspan> 萬元計畫</text>
+<rect x="410" y="177" width="490" height="43" rx="9" fill="#ddf2e5"/>
+<text x="655" y="205" text-anchor="middle" font-size="19" font-weight="700">住院及門診手術累計上限（3.5 倍）<tspan id="fg-medical-cap"></tspan></text>
 <path d="M62 229H900" stroke="#16835a" stroke-width="5"/><circle cx="62" cy="229" r="6"/><circle cx="410" cy="229" r="7"/><circle cx="688" cy="229" r="6"/><circle cx="900" cy="229" r="7"/>
 <text x="75" y="262" font-weight="700">繳費 20 年</text><text x="75" y="290">住院日額 <tspan data-benefit="fgDay">1,000</tspan> 元</text>
 <text x="75" y="318" font-weight="700">醫材補助（每次）</text>
@@ -57,7 +59,7 @@
 <div class="timeline">
 <section class="phase"><h2>投保起至繳費期滿</h2><p><strong>FG3 主約</strong><br>符合住院給付條件，每日 <span data-benefit="fgDay">1,000</span> 元。</p><p><strong>CV4 附約</strong><br>每日住院經常費用限額 <span data-benefit="cvDay">1,000</span> 元，每次住院醫療費用限額 <span data-benefit="cv">10</span> 萬元。實支與日額每日 <span data-benefit="cvDay">1,000</span> 元擇優給付。</p></section>
 <section class="phase"><h2>繳費期滿後至 80 歲</h2><p><strong>FG3 啟動住院實支</strong><br>每日住院經常費用限額 <span data-benefit="fgDay">1,000</span> 元，每次住院醫療費用一般限額 <span data-benefit="fg">10</span> 萬元，與日額每日 <span data-benefit="fgDay">1,000</span> 元擇優給付。</p><p><strong>癌症住院限額 × 1.2</strong><br>因癌症或直接因癌症本身所引起的併發症住院診療，該次住院醫療費用保險金限額提高至 <span data-benefit="cancer">12</span> 萬元。</p><p><strong>CV4 逐年續保</strong><br>保證續保至保險年齡 80 歲，以主契約保險期間為限。兩張契約的實支理賠皆適用損害填補，同一筆已獲實支補償的費用不可重複申領。</p></section>
-<section class="phase"><h2>CV4 屆滿後至 90 歲</h2><p><strong>FG3 接續住院保障</strong><br>每次住院醫療費用一般限額仍為 <span data-benefit="fg">10</span> 萬元，與日額給付型擇優。符合約定的癌症住院，該次醫療費用限額提高至 <span data-benefit="cancer">12</span> 萬元。</p><p>繳費期滿後，住院及門診手術保險金累計給付上限為 FG3 年繳應繳保險費總額的 3.5 倍。</p></section>
+<section class="phase"><h2>CV4 屆滿後至 90 歲</h2><p><strong>FG3 接續住院保障</strong><br>每次住院醫療費用一般限額仍為 <span data-benefit="fg">10</span> 萬元，與日額給付型擇優。符合約定的癌症住院，該次醫療費用限額提高至 <span data-benefit="cancer">12</span> 萬元。</p><p>繳費期滿後，住院及門診手術保險金累計給付上限為 FG3 年繳應繳保險費總額的 3.5 倍。以主約年繳費率乘以 20 年計算，CV4 保費不列入。</p></section>
 </div>
 <section class="maturity" id="maturity"><h2>90 歲滿期｜預估總繳保費</h2><div class="premium-grid" aria-live="polite"><p>FG3 固定繳費 20 年<strong id="fg-paid"></strong></p><p>CV4 逐年續保至 80 歲<strong id="cv-paid"></strong></p><p>主附約累計總繳<strong id="all-paid"></strong></p></div><h3>滿期保險金計算</h3><p>FG3 契約有效且於保險年齡達 90 歲的保單週年日仍生存時，以本例計算：</p><strong>FG3 計畫年繳費率 × 20 年 × 1.06 − 按 FG3 條款第 11 至 14 條應申領的累計保險金</strong><p>餘額最低為 0 元。CV4 的保費與理賠均不列入這項計算。</p></section>
 <section class="maturity" id="materials" aria-labelledby="materials-title">
@@ -184,7 +186,7 @@ function showPremiums(fg, cv) {
   const {fgAnnual, fgPaid, cvPaid, bands} = premiums(Number(ageInput.value), Number(sexInput.value), fg, cv);
   const cvAnnual = bands[0].annual;
   const amounts = {'fg-annual': fgAnnual, 'cv-annual': cvAnnual, 'first-annual': fgAnnual + cvAnnual,
-    'fg-paid': fgPaid, 'cv-paid': cvPaid, 'all-paid': fgPaid + cvPaid};
+    'fg-medical-cap': fgPaid * 3.5, 'fg-paid': fgPaid, 'cv-paid': cvPaid, 'all-paid': fgPaid + cvPaid};
   for (const [id, value] of Object.entries(amounts)) {
     document.getElementById(id).textContent = amount.format(value) + ' 元';
   }
