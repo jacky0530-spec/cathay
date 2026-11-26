@@ -147,3 +147,19 @@
  .heart-basis-grid strong{font-size:1rem}
  .heart-defined-premium{grid-template-columns:1fr;gap:9px;padding:12px 14px}
 }
+
+/* Photo-based interactive explanation */
+.explain{border-top:5px solid #167b55;padding:clamp(20px,3vw,36px);background:linear-gradient(135deg,#f0faf5,#fff 65%)}
+.explain .heart-panel-title h2{font-size:1.5rem}.explain a{color:#176b4b;font-size:.9rem}
+#explainProfile{color:#466354;font-size:1rem;line-height:1.8}
+.explain-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0}
+.explain-tabs button{font:inherit;font-weight:700;color:#24583f;border:1px solid #bed6c8;background:#fff;border-radius:12px;padding:15px;cursor:pointer;min-height:54px}
+.explain-tabs button[aria-pressed=true]{background:#126847;border-color:#126847;color:#fff;box-shadow:0 5px 15px #12684722}
+.explain button:focus-visible,.explain input:focus-visible{outline:3px solid #d49a24;outline-offset:3px}
+.explain-control{display:grid;gap:10px;padding:16px;background:#e6f2eb;border-radius:12px;margin-bottom:22px}.explain-control[hidden]{display:none}
+.explain-control input{width:100%;accent-color:#157851;min-height:32px}.explain-control span{font-size:.875rem;color:#4c6457}
+#explainHeadline{font-size:clamp(1.2rem,2.3vw,1.6rem);color:#164c36;line-height:1.6;margin:24px 0}
+.explain .heart-flow-item{padding:19px 14px}.explain .heart-flow-step,.explain .heart-flow-item p{font-size:.875rem}.explain .heart-flow-item b{font-size:clamp(1.15rem,2vw,1.6rem)}
+.explain-total{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:#125e43;color:#fff;border-radius:14px;padding:22px;margin-top:24px}.explain-total strong{font-size:clamp(1.7rem,3vw,2.4rem)}
+#explainFormula{font-size:1rem;line-height:1.85;color:#294f3c}.explain-note{font-size:.875rem;line-height:1.8;color:#5b6e61}
+@media(max-width:690px){.explain-tabs{grid-template-columns:1fr;gap:7px}.explain-tabs button{text-align:left;padding:12px}.explain{padding:18px}}

@@ -81,6 +81,39 @@
     el.hidden=!error;
     el.textContent=error||"";
   }
+  let story="healthy";
+  function renderExplanation(q){
+    $("explainResult").hidden=false;
+    set("explainProfile",`${q.age} 歲${q.sex==="F"?"女性":"男性"} · 保額 ${number(q.amountWan)} 萬 · ${q.term} 年期 · 年繳 ${money(q.annual)}`);
+    const slider=$("explainYear"); slider.max=q.finalYear;
+    const year=Math.min(q.finalYear,Math.max(1,Number(slider.value)||1));slider.value=year;
+    $("explainEvent").hidden=story==="healthy";
+    set("explainYearLabel",year);
+    set("explainAge",`約 ${q.age+year-1}～${q.age+year} 歲；本年度保費已到期的示例`);
+    document.querySelectorAll("[data-story]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.story===story)));
+    const out=$("explainTimeline");out.replaceChildren();
+    const after=year>q.earlyYear;
+    const basis=story==="healthy"?{years:q.term,sum:q.total}:premiumSumForBenefit(q,story,year);
+    out.append(card(`${q.age} 歲起`,"年繳保費",money(q.annual),`本情境計入 ${basis.years} 期，共 ${money(basis.sum)}`,"done"));
+    if(story==="healthy"||after){
+      out.append(card(`約 ${q.age+q.term} 歲 · 第 ${q.term} 年末`,"繳費期滿",money(q.total),"繳清後再經過 10 年，才到第一階段滿期金時點","done"));
+      out.append(card(`約 ${q.earlyAge} 歲 · 第 ${q.earlyYear} 年末`,"先領滿期金",money(q.first),"當時仍生存、契約有效","payout"));
+    }
+    if(story==="healthy"){
+      out.append(card("90 歲 · 保險期間屆滿","再領祝壽金",money(q.last),"仍生存且契約持續有效","payout"));
+      set("explainHeadline","先領一筆，保障繼續陪伴。平安到 90 歲，再領一筆。");
+      set("explainTotalLabel","兩階段生存給付合計");set("explainTotal",money(q.total));
+      set("explainFormula",`${money(q.annual)} × ${q.term} 年 × 50% = 每階段 ${money(q.first)}。滿期後一般重大傷病給付示意：${money(Math.max(q.face,q.total*1.05))}。`);
+    }else{
+      const amount=payout(q,story,year);
+      out.append(card(`第 ${year} 保單年度 · 約 ${q.age+year-1}～${q.age+year} 歲`,story==="critical"?"重大傷病給付":"身故給付（成人簡化）",amount===null?"須依條款核算":money(amount),"依事故／診斷日與原定繳費期屆滿日較早者計算","payout"));
+      set("explainHeadline",story==="critical"?(after?"先領滿期金，再看風險發生時的保障。":"風險提前發生，依事故年度計算保障。上方可拖曳年份。 "):(year<=q.term?"繳費期間遇到意外，看看留給家人的保障。":"繳費期滿後，看看留給家人的保障。"));
+      set("explainTotalLabel",after?"已領滿期金＋本次事故給付示意":"本次事故給付示意");
+      set("explainTotal",amount===null?"須依條款核算":money(amount+(after?q.first:0)));
+      set("explainFormula",`${money(q.annual)} × ${basis.years} 期 × 1.05 = ${money(basis.sum*1.05)}；${story==="critical"&&year===1?"第 1 年按應計保費總額 1.05 倍示意。":"與保額 "+money(q.face)+" 擇高（成人簡化示意）。"}`);
+    }
+    set("explainNote",story==="healthy"?"生存給付與事故保障分別展示，不可相加當作保證領回。所有給付均須符合條款。":"試算截至本次事故，不再加入 90 歲祝壽金。事故年齡以區間表示；照片 50 歲案例採 6 期保費，實際仍依事故日與應繳期數認定。給付扣抵、契約終止及未滿 16 歲規定依條款辦理。");
+  }
   function update(){
     let q;
     try{
@@ -92,6 +125,8 @@
         throw new Error("請輸入年齡及保險金額。");
       q=quote(age,$("heartSex").value,term,amount,raw===""?null:Number(raw));
     }catch(err){
+      $("explainResult").hidden=true;
+      set("explainProfile","請先修正下方投保條件，完成後即更新時間軸。");
       setError(err.message||"條件有誤");
       ["heartAnnual","heartTotal","heartEarly50","heartAge90","heartScenarioAmount"].forEach(id=>set(id,"—"));
       $("heartBenefitBasis").hidden=true;
@@ -103,6 +138,7 @@
       return;
     }
     setError("");
+    renderExplanation(q);
     const sexName=q.sex==="M"?"男性":"女性";
     const rateDetail="標準年繳費率："+sexName+"／"+q.age+" 歲／"+q.term+" 年期，每萬元保額 "+number(q.rate)+" 元 × "+q.amountWan+" 單位";
     set("heartRateDetail",rateDetail);
@@ -219,8 +255,8 @@
     set("heartScenarioNote",notes);
   }
   function reset(){
-    $("heartAge").value="40";
-    $("heartSex").value="M";
+    $("heartAge").value="44";
+    $("heartSex").value="F";
     $("heartTerm").value="20";
     $("heartFace").value="100";
     $("heartPremiumOverride").value="";
@@ -258,6 +294,13 @@
     input.addEventListener("input",()=>{untouchedSinceFocus=false;});
     input.addEventListener("blur",()=>{untouchedSinceFocus=false;});
   }
+  document.querySelectorAll("[data-story]").forEach(button=>button.addEventListener("click",()=>{
+    story=button.dataset.story;
+    $("explainYear").value=story==="death"?6:Number($("heartTerm").value)+11;
+    update();
+  }));
+  $("explainYear").addEventListener("input",update);
+  $("explainPhoto").addEventListener("click",()=>{story="healthy";reset();});
   $("heartReset").addEventListener("click",reset);
   update();
 })();

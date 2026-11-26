@@ -6,9 +6,9 @@
 <title>滿溢鍾心｜保費與先領後保障動態試算｜國泰雲端學習站</title>
 <link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="hub-ui.css">
-<link rel="stylesheet" href="prod_full_heart.css?v=timeline">
+<link rel="stylesheet" href="prod_full_heart.css?v=story-20261126">
 <script type="module" src="auth.js"></script>
-<script defer src="prod_full_heart.js?v=timeline"></script>
+<script defer src="prod_full_heart.js?v=story-20261126"></script>
 <script type="module" src="hub-usage.mjs"></script>
 </head>
 <body class="hub-page">
@@ -19,7 +19,7 @@
  </header>
  <section class="hub-hero hub-hero--small" aria-labelledby="pageTitle">
   <div class="hub-kicker">HEALTH PROTECTION · POLICY TIMELINE</div>
-  <h1 id="pageTitle">滿期先領 50%<br>保障怎麼走？</h1>
+  <h1 id="pageTitle">滿溢鍾心<br>把保障，放進人生時間軸。</h1>
   <p>滿溢鍾心重大傷病定期保險（外溢型）｜輸入保費與保額，立即看懂繳費年期、先領時間及保障延續。</p>
  </section>
  <div class="heart-highlight" role="note">
@@ -27,12 +27,29 @@
   <div><span>✓</span> 20 年期：第 <strong>30</strong> 保單年度末先領</div>
   <div><span>✓</span> 保單有效時保障至 <strong>90 歲</strong></div>
  </div>
+ <section class="heart-panel explain" aria-labelledby="explainTitle">
+  <div class="heart-panel-title"><h2 id="explainTitle">三種人生情境，一眼看懂</h2><a href="#formHeading">調整投保條件</a></div>
+  <p id="explainProfile"></p>
+  <div class="explain-tabs" aria-label="說明情境">
+   <button type="button" data-story="healthy" aria-pressed="true">A 平安健康到 90 歲</button>
+   <button type="button" data-story="critical" aria-pressed="false">B 滿期後遇到重大傷病</button>
+   <button type="button" data-story="death" aria-pressed="false">C 繳費期間身故</button>
+  </div>
+  <div class="explain-control" id="explainEvent" hidden><label for="explainYear">事故發生於第 <output id="explainYearLabel">31</output> 保單年度</label><input id="explainYear" type="range" min="1" max="46" value="31"><span id="explainAge"></span></div>
+  <div id="explainResult" aria-live="polite">
+   <h3 id="explainHeadline"></h3>
+   <ol id="explainTimeline" class="heart-flow-cards" aria-label="情境給付時間軸"></ol>
+   <div class="explain-total"><span id="explainTotalLabel"></span><strong id="explainTotal"></strong></div>
+   <p id="explainFormula"></p><p id="explainNote" class="explain-note"></p>
+  </div>
+  <button type="button" class="heart-reset" id="explainPhoto">套用照片案例：44 歲女性／100 萬／20 年</button>
+ </section>
  <div class="heart-layout">
   <section class="heart-panel heart-inputs" aria-labelledby="formHeading">
    <div class="heart-panel-title"><h2 id="formHeading">① 輸入投保條件</h2><span>依上傳費率表自動試算</span></div>
    <div class="heart-field-grid">
-    <div class="heart-field"><label for="heartAge">投保年齡</label><input id="heartAge" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" enterkeyhint="done" value="40"></div>
-    <div class="heart-field"><label for="heartSex">性別</label><select id="heartSex"><option value="M">男性</option><option value="F">女性</option></select></div>
+    <div class="heart-field"><label for="heartAge">投保年齡</label><input id="heartAge" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" enterkeyhint="done" value="44"></div>
+    <div class="heart-field"><label for="heartSex">性別</label><select id="heartSex"><option value="M">男性</option><option value="F" selected>女性</option></select></div>
     <div class="heart-field"><label for="heartTerm">繳費年期</label><select id="heartTerm"><option value="15">15 年期</option><option value="20" selected>20 年期</option></select></div>
     <div class="heart-field"><label for="heartFace">保險金額（萬元）</label><input id="heartFace" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" enterkeyhint="done" value="100"></div>
    </div>
@@ -127,7 +144,7 @@
   <p class="heart-disclaimer"><strong>注意：</strong>本工具依您提供的「年繳應繳保險費總額」契約定義，區分事故給付與生存給付計算期間。事件採保單年度輸入，屬按年繳方式的年度試算，實際事故日期及當期應繳保費仍須以契約核對。這是依提供的商品教學 PDF 與標準年繳費率表製作的內部教育試算。保險給付不是所有情境都能疊加；重大傷病、特定疾病及身故／完全失能等事故給付，涉及契約終止與例外規定。投保年齡、實際費率、當年度保險金額與給付條件，仍須以保單條款及正式建議書核對。未滿 16 歲的身故／完全失能不以一般成人公式計算。</p>
   <p class="heart-sources">參考資料：使用者提供「滿溢鍾心商品百分百」第 1 頁給付規則、「費率 (8)」第 1 頁標準年繳費率。<a href="https://www.cathaylife.com.tw/official/products/health-illness/zcqzcr" target="_blank" rel="noopener noreferrer">國泰人壽官方商品介紹</a>。<br>本試算僅供內部教育訓練使用，不作為對外行銷或正式理賠承諾。</p>
  </section>
- <footer class="hub-footer">滿溢鍾心保費與保障路徑 v1.2｜2026-11-19｜國泰雲端學習站</footer>
+ <footer class="hub-footer">滿溢鍾心保費與保障路徑 v1.3｜2026-11-26｜國泰雲端學習站</footer>
 </main>
 <script>if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js");</script>
 </body>
