@@ -6,9 +6,9 @@
 <title>滿溢鍾心｜保費與先領後保障動態試算｜國泰雲端學習站</title>
 <link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="hub-ui.css">
-<link rel="stylesheet" href="prod_full_heart.css?v=story-20261126">
+<link rel="stylesheet" href="prod_full_heart.css?v=compact-20261126">
 <script type="module" src="auth.js"></script>
-<script defer src="prod_full_heart.js?v=story-20261126"></script>
+<script defer src="prod_full_heart.js?v=compact-20261126"></script>
 <script type="module" src="hub-usage.mjs"></script>
 </head>
 <body class="hub-page">
@@ -27,6 +27,25 @@
   <div><span>✓</span> 20 年期：第 <strong>30</strong> 保單年度末先領</div>
   <div><span>✓</span> 保單有效時保障至 <strong>90 歲</strong></div>
  </div>
+  <section class="heart-panel heart-inputs" aria-labelledby="formHeading">
+   <div class="heart-panel-title"><h2 id="formHeading">① 輸入投保條件</h2><span>依上傳費率表自動試算</span></div>
+   <div class="heart-field-grid">
+    <div class="heart-field"><label for="heartAge">投保年齡</label><input id="heartAge" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" enterkeyhint="done" value="44"></div>
+    <div class="heart-field"><label for="heartSex">性別</label><select id="heartSex"><option value="M">男性</option><option value="F" selected>女性</option></select></div>
+    <div class="heart-field"><label for="heartTerm">繳費年期</label><select id="heartTerm"><option value="15">15 年期</option><option value="20" selected>20 年期</option></select></div>
+    <div class="heart-field"><label for="heartFace">保險金額（萬元）</label><input id="heartFace" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" enterkeyhint="done" value="100"></div>
+   </div>
+   <div class="heart-rate-status" id="heartRateStatus" role="status" aria-live="polite">依標準年繳費率計算。</div>
+   <details class="heart-advanced"><summary>手動保費與費率明細（選填）</summary>
+   <div class="heart-field">
+    <label for="heartPremiumOverride">手動套入年繳應繳保費（元，選填）</label>
+    <input id="heartPremiumOverride" type="text" inputmode="decimal" autocomplete="off" enterkeyhint="done" placeholder="空白＝使用費率表自動試算">
+    <small>請輸入本契約保險金額對應的「年繳應繳保險費」，不是累計實際繳費或折減後實付金額。空白時採標準費率；本工具不自動計入外溢折減。</small>
+   </div>
+   <div class="heart-rate-detail" id="heartRateDetail">費率：—</div>
+   </details>
+   <button class="heart-reset" id="heartReset" type="button">↺ 恢復示範條件</button>
+  </section>
  <section class="heart-panel explain" aria-labelledby="explainTitle">
   <div class="heart-panel-title"><h2 id="explainTitle">三種人生情境，一眼看懂</h2><a href="#formHeading">調整投保條件</a></div>
   <p id="explainProfile"></p>
@@ -45,23 +64,6 @@
   <button type="button" class="heart-reset" id="explainPhoto">套用照片案例：44 歲女性／100 萬／20 年</button>
  </section>
  <div class="heart-layout">
-  <section class="heart-panel heart-inputs" aria-labelledby="formHeading">
-   <div class="heart-panel-title"><h2 id="formHeading">① 輸入投保條件</h2><span>依上傳費率表自動試算</span></div>
-   <div class="heart-field-grid">
-    <div class="heart-field"><label for="heartAge">投保年齡</label><input id="heartAge" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" enterkeyhint="done" value="44"></div>
-    <div class="heart-field"><label for="heartSex">性別</label><select id="heartSex"><option value="M">男性</option><option value="F" selected>女性</option></select></div>
-    <div class="heart-field"><label for="heartTerm">繳費年期</label><select id="heartTerm"><option value="15">15 年期</option><option value="20" selected>20 年期</option></select></div>
-    <div class="heart-field"><label for="heartFace">保險金額（萬元）</label><input id="heartFace" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" enterkeyhint="done" value="100"></div>
-   </div>
-   <div class="heart-rate-status" id="heartRateStatus" role="status" aria-live="polite">依標準年繳費率計算。</div>
-   <div class="heart-field">
-    <label for="heartPremiumOverride">手動套入年繳應繳保費（元，選填）</label>
-    <input id="heartPremiumOverride" type="text" inputmode="decimal" autocomplete="off" enterkeyhint="done" placeholder="空白＝使用費率表自動試算">
-    <small>請輸入本契約保險金額對應的「年繳應繳保險費」，不是累計實際繳費或折減後實付金額。空白時採標準費率；本工具不自動計入外溢折減。</small>
-   </div>
-   <div class="heart-rate-detail" id="heartRateDetail">費率：—</div>
-   <button class="heart-reset" id="heartReset" type="button">↺ 恢復示範條件</button>
-  </section>
   <section class="heart-panel heart-summary" aria-labelledby="summaryHeading">
    <div class="heart-panel-title"><h2 id="summaryHeading">② 保費與兩階段生存給付</h2><span>條款示意，非核保報價</span></div>
    <div id="heartError" class="heart-error" hidden role="alert"></div>
