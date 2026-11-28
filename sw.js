@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cathay-app-v79-retirement-defaults';
+const CACHE_NAME = 'cathay-app-v80-retirement-systems';
 const urlsToCache = [
   './',
   'index.html',
