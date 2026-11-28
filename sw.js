@@ -1,9 +1,12 @@
-const CACHE_NAME = 'cathay-app-v76-heart-position';
+const CACHE_NAME = 'cathay-app-v77-retirement';
 const urlsToCache = [
   './',
   'index.html',
   'hub-ui.css',
   'calc.html',
+  'calc_good_retirement.html',
+  'calc_good_retirement.css',
+  'calc_good_retirement.js',
   'client.html',
   'photos.html',
   'photos.css',
