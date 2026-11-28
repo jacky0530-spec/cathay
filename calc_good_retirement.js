@@ -33,9 +33,30 @@ function calculate(p){
 root.RetirementMath={calculate,fv,factor};if(typeof module!=='undefined')module.exports=root.RetirementMath;
 if(typeof document==='undefined')return;
 const $=id=>document.getElementById(id),num=n=>Math.round(n).toLocaleString('zh-TW'),money=n=>num(n)+' 元',wan=n=>(n/10000).toLocaleString('zh-TW',{maximumFractionDigits:1})+' 萬';
-const form=$('retireForm');const defaults=[...form.querySelectorAll('input,select')].map(el=>[el,el.value]);
+const form=$('retireForm');
+// Text controls support full selection on iOS; retain numeric bounds explicitly.
+const numericInputs=[...form.querySelectorAll('input[type=number]')];
+for(const input of numericInputs){
+ input.type='text';input.inputMode=Number(input.min)<0?'text':Number(input.step||1)<1?'decimal':'numeric';
+ input.autocomplete='off';input.spellcheck=false;
+ let revision=0;
+ const selectAll=()=>{if(input.value)input.select()};
+ input.addEventListener('focus',selectAll);
+ input.addEventListener('click',selectAll);
+ input.addEventListener('touchend',()=>{const before=revision;requestAnimationFrame(()=>{if(document.activeElement===input&&revision===before)selectAll()})});
+ input.addEventListener('input',()=>{revision++});
+}
+function validateNumbers(){
+ for(const input of numericInputs){
+  const raw=input.value.trim(),value=Number(raw),min=Number(input.min),max=Number(input.max),step=Number(input.step||1);
+  const valid=/^-?(?:\d+(?:\.\d*)?|\.\d+)$/.test(raw)&&Number.isFinite(value)&&value>=min&&value<=max&&Math.abs((value-min)/step-Math.round((value-min)/step))<1e-6;
+  input.setCustomValidity(valid?'':`請輸入 ${min}～${max}，以 ${step} 為間隔的數字。`);
+ }
+}
+const defaults=[...form.querySelectorAll('input,select')].map(el=>[el,el.value]);
 function update(){
  try{
+ validateNumbers();
  if(!form.checkValidity())throw Error('請依欄位範圍填入數字，不能留白。');
  const p={};form.querySelectorAll('input,select').forEach(el=>p[el.id]=el.id==='mode'?el.value:Number(el.value));
  const r=calculate(p);$('error').textContent='';$('results').hidden=false;
